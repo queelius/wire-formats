@@ -27,3 +27,11 @@ add_executable(test_kraft 2020-03-kraft-wire-formats/test_kraft.cpp)
 target_link_libraries(test_kraft GTest::gtest_main)
 target_include_directories(test_kraft PRIVATE 2020-03-kraft-wire-formats)
 add_test(NAME test_kraft COMMAND test_kraft)
+
+# =============================================================================
+# McMillan's Converse (post 2, 2020-09-13)
+# =============================================================================
+add_executable(test_mcmillan 2020-09-mcmillan-wire-formats/test_mcmillan.cpp)
+target_link_libraries(test_mcmillan GTest::gtest_main)
+target_include_directories(test_mcmillan PRIVATE 2020-09-mcmillan-wire-formats)
+add_test(NAME test_mcmillan COMMAND test_mcmillan)
