@@ -127,4 +127,14 @@ inline TrieEmbeddingInfo trie_embedding(const std::vector<std::size_t>& lengths)
     return info;
 }
 
+// ---- is_kraft_satisfying -------------------------------------------------------
+//
+// Returns true iff the given length vector satisfies Kraft's inequality
+// (sum of 2^{-l_i} <= 1). Allows a small floating-point tolerance.
+
+inline bool is_kraft_satisfying(const std::vector<std::size_t>& lengths) {
+    constexpr double kTolerance = 1e-9;
+    return kraft_sum(lengths) <= 1.0 + kTolerance;
+}
+
 }  // namespace kraft

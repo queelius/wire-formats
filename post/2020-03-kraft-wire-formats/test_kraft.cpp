@@ -173,3 +173,14 @@ TEST(KraftTest, TrieEmbeddingForEmptyCode) {
     EXPECT_EQ(info.occupied_leaves, 0u);
     EXPECT_TRUE(info.subtree_sizes.empty());
 }
+
+TEST(KraftTest, IsKraftSatisfyingTrueForValidLengths) {
+    EXPECT_TRUE(is_kraft_satisfying({1, 2, 3, 3}));
+    EXPECT_TRUE(is_kraft_satisfying({2, 2, 2, 2}));  // saturates
+    EXPECT_TRUE(is_kraft_satisfying({}));  // empty: sum is 0
+}
+
+TEST(KraftTest, IsKraftSatisfyingFalseForOverlongLengths) {
+    EXPECT_FALSE(is_kraft_satisfying({1, 1, 1}));  // sum 1.5
+    EXPECT_FALSE(is_kraft_satisfying({1, 2, 2, 2, 2}));  // 0.5 + 4*0.25 = 1.5
+}
