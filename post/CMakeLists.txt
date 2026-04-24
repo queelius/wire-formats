@@ -19,3 +19,11 @@ enable_testing()
 # =============================================================================
 # Per-post test executables are added below as posts are written.
 # =============================================================================
+
+# =============================================================================
+# Kraft's Inequality (post 1, 2020-03-22)
+# =============================================================================
+add_executable(test_kraft 2020-03-kraft-wire-formats/test_kraft.cpp)
+target_link_libraries(test_kraft GTest::gtest_main)
+target_include_directories(test_kraft PRIVATE 2020-03-kraft-wire-formats)
+add_test(NAME test_kraft COMMAND test_kraft)
