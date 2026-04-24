@@ -1,0 +1,38 @@
+site_name: Algebra over Wire Formats
+site_description: Pedagogical blog posts exploring information theory by construction in C++23
+site_author: Alexander Towell
+site_url: https://queelius.github.io/wire-formats/
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.expand
+    - content.code.copy
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+
+markdown_extensions:
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - admonition
+  - pymdownx.details
+  - tables
+  - footnotes
+  - attr_list
+
+extra_javascript:
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+nav:
+  - Home: index.md
+  - About: about.md
+  - "Foundations":
+      - "Kraft's Inequality": "post/2020-03-kraft-wire-formats/index.md"
+      - "McMillan's Converse": "post/2020-09-mcmillan-wire-formats/index.md"
