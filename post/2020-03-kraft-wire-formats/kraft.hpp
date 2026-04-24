@@ -95,4 +95,36 @@ inline double kraft_sum(const std::vector<std::size_t>& lengths) {
     return sum;
 }
 
+// ---- trie_embedding -- the binary-tree proof made concrete ------------------
+//
+// For codeword lengths (l_1, ..., l_n), embed the code in the depth-l_max
+// complete binary tree. Each codeword of length l_i corresponds to a subtree
+// of size 2^{l_max - l_i} leaves. The Kraft inequality is the statement that
+// the sum of these subtree sizes is at most the total number of leaves
+// (2^l_max).
+
+struct TrieEmbeddingInfo {
+    std::size_t l_max;
+    std::size_t total_leaves;            // 2^l_max
+    std::size_t occupied_leaves;         // sum of subtree_sizes
+    std::vector<std::size_t> subtree_sizes;  // 2^{l_max - l_i} for each codeword
+};
+
+inline TrieEmbeddingInfo trie_embedding(const std::vector<std::size_t>& lengths) {
+    TrieEmbeddingInfo info;
+    info.l_max = 0;
+    for (std::size_t l : lengths) {
+        if (l > info.l_max) info.l_max = l;
+    }
+    info.total_leaves = std::size_t{1} << info.l_max;
+    info.subtree_sizes.reserve(lengths.size());
+    info.occupied_leaves = 0;
+    for (std::size_t l : lengths) {
+        std::size_t size = std::size_t{1} << (info.l_max - l);
+        info.subtree_sizes.push_back(size);
+        info.occupied_leaves += size;
+    }
+    return info;
+}
+
 }  // namespace kraft

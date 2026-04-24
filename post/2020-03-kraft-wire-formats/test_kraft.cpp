@@ -138,3 +138,38 @@ TEST(KraftTest, NonPrefixFreeCodeStillSatisfiesKraftIfLengthsAllow) {
     std::vector<std::size_t> lengths{1, 2};
     EXPECT_DOUBLE_EQ(kraft_sum(lengths), 0.75);
 }
+
+TEST(KraftTest, TrieEmbeddingComputesSubtreeSizes) {
+    // Code with lengths {1, 2, 3, 3}, l_max = 3.
+    // Codeword of length 1 occupies 2^(3-1) = 4 leaves.
+    // Codeword of length 2 occupies 2^(3-2) = 2 leaves.
+    // Codewords of length 3 occupy 2^(3-3) = 1 leaf each.
+    // Total: 4 + 2 + 1 + 1 = 8 = 2^3 (saturates).
+    auto info = trie_embedding({1, 2, 3, 3});
+    EXPECT_EQ(info.l_max, 3u);
+    EXPECT_EQ(info.total_leaves, 8u);
+    ASSERT_EQ(info.subtree_sizes.size(), 4u);
+    EXPECT_EQ(info.subtree_sizes[0], 4u);
+    EXPECT_EQ(info.subtree_sizes[1], 2u);
+    EXPECT_EQ(info.subtree_sizes[2], 1u);
+    EXPECT_EQ(info.subtree_sizes[3], 1u);
+    EXPECT_EQ(info.occupied_leaves, 8u);
+}
+
+TEST(KraftTest, TrieEmbeddingForUnsaturatedCode) {
+    // Lengths {2, 2, 3}, l_max = 3.
+    // Subtree sizes: 2, 2, 1 = 5 leaves total.
+    // Total: 8. Spare: 3.
+    auto info = trie_embedding({2, 2, 3});
+    EXPECT_EQ(info.l_max, 3u);
+    EXPECT_EQ(info.total_leaves, 8u);
+    EXPECT_EQ(info.occupied_leaves, 5u);
+}
+
+TEST(KraftTest, TrieEmbeddingForEmptyCode) {
+    auto info = trie_embedding({});
+    EXPECT_EQ(info.l_max, 0u);
+    EXPECT_EQ(info.total_leaves, 1u);  // 2^0 = 1
+    EXPECT_EQ(info.occupied_leaves, 0u);
+    EXPECT_TRUE(info.subtree_sizes.empty());
+}
