@@ -68,4 +68,22 @@ inline std::vector<std::string> build_prefix_free_code(
     return code;
 }
 
+// ---- is_prefix_free -- verification helper ----------------------------------
+//
+// Returns true iff no codeword in the input vector is a prefix of any other.
+// Useful for verifying that build_prefix_free_code produces valid output.
+
+inline bool is_prefix_free(const std::vector<std::string>& code) {
+    for (std::size_t i = 0; i < code.size(); ++i) {
+        for (std::size_t j = 0; j < code.size(); ++j) {
+            if (i == j) continue;
+            const std::string& a = code[i];
+            const std::string& b = code[j];
+            if (a.size() > b.size()) continue;
+            if (b.compare(0, a.size(), a) == 0) return false;
+        }
+    }
+    return true;
+}
+
 }  // namespace mcmillan

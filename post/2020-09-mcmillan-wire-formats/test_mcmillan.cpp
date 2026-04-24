@@ -45,3 +45,29 @@ TEST(McMillanTest, BuildPrefixFreeCodeForEmptyLengthsReturnsEmpty) {
     auto code = build_prefix_free_code({});
     EXPECT_TRUE(code.empty());
 }
+
+TEST(McMillanTest, IsPrefixFreeReturnsTrueForValidCode) {
+    EXPECT_TRUE(is_prefix_free({"0", "10", "110", "111"}));
+}
+
+TEST(McMillanTest, IsPrefixFreeReturnsFalseWhenViolating) {
+    EXPECT_FALSE(is_prefix_free({"0", "01"}));
+    EXPECT_FALSE(is_prefix_free({"01", "010"}));
+}
+
+TEST(McMillanTest, IsPrefixFreeReturnsTrueForEmptyCode) {
+    EXPECT_TRUE(is_prefix_free({}));
+}
+
+TEST(McMillanTest, BuildPrefixFreeCodeOutputIsActuallyPrefixFree) {
+    for (const std::vector<std::size_t>& lengths : {
+        std::vector<std::size_t>{1, 2, 3, 3},
+        std::vector<std::size_t>{2, 2, 2, 2},
+        std::vector<std::size_t>{3, 3, 3, 3, 3, 3, 3, 3},
+        std::vector<std::size_t>{1, 3, 3, 3, 3},
+    }) {
+        auto code = build_prefix_free_code(lengths);
+        EXPECT_TRUE(is_prefix_free(code))
+            << "Constructed code is not prefix-free for some input lengths";
+    }
+}
