@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <cmath>
 #include <map>
 #include <string>
 #include <vector>
@@ -77,4 +78,63 @@ TEST(KraftTest, KraftSumExceedsOneForOverlongCode) {
     // 3 codewords of length 1 cannot fit prefix-freely (only 2 leaves at depth 1).
     // Sum: 3 * 1/2 = 1.5 > 1.
     EXPECT_GT(kraft_sum({1, 1, 1}), 1.0);
+}
+
+namespace {
+
+// Helper: extract the lengths of all codewords in a code map.
+void collect_lengths_recursive(const std::map<std::string, std::string>& code,
+                               std::vector<std::size_t>& out) {
+    for (const auto& [sym, codeword] : code) {
+        out.push_back(codeword.size());
+    }
+}
+
+}  // namespace
+
+TEST(KraftTest, KraftHoldsForExampleCode) {
+    // Code: A=0, B=10, C=110, D=111.
+    BinaryTree t;
+    t.insert("0");
+    t.insert("10");
+    t.insert("110");
+    t.insert("111");
+    ASSERT_TRUE(t.is_prefix_free());
+
+    std::map<std::string, std::string> code{
+        {"A", "0"}, {"B", "10"}, {"C", "110"}, {"D", "111"}
+    };
+    std::vector<std::size_t> lengths;
+    collect_lengths_recursive(code, lengths);
+    EXPECT_DOUBLE_EQ(kraft_sum(lengths), 1.0);
+}
+
+TEST(KraftTest, KraftHoldsForUnaryCodeUpToK) {
+    // Unary: codeword for n is (n-1) zeros followed by a one. Lengths 1, 2, 3, ...
+    constexpr std::size_t K = 10;
+    BinaryTree t;
+    std::vector<std::size_t> lengths;
+    std::string codeword;
+    for (std::size_t n = 1; n <= K; ++n) {
+        codeword.assign(n - 1, '0');
+        codeword += '1';
+        t.insert(codeword);
+        lengths.push_back(n);
+    }
+    ASSERT_TRUE(t.is_prefix_free());
+    EXPECT_LT(kraft_sum(lengths), 1.0);
+    EXPECT_NEAR(kraft_sum(lengths), 1.0 - std::ldexp(1.0, -static_cast<int>(K)), 1e-12);
+}
+
+TEST(KraftTest, NonPrefixFreeCodeStillSatisfiesKraftIfLengthsAllow) {
+    // The lengths 1, 2 satisfy Kraft (sum = 0.75 <= 1), but the specific
+    // assignment "0", "01" is NOT prefix-free. This verifies that Kraft is
+    // about the LENGTH VECTOR, not the specific assignment.
+    BinaryTree t;
+    t.insert("0");
+    t.insert("01");
+    EXPECT_FALSE(t.is_prefix_free());
+
+    std::vector<std::size_t> lengths{1, 2};
+    EXPECT_DOUBLE_EQ(kraft_sum(lengths), 0.75);
 }
