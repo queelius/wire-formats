@@ -82,4 +82,17 @@ private:
     }
 };
 
+// ---- kraft_sum -- the Kraft inequality's left-hand side ---------------------
+//
+// For codeword lengths (l_1, ..., l_n), returns sum_i 2^{-l_i}.
+// Kraft's inequality says this sum is <= 1 for any prefix-free code.
+
+inline double kraft_sum(const std::vector<std::size_t>& lengths) {
+    double sum = 0.0;
+    for (std::size_t l : lengths) {
+        sum += std::ldexp(1.0, -static_cast<int>(l));
+    }
+    return sum;
+}
+
 }  // namespace kraft
