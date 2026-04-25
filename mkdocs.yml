@@ -39,3 +39,5 @@ nav:
   - "Universal Codes":
       - "Universal Codes as Priors": "post/2022-01-priors-wire-formats/index.md"
       - "Unary and Elias Gamma": "post/2022-06-elias-gamma-wire-formats/index.md"
+      - "Elias Delta and Omega": "post/2022-11-elias-delta-omega-wire-formats/index.md"
+      - "Fibonacci Coding": "post/2023-04-fibonacci-wire-formats/index.md"
