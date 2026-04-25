@@ -134,3 +134,13 @@ add_executable(test_roaring 2025-12-roaring-bitmap-wire-formats/test_roaring.cpp
 target_link_libraries(test_roaring GTest::gtest_main)
 target_include_directories(test_roaring PRIVATE 2025-12-roaring-bitmap-wire-formats)
 add_test(NAME test_roaring COMMAND test_roaring)
+
+# =============================================================================
+# Synthesis: Codecs as Structure (post 13, 2026-05-15)
+# =============================================================================
+add_executable(test_synthesis 2026-05-synthesis-wire-formats/test_synthesis.cpp)
+target_link_libraries(test_synthesis GTest::gtest_main)
+target_include_directories(test_synthesis PRIVATE
+    2026-05-synthesis-wire-formats
+    2022-01-priors-wire-formats)
+add_test(NAME test_synthesis COMMAND test_synthesis)
