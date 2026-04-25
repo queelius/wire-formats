@@ -208,3 +208,58 @@ TEST(RoundTripTest, SingleSymbolSkewed99) {
     EXPECT_EQ(encode_decode_single(0, 99, 100, 0u), 0u);
     EXPECT_EQ(encode_decode_single(99, 100, 100, 1u), 1u);
 }
+
+// Helper: encode a sequence of binary symbols under a Bernoulli(p) source
+// (p = prob_high/total), then decode and verify.
+// Returns true if the decoded sequence matches the original.
+static bool sequence_round_trip(const std::vector<std::size_t>& symbols,
+                                 std::uint32_t prob_high, std::uint32_t total) {
+    // Cumulative freqs: sym 0 -> [0, prob_high), sym 1 -> [prob_high, total).
+    BitWriter bw;
+    {
+        ArithmeticEncoder enc(bw);
+        for (std::size_t sym : symbols) {
+            if (sym == 0) {
+                enc.encode_symbol(0, prob_high, total);
+            } else {
+                enc.encode_symbol(prob_high, total, total);
+            }
+        }
+        enc.finish();
+    }
+    bw.flush();
+    BitReader br(bw.bytes());
+    ArithmeticDecoder dec(br);
+
+    auto get_freq = [=](std::uint32_t scaled) -> std::size_t {
+        return (scaled >= prob_high) ? 1u : 0u;
+    };
+    auto cum_range = [=](std::size_t sym)
+        -> std::pair<std::uint32_t, std::uint32_t> {
+        if (sym == 0) return {0, prob_high};
+        return {prob_high, total};
+    };
+
+    for (std::size_t expected : symbols) {
+        std::size_t got = dec.decode_symbol(get_freq, cum_range, total);
+        if (got != expected) return false;
+    }
+    return true;
+}
+
+TEST(RoundTripTest, Sequence10SymbolsEquiprobable) {
+    std::vector<std::size_t> syms = {0,1,0,0,1,1,0,1,0,0};
+    EXPECT_TRUE(sequence_round_trip(syms, 1, 2));
+}
+
+TEST(RoundTripTest, Sequence50SymbolsSkewed90) {
+    std::vector<std::size_t> syms(50);
+    for (std::size_t i = 0; i < 50; ++i) syms[i] = (i % 10 == 0) ? 1u : 0u;
+    EXPECT_TRUE(sequence_round_trip(syms, 9, 10));
+}
+
+TEST(RoundTripTest, Sequence100SymbolsSkewed99) {
+    std::vector<std::size_t> syms(100);
+    for (std::size_t i = 0; i < 100; ++i) syms[i] = (i % 100 == 0) ? 1u : 0u;
+    EXPECT_TRUE(sequence_round_trip(syms, 99, 100));
+}
