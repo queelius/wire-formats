@@ -13,8 +13,8 @@ The series is planned for 13 posts spanning 2020 through 2026, roughly 2 posts p
 |---|-------|------|--------|
 | 1 | Kraft's Inequality | 2020-03-22 | Published |
 | 2 | McMillan's Converse | 2020-09-13 | Published |
-| 3 | Universal Codes as Priors | 2021-03-29 | Forthcoming |
-| 4 | Unary and Elias Gamma | 2021-08-08 | Forthcoming |
+| 3 | Universal Codes as Priors | 2022-01-15 | Published |
+| 4 | Unary and Elias Gamma | 2022-06-19 | Published |
 | 5 | Elias Delta and Omega | 2022-02-13 | Forthcoming |
 | 6 | Fibonacci Coding | 2022-07-17 | Forthcoming |
 | 7 | Rice / Golomb | 2023-02-19 | Forthcoming |
