@@ -24,23 +24,23 @@ linked_project:
 
 ## Kraft's Inequality
 
-You want to assign a bit string to each symbol in some alphabet. The assignment must be uniquely decodable: given a bit string that is a concatenation of codewords, you can recover the original symbol sequence without ambiguity. The simplest way to guarantee unique decodability is prefix-freeness: no codeword is a prefix of any other. A prefix-free code is self-delimiting. The decoder reads bits left-to-right and knows exactly when each codeword ends, with no lookahead and no length headers.
+I want a code where each symbol maps to a bit string, and where any concatenation of codewords can be decoded unambiguously. The simplest way to guarantee that is prefix-freeness: no codeword is a prefix of any other. A prefix-free code is self-delimiting. The decoder reads bits left-to-right and knows exactly when each codeword ends, with no lookahead and no length headers.
 
-The design question is: which collections of lengths are achievable? If you want four codewords of lengths 1, 2, 3, and 3, can you build a prefix-free code with those lengths? If you want two codewords of length 1, can you do it? (No: there are only two 1-bit strings, and they are prefixes of everything.)
+The question I keep returning to is: which collections of lengths are actually achievable? If I want four codewords of lengths 1, 2, 3, and 3, can I build a prefix-free code with those lengths? What if I want two codewords of length 1? (No: there are only two 1-bit strings, and they are prefixes of everything longer.)
 
-Kraft's inequality answers this question. It says: a length vector \((l_1, l_2, \ldots, l_n)\) is achievable by a prefix-free binary code only if
+Kraft's inequality is the answer. A length vector \((l_1, l_2, \ldots, l_n)\) is achievable by a prefix-free binary code only if
 
 $$\sum_{i=1}^{n} 2^{-l_i} \leq 1.$$
 
-This is the inequality you cannot escape. Any prefix-free code satisfies it. Any length vector that violates it cannot be realized as a prefix-free code, full stop.
+This is the constraint you cannot escape. Any prefix-free code satisfies it. Any length vector that violates it cannot be realized as a prefix-free code, full stop.
 
 The converse is also true: any length vector satisfying Kraft is realizable by some prefix-free code. That is McMillan's theorem, and it is the subject of the [next post in this series](/post/2020-09-mcmillan-wire-formats/). This post develops the necessary direction: every prefix-free code satisfies Kraft.
 
-Understanding Kraft requires understanding the geometry of prefix-free codes. The right tool is the binary tree.
+The right tool for understanding why is the binary tree.
 
 ## The Trie View
 
-Represent each codeword as a path in a binary tree. Start at the root. For each bit in the codeword, go left (0) or right (1). The codeword ends at a node, which we mark as a terminal. A code is prefix-free if and only if no terminal node has any descendants that are also terminals. Equivalently, once you reach a terminal on the way down, you stop. Terminals are leaves of the code, even if the underlying tree has deeper structure.
+Represent each codeword as a path in a binary tree. Start at the root. For each bit, go left (0) or right (1). The codeword ends at a node, which I mark as a terminal. A code is prefix-free if and only if no terminal node has any descendants that are also terminals. Once you reach a terminal on the way down, you stop.
 
 The example code \(\{A \to \texttt{0},\ B \to \texttt{10},\ C \to \texttt{110},\ D \to \texttt{111}\}\) has lengths \((1, 2, 3, 3)\). Its trie looks like this:
 
@@ -118,11 +118,11 @@ private:
 };
 ```
 
-The `is_prefix_free_recursive` function passes a flag `ancestor_is_codeword` down the tree. If the current node is a terminal and an ancestor was also a terminal, that ancestor's codeword is a prefix of the current one: violation. This catches both directions of the prefix relationship in a single pass.
+`is_prefix_free_recursive` passes a flag `ancestor_is_codeword` down the tree. If the current node is a terminal and an ancestor was also a terminal, that ancestor's codeword is a prefix of the current one: violation. This catches both directions of the prefix relationship in a single pass.
 
 ## The Inequality
 
-Each codeword of length \(l_i\) claims a fraction \(2^{-l_i}\) of a unit budget. Kraft's inequality says the total claim is at most 1:
+Think of the unit interval as a budget. Each codeword of length \(l_i\) claims a fraction \(2^{-l_i}\) of that budget. Kraft's inequality says the total claim is at most 1:
 
 $$\sum_{i=1}^{n} 2^{-l_i} \leq 1.$$
 
@@ -151,7 +151,7 @@ Some examples from the test suite:
 - Lengths \(\{1, 2, 3, 4, 5\}\): sum is \(\frac{1}{2} + \frac{1}{4} + \frac{1}{8} + \frac{1}{16} + \frac{1}{32} = \frac{31}{32} < 1\). (A prefix of the unary code. Strictly below 1.)
 - Lengths \(\{1, 1, 1\}\): sum is \(1.5 > 1\). (Three 1-bit codewords are impossible: only "0" and "1" exist at depth 1.)
 
-The last case violates Kraft, so no prefix-free code with those lengths exists. The check `is_kraft_satisfying` wraps this with a small floating-point tolerance:
+That last case violates Kraft, so no prefix-free code with those lengths exists. The check `is_kraft_satisfying` wraps this with a small floating-point tolerance:
 
 ```cpp
 inline bool is_kraft_satisfying(const std::vector<std::size_t>& lengths) {
@@ -236,7 +236,7 @@ An unsaturated case: lengths \(\{2, 2, 3\}\) give occupied \(2 + 2 + 1 = 5\) out
 
 ## What Kraft Gives Us
 
-Three consequences follow immediately from Kraft's inequality.
+Three consequences fall out of Kraft's inequality directly.
 
 **First: a budget.** Each codeword consumes a share of the unit budget. A codeword of length 1 costs 1/2. A codeword of length 3 costs 1/8. Once the budget is exhausted, no more codewords can be added without violating prefix-freeness. This is not a practical limitation but a mathematical fact: the fractions must sum to at most 1.
 
@@ -246,17 +246,17 @@ The budget framing makes trade-offs visible. If you want symbol A to have a very
 
 Kraft's inequality is what makes this optimization well-defined. The constraint \(\sum_i 2^{-l_i} \leq 1\) defines the feasible region; the optimization finds the best point in that region.
 
-**Third: a diagnostic.** A length vector that violates Kraft has no prefix-free realization. This is a hard constraint, not a heuristic. If someone proposes a code with lengths that sum past 1 in Kraft's sense, no amount of clever codeword assignment will fix it: the tree simply does not have enough leaves.
+**Third: a diagnostic.** A length vector that violates Kraft has no prefix-free realization. This is a hard constraint, not a heuristic. If someone proposes a code with lengths that sum past 1 in Kraft's sense, no amount of clever codeword assignment will fix it: the tree does not have enough leaves.
 
-Conversely, a length vector satisfying Kraft always has a prefix-free realization. This is McMillan's theorem, and it is the point where the story becomes constructive.
+Conversely, a length vector satisfying Kraft always has a prefix-free realization. That is McMillan's theorem, and it is where the story becomes constructive.
 
 ## The Converse, Foreshadowed
 
 Kraft's inequality is necessary. McMillan's theorem (1956) says it is also sufficient: any length vector satisfying the inequality is realizable by some prefix-free binary code. You can always build the code.
 
-The proof is constructive. Given a Kraft-satisfying length vector, you can walk the binary tree left-to-right, assigning the next available node at the right depth to each symbol, and the budget guarantee ensures you never run out of room before all symbols are placed.
+The proof is constructive. Given a Kraft-satisfying length vector, you walk the binary tree left-to-right, assigning the next available node at the right depth to each symbol. The budget guarantee ensures you never run out of room before all symbols are placed.
 
-This constructive direction is what makes Kraft practically useful: it transforms a feasibility question ("does a code with these lengths exist?") into a simple arithmetic check. Compute the Kraft sum. If it is at most 1, the code exists. If not, it does not.
+This constructive direction is what makes Kraft practically useful: it turns a feasibility question ("does a code with these lengths exist?") into a simple arithmetic check. Compute the Kraft sum. If it is at most 1, the code exists. If not, it does not.
 
 The [next post in this series](/post/2020-09-mcmillan-wire-formats/) proves McMillan's theorem and gives the construction explicitly.
 
