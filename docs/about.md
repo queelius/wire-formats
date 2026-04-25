@@ -20,7 +20,7 @@ The series is planned for 13 posts spanning 2020 through 2026, roughly 2 posts p
 | 7 | Rice / Golomb | 2023-09-17 | Published |
 | 8 | VByte / Varint | 2024-02-25 | Published |
 | 9 | Huffman Coding | 2024-08-04 | Published |
-| 10 | Arithmetic Coding | 2024-09-04 | Forthcoming |
+| 10 | Arithmetic Coding | 2025-01-12 | Published |
 | 11 | Succinct Bit Vectors and Rank/Select | 2025-03-09 | Forthcoming |
 | 12 | RoaringBitmap | 2025-08-10 | Forthcoming |
 | 13 | Synthesis: Codecs as Structure | 2026-05-15 | Forthcoming |
