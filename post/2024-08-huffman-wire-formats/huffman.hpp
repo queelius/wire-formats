@@ -102,4 +102,41 @@ inline std::unique_ptr<Node> build_huffman_tree(const std::vector<double>& freqs
     return std::move(const_cast<std::unique_ptr<Node>&>(pq.top()));
 }
 
+// ---- tree_to_codebook -- recursive DFS to extract symbol-to-codeword map ---
+//
+// Walks the tree, accumulating a path string ("0" for left, "1" for right).
+// At each leaf, emits the symbol-to-path mapping into the result map.
+//
+// For a single-symbol tree (the root is itself a leaf), the function returns
+// {"0"} for that symbol. A single-bit codeword is the minimum meaningful
+// codeword; it is not prefix-free with any other code, but for a one-symbol
+// alphabet there is nothing to be prefix-free against.
+//
+// Returns: std::map<int, std::string> mapping symbol index -> binary codeword.
+
+inline std::map<int, std::string> tree_to_codebook(const Node* root,
+                                                    std::string prefix = "") {
+    assert(root != nullptr && "tree_to_codebook called with null root");
+
+    // Special case: single-symbol alphabet (root is a leaf).
+    if (root->symbol >= 0 && root->left == nullptr && root->right == nullptr) {
+        // A single-symbol code needs at least 1 bit. Assign "0".
+        return {{root->symbol, prefix.empty() ? "0" : prefix}};
+    }
+
+    std::map<int, std::string> result;
+
+    // Recursive DFS: left child gets "0", right child gets "1".
+    if (root->left) {
+        auto left_codes = tree_to_codebook(root->left.get(), prefix + "0");
+        result.insert(left_codes.begin(), left_codes.end());
+    }
+    if (root->right) {
+        auto right_codes = tree_to_codebook(root->right.get(), prefix + "1");
+        result.insert(right_codes.begin(), right_codes.end());
+    }
+
+    return result;
+}
+
 }  // namespace huffman

@@ -79,3 +79,69 @@ TEST(HuffmanTest, AllSymbolsPresent) {
     ASSERT_EQ(found.size(), 4u);
     for (int i = 0; i < 4; ++i) EXPECT_EQ(found[i], i);
 }
+
+// For a two-symbol distribution, both codewords must be exactly 1 bit ("0" or "1").
+TEST(HuffmanTest, TwoSymbolCodewordLengthIs1) {
+    std::vector<double> freqs = {0.6, 0.4};
+    auto root = build_huffman_tree(freqs);
+    auto cb = tree_to_codebook(root.get());
+    ASSERT_EQ(cb.size(), 2u);
+    for (const auto& [sym, cw] : cb) {
+        EXPECT_EQ(cw.size(), 1u) << "symbol " << sym << " has codeword length " << cw.size();
+    }
+}
+
+// For a uniform 4-symbol distribution, all codewords should be 2 bits
+// (Huffman reduces to fixed-width for uniform power-of-2 alphabets).
+TEST(HuffmanTest, UniformFourSymbolAllTwoBits) {
+    std::vector<double> freqs = {0.25, 0.25, 0.25, 0.25};
+    auto root = build_huffman_tree(freqs);
+    auto cb = tree_to_codebook(root.get());
+    ASSERT_EQ(cb.size(), 4u);
+    for (const auto& [sym, cw] : cb) {
+        EXPECT_EQ(cw.size(), 2u) << "symbol " << sym;
+    }
+}
+
+// The most frequent symbol must get the shortest codeword (or tied-shortest).
+// Distribution: {0.5, 0.25, 0.125, 0.125}.
+// Symbol 0 (freq 0.5) should get a 1-bit codeword.
+TEST(HuffmanTest, MostFrequentSymbolShortestCode) {
+    std::vector<double> freqs = {0.5, 0.25, 0.125, 0.125};
+    auto root = build_huffman_tree(freqs);
+    auto cb = tree_to_codebook(root.get());
+    ASSERT_EQ(cb.size(), 4u);
+    std::size_t len0 = cb.at(0).size();
+    for (const auto& [sym, cw] : cb) {
+        EXPECT_GE(cw.size(), len0)
+            << "symbol " << sym << " has shorter code than symbol 0";
+    }
+}
+
+// Codebook must be prefix-free: no codeword is a prefix of another.
+TEST(HuffmanTest, CodebookIsPrefixFree) {
+    std::vector<double> freqs = {0.4, 0.3, 0.2, 0.1};
+    auto root = build_huffman_tree(freqs);
+    auto cb = tree_to_codebook(root.get());
+    // For every pair (a, b), a is not a prefix of b.
+    for (const auto& [sa, ca] : cb) {
+        for (const auto& [sb, cb2] : cb) {
+            if (sa == sb) continue;
+            bool a_prefix_of_b = (cb2.size() >= ca.size()) &&
+                                 (cb2.substr(0, ca.size()) == ca);
+            EXPECT_FALSE(a_prefix_of_b)
+                << "codeword \"" << ca << "\" (sym " << sa
+                << ") is a prefix of \"" << cb2 << "\" (sym " << sb << ")";
+        }
+    }
+}
+
+// Single-symbol distribution: codebook has one entry.
+// The codeword is conventionally "0" (assign at least 1 bit).
+TEST(HuffmanTest, SingleSymbolCodebook) {
+    std::vector<double> freqs = {1.0};
+    auto root = build_huffman_tree(freqs);
+    auto cb = tree_to_codebook(root.get());
+    ASSERT_EQ(cb.size(), 1u);
+    EXPECT_FALSE(cb.at(0).empty());
+}
