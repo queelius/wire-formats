@@ -81,5 +81,7 @@ add_test(NAME test_fibonacci COMMAND test_fibonacci)
 # =============================================================================
 add_executable(test_rice_golomb 2023-09-rice-golomb-wire-formats/test_rice_golomb.cpp)
 target_link_libraries(test_rice_golomb GTest::gtest_main)
-target_include_directories(test_rice_golomb PRIVATE 2023-09-rice-golomb-wire-formats)
+target_include_directories(test_rice_golomb PRIVATE
+    2023-09-rice-golomb-wire-formats
+    2022-01-priors-wire-formats)
 add_test(NAME test_rice_golomb COMMAND test_rice_golomb)

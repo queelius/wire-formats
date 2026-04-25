@@ -233,3 +233,73 @@ TEST(RiceGolombTest, OptimalGolombMForMeanFive) {
     EXPECT_GE(m, std::size_t{1});
     EXPECT_LE(m, std::size_t{20});
 }
+
+#include "../2022-01-priors-wire-formats/priors.hpp"
+#include <cmath>
+
+// Build a geometric distribution truncated to N terms with mean mu.
+// Geometric over non-negative integers: P(n) = (1 - p)^n * p, where p = 1/mu.
+// For the truncated version, we renormalize.
+static std::vector<double> geometric_dist(double mu, std::size_t N) {
+    double p = 1.0 / mu;
+    std::vector<double> dist(N);
+    double total = 0.0;
+    for (std::size_t i = 0; i < N; ++i) {
+        dist[i] = std::pow(1.0 - p, static_cast<double>(i)) * p;
+        total += dist[i];
+    }
+    for (double& d : dist) d /= total;
+    return dist;
+}
+
+// Build the Rice<K> length vector for n = 0..N-1: length = (n >> K) + 1 + K.
+template<std::size_t K>
+static std::vector<std::size_t> rice_lengths(std::size_t N) {
+    std::vector<std::size_t> v(N);
+    for (std::size_t i = 0; i < N; ++i) {
+        v[i] = (i >> K) + 1 + K;
+    }
+    return v;
+}
+
+// Optimal Rice<K> has small redundancy on a geometric source with mean 2^K.
+// Test: K=1 (mean=2), K=2 (mean=4), K=3 (mean=8).
+TEST(RiceGolombTest, Rice1SmallRedundancyOnGeometricMean2) {
+    const std::size_t N = 128;
+    auto dist = geometric_dist(2.0, N);
+    auto lens = rice_lengths<1>(N);
+    double r = priors::redundancy(dist, lens);
+    EXPECT_GE(r, 0.0);
+    EXPECT_LT(r, 2.0);
+}
+
+TEST(RiceGolombTest, Rice2SmallRedundancyOnGeometricMean4) {
+    const std::size_t N = 256;
+    auto dist = geometric_dist(4.0, N);
+    auto lens = rice_lengths<2>(N);
+    double r = priors::redundancy(dist, lens);
+    EXPECT_GE(r, 0.0);
+    EXPECT_LT(r, 2.0);
+}
+
+TEST(RiceGolombTest, Rice3SmallRedundancyOnGeometricMean8) {
+    const std::size_t N = 512;
+    auto dist = geometric_dist(8.0, N);
+    auto lens = rice_lengths<3>(N);
+    double r = priors::redundancy(dist, lens);
+    EXPECT_GE(r, 0.0);
+    EXPECT_LT(r, 2.0);
+}
+
+// Optimal K beats non-optimal K: Rice<3> beats Rice<1> on mean=8 source.
+// geometric_dist(8.0, N) uses p=1/8 giving E[n]=7 (close to 2^3=8).
+// Rice<3> (divisor=8) is near-optimal; Rice<1> (divisor=2) is far off.
+TEST(RiceGolombTest, OptimalKBeatsNonOptimalK) {
+    const std::size_t N = 512;
+    auto dist = geometric_dist(8.0, N);
+    auto lens1 = rice_lengths<1>(N);
+    auto lens3 = rice_lengths<3>(N);
+    double r1 = priors::redundancy(dist, lens1);
+    double r3 = priors::redundancy(dist, lens3);
+    EXPECT_LT(r3, r1);  // Rice<3> has lower redundancy on mean~7 source.
+}
