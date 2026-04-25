@@ -152,3 +152,65 @@ TEST(PriorsTest, RedundancyUnaryOnGeometricPrior) {
     auto probs = implied_prior(lengths);
     EXPECT_NEAR(redundancy(probs, lengths), 0.0, 2e-6);
 }
+
+// Integration: geometric(1/2) source + unary code achieves entropy exactly.
+// This verifies section D claim: "unary achieves entropy for geometric(1/2)."
+TEST(PriorsTest, UnaryAchievesEntropyForGeometricPrior) {
+    // Use K=30 terms; the truncation tail is < 2^{-30}.
+    const std::size_t K = 30;
+    auto lengths = unary_lengths(K);
+    // Build geometric(1/2) truncated to K terms.
+    std::vector<double> geo(K);
+    double z = 0.0;
+    for (std::size_t i = 0; i < K; ++i) {
+        geo[i] = std::ldexp(1.0, -static_cast<int>(i + 1));
+        z += geo[i];
+    }
+    for (double& p : geo) p /= z;
+    double h = entropy(geo);
+    double L = expected_length(geo, lengths);
+    // The code is exactly optimal for its own implied prior (which is this geo).
+    // After normalization the two should match very closely.
+    EXPECT_NEAR(L, h, 0.01);
+}
+
+// Integration: power-law source + gamma code has small redundancy.
+// This verifies section D claim: "gamma is approximately optimal for 1/n^2."
+TEST(PriorsTest, GammaSmallRedundancyForPowerLaw2) {
+    const std::size_t N = 64;
+    auto lengths = gamma_lengths(N);
+    // Build power-law(2): p_n = C/n^2, normalized.
+    std::vector<double> pl(N);
+    double z = 0.0;
+    for (std::size_t i = 0; i < N; ++i) {
+        double n = static_cast<double>(i + 1);
+        pl[i] = 1.0 / (n * n);
+        z += pl[i];
+    }
+    for (double& p : pl) p /= z;
+    double r = redundancy(pl, lengths);
+    // Universal codes have bounded redundancy (constant additive overhead);
+    // for gamma on a power-law(2) source, redundancy should be < 3 bits.
+    EXPECT_GE(r, 0.0);
+    EXPECT_LT(r, 3.0);
+}
+
+// Sanity: a sub-optimal code (unary applied to power-law source) has higher
+// redundancy than the right code (gamma on the same source).
+TEST(PriorsTest, GammaBeatsUnaryOnPowerLawSource) {
+    const std::size_t N = 64;
+    auto gamma_lens = gamma_lengths(N);
+    auto unary_lens = unary_lengths(N);
+    // Build power-law(2) source.
+    std::vector<double> pl(N);
+    double z = 0.0;
+    for (std::size_t i = 0; i < N; ++i) {
+        double n = static_cast<double>(i + 1);
+        pl[i] = 1.0 / (n * n);
+        z += pl[i];
+    }
+    for (double& p : pl) p /= z;
+    double r_gamma = redundancy(pl, gamma_lens);
+    double r_unary = redundancy(pl, unary_lens);
+    EXPECT_LT(r_gamma, r_unary);
+}
