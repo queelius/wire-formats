@@ -49,5 +49,7 @@ add_test(NAME test_priors COMMAND test_priors)
 # =============================================================================
 add_executable(test_unary_gamma 2022-06-elias-gamma-wire-formats/test_unary_gamma.cpp)
 target_link_libraries(test_unary_gamma GTest::gtest_main)
-target_include_directories(test_unary_gamma PRIVATE 2022-06-elias-gamma-wire-formats)
+target_include_directories(test_unary_gamma PRIVATE
+    2022-06-elias-gamma-wire-formats
+    2022-01-priors-wire-formats)
 add_test(NAME test_unary_gamma COMMAND test_unary_gamma)

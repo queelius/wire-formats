@@ -172,3 +172,66 @@ TEST(UnaryGammaTest, GammaLengthsMatchEncode) {
         EXPECT_EQ(v[i], gamma_bit_count(static_cast<uint64_t>(i + 1))) << "n=" << (i+1);
     }
 }
+
+// Integration tests using the priors library from post 3.
+#include "../2022-01-priors-wire-formats/priors.hpp"
+
+// Unary is exactly optimal for geometric(1/2): redundancy ~ 0.
+// (The code achieves entropy exactly because the prior is dyadic and saturates Kraft.)
+TEST(UnaryGammaTest, UnaryAchievesEntropyOnGeometricPrior) {
+    const std::size_t K = 30;
+    auto lens = unary_lengths(K);
+    auto probs = priors::implied_prior(lens);
+    double r = priors::redundancy(probs, lens);
+    // The implied prior of unary IS geometric(1/2), so redundancy should be
+    // essentially zero (only floating-point and truncation error).
+    EXPECT_NEAR(r, 0.0, 1e-6);
+}
+
+// Gamma has bounded redundancy on a power-law(2) source.
+// This is the "approximately optimal" claim from the spec.
+TEST(UnaryGammaTest, GammaSmallRedundancyOnPowerLaw2) {
+    const std::size_t N = 128;
+    auto lens = gamma_lengths(N);
+    // Build power-law(2) source: p_n = C/n^2.
+    std::vector<double> pl(N);
+    double z = 0.0;
+    for (std::size_t i = 0; i < N; ++i) {
+        double n = static_cast<double>(i + 1);
+        pl[i] = 1.0 / (n * n);
+        z += pl[i];
+    }
+    for (double& p : pl) p /= z;
+    double r = priors::redundancy(pl, lens);
+    EXPECT_GE(r, 0.0);
+    EXPECT_LT(r, 3.0);  // Universal-code bounded redundancy.
+}
+
+// Gamma beats unary on a power-law source.
+TEST(UnaryGammaTest, GammaBeatsUnaryOnPowerLaw2) {
+    const std::size_t N = 64;
+    auto gamma_lens = gamma_lengths(N);
+    auto unary_lens = unary_lengths(N);
+    std::vector<double> pl(N);
+    double z = 0.0;
+    for (std::size_t i = 0; i < N; ++i) {
+        double n = static_cast<double>(i + 1);
+        pl[i] = 1.0 / (n * n);
+        z += pl[i];
+    }
+    for (double& p : pl) p /= z;
+    double r_gamma = priors::redundancy(pl, gamma_lens);
+    double r_unary = priors::redundancy(pl, unary_lens);
+    EXPECT_LT(r_gamma, r_unary);
+}
+
+// Unary beats gamma on a geometric(1/2) source.
+TEST(UnaryGammaTest, UnaryBeatsGammaOnGeometricHalf) {
+    const std::size_t K = 30;
+    auto unary_lens = unary_lengths(K);
+    auto gamma_lens = gamma_lengths(K);
+    auto probs = priors::implied_prior(unary_lens);  // geometric(1/2)
+    double r_unary = priors::redundancy(probs, unary_lens);
+    double r_gamma = priors::redundancy(probs, gamma_lens);
+    EXPECT_LE(r_unary, r_gamma);
+}
