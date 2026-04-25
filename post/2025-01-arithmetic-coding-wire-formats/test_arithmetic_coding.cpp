@@ -32,3 +32,12 @@ TEST(BitIOTest, EmptyStreamBytesEmpty) {
     // constructed from whatever is returned).
     EXPECT_NO_THROW({ BitReader br(bw.bytes()); });
 }
+
+TEST(ArithmeticEncoderTest, ConstructorInitializesState) {
+    BitWriter bw;
+    ArithmeticEncoder enc(bw);
+    // After construction: low = 0, high = TOP_VALUE, underflow_count = 0.
+    EXPECT_EQ(enc.low(),             0u);
+    EXPECT_EQ(enc.high(),            TOP_VALUE);
+    EXPECT_EQ(enc.underflow_count(), 0u);
+}
