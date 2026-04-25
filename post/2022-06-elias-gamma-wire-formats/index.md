@@ -22,10 +22,11 @@ linked_project:
 - pfc
 - wire-formats
 ---
+*Unary is older than information theory. Elias gamma is its 1975 improvement. Together they span the gap between optimal-but-impractical and practical-but-nearly-optimal. This post derives what each code bets on, and shows numerically what that means.*
 
 ## Unary and Elias Gamma
 
-Unary is the oldest code in this series. It predates information theory by centuries: a shepherd counting sheep on a stick is using unary. Mark one notch per sheep; count the notches to decode. The codeword for \(n\) is \(n\) tally marks. Its information-theoretic content came later, when Shannon showed it is exactly optimal for a geometric source.
+Unary is the oldest code in this series. It predates information theory by centuries: a shepherd counting sheep on a stick is using unary. Mark one notch per sheep; count the notches to decode. The codeword for \(n\) is \(n\) tally marks. Its information-theoretic justification came later, when Shannon showed it is exactly optimal for a geometric source.
 
 Elias gamma is the 1975 extension by Peter Elias. It brings the codeword length from \(O(n)\) to \(O(\log n)\), making it practical for numbers beyond small single digits, while keeping the prefix-free property that makes self-delimiting streams possible.
 
@@ -61,7 +62,7 @@ struct Unary {
 
 **Length analysis.** The codeword for \(n\) has length \(n\). The Kraft sum is \(\sum_{n=1}^{\infty} 2^{-n} = 1\): unary saturates Kraft exactly. The implied prior is \(p_n = 2^{-n}\): a geometric distribution with parameter \(1/2\), where each value is half as likely as the previous.
 
-**Optimality test.** Because the implied prior is dyadic (all probabilities are powers of \(1/2\)) and Kraft saturates, unary achieves entropy exactly on this prior. Numerically, for a 30-symbol truncation of geometric(1/2), the expected unary length equals the entropy to within the truncation tail (\(\approx 2^{-30}\)):
+**Optimality test.** Because the implied prior is dyadic (all probabilities are powers of \(1/2\)) and Kraft saturates, unary achieves entropy exactly on this prior. For a 30-symbol truncation of geometric(1/2), the expected unary length equals the entropy to within the truncation tail (\(\approx 2^{-30}\)):
 
 ```cpp
 const std::size_t K = 30;
@@ -137,7 +138,7 @@ double r = priors::redundancy(pl, lens);
 // r is < 3.0: gamma has bounded redundancy on power-law(2) sources.
 ```
 
-The measured redundancy for \(N=128\) is about 0.5 bits per symbol. This is the "bounded overhead" that makes gamma a universal code for the class of power-law(2) distributions.
+The measured redundancy for \(N=128\) is about 0.5 bits per symbol. That constant overhead is what "universal code" means in practice: gamma works without knowing the distribution, and the price is a small fixed penalty.
 
 ---
 
@@ -165,13 +166,13 @@ Both codes decode in time proportional to the codeword length, which is proporti
 
 ## When to Use Which
 
-The implied-prior framing gives concrete guidance.
+The implied-prior framing gives concrete guidance here.
 
-Use **unary** when your data is very strongly left-skewed toward 1. If 90% or more of your values are 1 or 2, unary's simplicity and exact optimality for geometric(1/2) make it the right choice. Many compressors use unary internally for length-of-run or tag-bit sequences, where most runs are length 1 or 2.
+Use **unary** when your data is very strongly left-skewed toward 1. If 90% or more of your values are 1 or 2, unary's simplicity and exact optimality for geometric(1/2) make it the right choice. Many compressors use unary internally for run-length or tag-bit sequences, where most runs are length 1 or 2.
 
-Use **Elias gamma** when values are left-skewed but the tail extends. Natural language word ranks, file sizes in a large corpus, and degree distributions in social networks all follow approximate power laws with exponents near 2. Gamma is a good default for any positive integer that has no known maximum and follows roughly the "larger values are rarer" pattern.
+Use **Elias gamma** when values are left-skewed but the tail extends. Natural language word ranks, file sizes in a large corpus, and degree distributions in social networks all follow approximate power laws with exponents near 2. Gamma is a good default for any positive integer with no known maximum that follows roughly the "larger values are rarer" pattern.
 
-If you have enough data to estimate the source distribution precisely, neither code is the right answer: a Huffman code for the estimated distribution will do better. But Huffman requires knowing the distribution in advance. Gamma requires nothing: it works without any training data and achieves bounded redundancy on a large class of natural distributions.
+If you have enough data to estimate the source distribution, neither code is the right answer: a Huffman code built from the estimated distribution will do better. But Huffman requires knowing the distribution up front. Gamma requires nothing. It works without any training data and achieves bounded redundancy on a large class of natural distributions. That is the trade.
 
 ---
 
@@ -183,7 +184,7 @@ What if we encoded the block index in gamma instead of unary? We would use \(O(\
 
 What if we encoded the block index of the block index? One more recursion gives Elias omega, with length about \(\log_2 n + \log_2\log_2 n + \log_2\log_2\log_2 n + \ldots\) bits (stopping at the first term that reaches 1).
 
-Each recursion improves the asymptotic length for very large \(n\) at the cost of a constant overhead for small \(n\). The crossover point moves further and further out. For most practical applications (where values rarely exceed \(10^6\)), gamma's length of about \(2\log_2 n\) bits is already near-optimal; the recursive codes matter mainly for truly unbounded streams.
+Each recursion improves the asymptotic length for very large \(n\) at the cost of a constant overhead for small \(n\). The crossover point moves further and further out. For most practical applications, where values rarely exceed \(10^6\), gamma's length of about \(2\log_2 n\) bits is already near-optimal. The recursive codes matter mainly for truly unbounded streams.
 
 The recursive idea is developed in the next post, Elias Delta and Omega.
 
