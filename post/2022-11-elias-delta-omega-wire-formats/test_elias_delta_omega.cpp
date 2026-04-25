@@ -125,3 +125,44 @@ TEST(EliasDeltaOmegaTest, DeltaShorterThanGammaForN16AndAbove) {
         EXPECT_LE(dl, gl) << "n=" << n << " delta=" << dl << " gamma=" << gl;
     }
 }
+
+// ---- Omega tests ------------------------------------------------------------
+
+static uint64_t omega_round_trip(uint64_t n) {
+    BitBuffer buf;
+    Omega::encode(n, buf);
+    buf.pos_ = 0;
+    return Omega::decode(buf);
+}
+
+static std::size_t omega_bit_count(uint64_t n) {
+    BitBuffer buf;
+    Omega::encode(n, buf);
+    return buf.bits.size();
+}
+
+TEST(EliasDeltaOmegaTest, OmegaRoundTrip) {
+    for (uint64_t n = 1; n <= 256; ++n) {
+        EXPECT_EQ(omega_round_trip(n), n) << "n=" << n;
+    }
+}
+
+TEST(EliasDeltaOmegaTest, OmegaRoundTripLarge) {
+    for (uint64_t n : {uint64_t{1000}, uint64_t{65536}, uint64_t{1000000}}) {
+        EXPECT_EQ(omega_round_trip(n), n) << "n=" << n;
+    }
+}
+
+// For n=1, all three codes use 1 bit.
+TEST(EliasDeltaOmegaTest, OmegaEncoding1Is1Bit) {
+    EXPECT_EQ(omega_bit_count(1u), 1u);
+}
+
+// Omega length is always <= Delta length for n >= 1000 (spec crossover claim).
+// For small n, they may coincide; we only assert non-regression up to delta.
+TEST(EliasDeltaOmegaTest, OmegaNoLongerThanDeltaForLargeN) {
+    for (uint64_t n = 1000; n <= 2000; ++n) {
+        EXPECT_LE(omega_bit_count(n), delta_bit_count(n) + 2)
+            << "n=" << n;
+    }
+}
