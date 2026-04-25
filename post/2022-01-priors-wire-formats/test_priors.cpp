@@ -90,3 +90,65 @@ TEST(PriorsTest, ImpliedPriorSumsToOne) {
     for (double p : probs) total += p;
     EXPECT_NEAR(total, 1.0, 1e-9);
 }
+
+// entropy of a uniform distribution over K symbols = log2(K).
+TEST(PriorsTest, EntropyUniform) {
+    std::vector<double> probs = {0.25, 0.25, 0.25, 0.25};
+    EXPECT_NEAR(entropy(probs), 2.0, 1e-12);
+}
+
+// entropy of a degenerate distribution (one symbol certain) = 0.
+TEST(PriorsTest, EntropyDegenerate) {
+    std::vector<double> probs = {1.0};
+    EXPECT_NEAR(entropy(probs), 0.0, 1e-12);
+}
+
+// entropy of geometric(1/2) truncated to K terms.
+// H = sum_{n=1}^{K} p_n * n (where p_n = 2^{-n} / Z, Z = 1 - 2^{-K}).
+// For K=8 this is close to 2 bits.
+TEST(PriorsTest, EntropyGeometricHalf) {
+    auto lengths = unary_lengths(8);
+    auto probs = implied_prior(lengths);
+    double h = entropy(probs);
+    EXPECT_GT(h, 1.5);
+    EXPECT_LT(h, 3.0);
+}
+
+// expected_length: for uniform 2-bit code, expected length = 2.
+TEST(PriorsTest, ExpectedLengthUniform2Bit) {
+    std::vector<double> probs = {0.25, 0.25, 0.25, 0.25};
+    std::vector<std::size_t> lengths = {2, 2, 2, 2};
+    EXPECT_NEAR(expected_length(probs, lengths), 2.0, 1e-12);
+}
+
+// expected_length >= entropy (Shannon's theorem).
+TEST(PriorsTest, ExpectedLengthAtLeastEntropy) {
+    auto lengths = gamma_lengths(32);
+    auto probs = implied_prior(lengths);
+    double h = entropy(probs);
+    double L = expected_length(probs, lengths);
+    EXPECT_GE(L, h - 1e-9);
+}
+
+// redundancy = expected_length - entropy >= 0 always.
+TEST(PriorsTest, RedundancyNonNegative) {
+    auto lengths = gamma_lengths(64);
+    auto probs = implied_prior(lengths);
+    EXPECT_GE(redundancy(probs, lengths), -1e-9);
+}
+
+// redundancy = 0 when the code is exactly optimal (dyadic distribution).
+// lengths {1, 2, 2} with probs {0.5, 0.25, 0.25}: entropy = 1.5, expected = 1.5.
+TEST(PriorsTest, RedundancyZeroForDyadicOptimal) {
+    std::vector<std::size_t> lengths = {1, 2, 2};
+    std::vector<double> probs = {0.5, 0.25, 0.25};
+    EXPECT_NEAR(redundancy(probs, lengths), 0.0, 1e-12);
+}
+
+// For unary code on its own geometric(1/2) prior, redundancy should be
+// essentially 0 (unary is exactly optimal for this prior).
+TEST(PriorsTest, RedundancyUnaryOnGeometricPrior) {
+    auto lengths = unary_lengths(20);
+    auto probs = implied_prior(lengths);
+    EXPECT_NEAR(redundancy(probs, lengths), 0.0, 2e-6);
+}
