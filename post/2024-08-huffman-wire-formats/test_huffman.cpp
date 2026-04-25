@@ -313,3 +313,79 @@ TEST(HuffmanTest, OptimalityHighlySkewedBinary) {
     EXPECT_GE(L, H - 1e-9);
     EXPECT_LE(L, H + 1.0 + 1e-9);
 }
+
+// Uniform 8-symbol distribution: Huffman produces 3-bit fixed-width code.
+// (8 = 2^3; entropy = 3 bits; Huffman achieves entropy exactly.)
+TEST(HuffmanTest, UniformEightSymbolFixedWidth) {
+    const std::size_t N = 8;
+    std::vector<double> freqs(N, 1.0 / static_cast<double>(N));
+    auto root = build_huffman_tree(freqs);
+    auto cb   = tree_to_codebook(root.get());
+    for (const auto& [sym, cw] : cb) {
+        EXPECT_EQ(cw.size(), 3u) << "symbol " << sym;
+    }
+}
+
+// Huffman beats gamma on a known distribution.
+// On a power-law(2) source with 16 symbols, Huffman's expected length
+// should be <= gamma's expected length (knowing the distribution helps).
+TEST(HuffmanTest, HuffmanBeatsGammaOnPowerLaw2) {
+    const std::size_t N = 16;
+    std::vector<double> freqs(N);
+    double z = 0.0;
+    for (std::size_t i = 0; i < N; ++i) {
+        double n = static_cast<double>(i + 1);
+        freqs[i] = 1.0 / (n * n);
+        z += freqs[i];
+    }
+    for (double& f : freqs) f /= z;
+
+    // Huffman expected length.
+    auto root = build_huffman_tree(freqs);
+    auto cb   = tree_to_codebook(root.get());
+    auto huff_lens = codebook_lengths(cb, freqs.size());
+    double L_huff = priors::expected_length(freqs, huff_lens);
+
+    // Gamma expected length: l_n = 2*floor(log2(n)) + 1 for n = 1..N.
+    std::vector<std::size_t> gamma_lens(N);
+    for (std::size_t i = 0; i < N; ++i) {
+        std::size_t n = i + 1, k = 0, tmp = n;
+        while (tmp > 1) { tmp >>= 1; ++k; }
+        gamma_lens[i] = 2 * k + 1;
+    }
+    double L_gamma = priors::expected_length(freqs, gamma_lens);
+
+    EXPECT_LE(L_huff, L_gamma + 1e-9)
+        << "Huffman (" << L_huff << " bits) should be no worse than gamma (" << L_gamma << " bits)";
+}
+
+// Two-symbol distribution: codeword lengths are always exactly 1 bit each.
+// This holds regardless of the probabilities (as long as both > 0).
+TEST(HuffmanTest, TwoSymbolAlwaysOneBit) {
+    for (double p : {0.1, 0.3, 0.5, 0.7, 0.9}) {
+        std::vector<double> freqs = {p, 1.0 - p};
+        auto root = build_huffman_tree(freqs);
+        auto cb   = tree_to_codebook(root.get());
+        EXPECT_EQ(cb.at(0).size(), 1u) << "p = " << p;
+        EXPECT_EQ(cb.at(1).size(), 1u) << "p = " << p;
+    }
+}
+
+// Longer integer sequence round-trip (100 symbols drawn from a 6-symbol
+// alphabet, all symbols present, all must decode correctly).
+TEST(HuffmanTest, RoundTripLongSequence) {
+    std::vector<double> freqs = {0.4, 0.2, 0.15, 0.1, 0.1, 0.05};
+    auto root = build_huffman_tree(freqs);
+    auto cb   = tree_to_codebook(root.get());
+    // Deterministic sequence: cycle through symbols weighted by freq bucket.
+    std::vector<int> input;
+    for (int rep = 0; rep < 20; ++rep) {
+        for (int s : {0, 0, 1, 0, 2, 1, 0, 3, 4, 5}) input.push_back(s);
+    }
+    BitVector bv;
+    for (int s : input) encode(s, cb, bv);
+    bv.reset();
+    for (int expected : input) {
+        EXPECT_EQ(decode(root.get(), bv), expected);
+    }
+}
