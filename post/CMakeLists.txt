@@ -64,3 +64,13 @@ target_include_directories(test_elias_delta_omega PRIVATE
     2022-11-elias-delta-omega-wire-formats
     2022-01-priors-wire-formats)
 add_test(NAME test_elias_delta_omega COMMAND test_elias_delta_omega)
+
+# =============================================================================
+# Fibonacci Coding (post 6, 2023-04-23)
+# =============================================================================
+add_executable(test_fibonacci
+    2023-04-fibonacci-wire-formats/test_fibonacci.cpp)
+target_link_libraries(test_fibonacci GTest::gtest_main)
+target_include_directories(test_fibonacci PRIVATE
+    2023-04-fibonacci-wire-formats)
+add_test(NAME test_fibonacci COMMAND test_fibonacci)
