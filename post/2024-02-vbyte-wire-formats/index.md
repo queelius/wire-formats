@@ -24,15 +24,17 @@ linked_project:
 - wire-formats
 ---
 
+*Every code in this series so far operates at bit granularity. VByte does not. It gives up bit-level precision for byte-alignment, and in production systems, that trade wins most of the time.*
+
 ## The Practical Question
 
 Every code in this series so far operates at bit granularity. Elias gamma encodes 1 in a single bit. Fibonacci coding uses exactly as many bits as the Zeckendorf representation requires. Bit packing is theoretically attractive because it minimizes the number of bits written, which minimizes the encoded size.
 
 But bit packing is computationally expensive. Reading or writing a single bit requires a shift, a mask, and often a branch to handle byte boundaries. Encoding a sequence of integers this way burns CPU cycles that scale with the number of integers, independent of their values. For high-throughput applications, the overhead of bit manipulation can easily exceed the savings from compact encoding.
 
-VByte (also called Varint in Google's ecosystem, and LEB128 in the DWARF debug format) trades a small amount of length efficiency for byte-alignment. The fundamental idea is simple: encode each integer as a sequence of 7-bit groups, one per byte, with a continuation flag in the high bit of each byte. The result is self-delimiting (no length header needed), compact for small values, and requires no bit-level manipulation to decode.
+VByte (also called Varint in Google's ecosystem, and LEB128 in the DWARF debug format) trades a small amount of length efficiency for byte-alignment. The idea is simple: encode each integer as a sequence of 7-bit groups, one per byte, with a continuation flag in the high bit of each byte. The result is self-delimiting, compact for small values, and requires no bit-level manipulation to decode.
 
-VByte is the encoding used by Protocol Buffers for all integer fields. It appears in Apache Arrow, Parquet, Snappy's block format, LevelDB's metadata, and most production columnar file formats. These are high-throughput systems, and byte-alignment is the reason VByte is their choice over the more compact universal codes from posts 4 through 7.
+VByte is the encoding used by Protocol Buffers for all integer fields. It appears in Apache Arrow, Parquet, Snappy's block format, LevelDB's metadata, and most production columnar file formats. These are high-throughput systems. Byte-alignment is why VByte is their choice over the more compact universal codes from posts 4 through 7.
 
 ---
 
@@ -74,7 +76,7 @@ struct VByte {
 };
 ```
 
-**Aside:** This implementation stores each byte LSB-first through a bit-level sink, for consistency with the rest of the series. Real VByte implementations do not use a bit sink at all: they write bytes directly to a buffer. A production VByte encoder is a tight loop over `byte = (n & 0x7F) | 0x80; *ptr++ = byte; n >>= 7;`, terminating with `*ptr++ = n`. No bit shuffling, no branching on byte boundaries. The bit-level wrapper here exists only to maintain pedagogical consistency.
+**Aside:** This implementation routes each byte LSB-first through a bit-level sink, for consistency with the rest of the series. Real VByte implementations do not use a bit sink at all: they write bytes directly to a buffer. A production VByte encoder is a tight loop over `byte = (n & 0x7F) | 0x80; *ptr++ = byte; n >>= 7;`, terminating with `*ptr++ = n`. No bit shuffling, no branching on byte boundaries. The bit-level wrapper here exists only to keep the pedagogical interface uniform.
 
 ---
 
@@ -86,16 +88,16 @@ $$L(n) = 8 \cdot \left\lceil \frac{\lfloor \log_2(n+1) \rfloor + 1}{7} \right\rc
 
 with a minimum of 8 bits. Equivalently, the number of bytes is $\lceil \text{bit\_width}(n) / 7 \rceil$.
 
-Within each byte-length tier, all values in the same tier have the same length:
+Within each byte-length tier, all values have the same encoded length:
 - 1 byte (8 bits): $n \in [0, 127]$, all 128 values.
 - 2 bytes (16 bits): $n \in [128, 16383]$, all 16256 values.
 - 3 bytes (24 bits): $n \in [16384, 2097151]$, and so on.
 
-This "step-uniform" distribution is the VByte implied prior: within each tier, VByte acts as if all values are equally likely. VByte is optimal for sources where the byte-length of each value is geometrically distributed, with most values in the first few tiers.
+This "step-uniform" distribution is VByte's implied prior: within each tier, it treats all values as equally likely. VByte is optimal for sources where the byte-length of each value is geometrically distributed, with most values falling in the first few tiers.
 
-Real-world integer distributions for database columns, network port numbers, document lengths, and similar data tend to be heavily skewed toward small values. For these sources, VByte is competitive: most values fall in the 1-byte or 2-byte tier, so the average encoded length is close to the minimum.
+Real-world integer distributions for database columns, network port numbers, document lengths, and similar data tend to be heavily skewed toward small values. For these sources, VByte is competitive: most values land in the 1-byte or 2-byte tier, so average encoded length stays close to the minimum.
 
-VByte does not adapt within a tier. If your values cluster heavily below 64 (half the 1-byte range), VByte wastes the unused bits in those bytes. In that case, Elias gamma would be more efficient. The trade is: VByte gives up intra-tier precision for byte-alignment.
+VByte does not adapt within a tier. If your values cluster heavily below 64 (half the 1-byte range), VByte wastes the unused bits in each byte. In that case, Elias gamma would be more efficient. The trade is explicit: VByte gives up intra-tier precision for byte-alignment.
 
 ---
 
@@ -111,11 +113,11 @@ How does VByte compare to the universal codes from earlier posts? The table belo
 | $2^{20}$ | 24  | 41          | 29          |
 | $2^{32}$ | 40  | 65          | 43          |
 
-For small values (1 to 127), VByte is much worse than Gamma or Delta: 8 bits vs 1 bit for $n = 1$. The cost of byte-alignment is severe at the small end.
+For small values (1 to 127), VByte is much worse than Gamma or Delta: 8 bits vs 1 bit for $n = 1$. Byte-alignment is expensive at the small end.
 
-For medium values (around 1000), VByte is competitive with Delta. For large values, VByte's growth rate is $8 \lceil \log_2(n) / 7 \rceil \approx 1.14 \log_2(n)$, while Gamma grows as $2 \log_2(n)$ and Delta grows as approximately $\log_2(n) + 2\log_2(\log_2(n))$. So for large $n$, VByte is actually more compact than Gamma and not much worse than Delta.
+For medium values (around 1000), VByte is competitive with Delta. For large values, VByte's growth rate is $8 \lceil \log_2(n) / 7 \rceil \approx 1.14 \log_2(n)$, while Gamma grows as $2 \log_2(n)$ and Delta grows as approximately $\log_2(n) + 2\log_2(\log_2(n))$. For large $n$, VByte is actually more compact than Gamma and not far behind Delta.
 
-The picture: for very small values, use Gamma or a short fixed-width code. For skewed data with occasional large values, VByte often beats everything else when you factor in decoding speed.
+The pattern: for very small values, use Gamma or a short fixed-width code. For skewed data with occasional large values, VByte often beats everything else once you factor in decoding speed.
 
 ---
 
@@ -145,13 +147,13 @@ Bit-level Gamma or Delta decoders, by contrast, typically top out around 100 to 
 
 ## The Engineering Trade
 
-VByte is the engineer's compromise: theoretically suboptimal, practically dominant.
+VByte is the engineer's compromise: theoretically suboptimal, practically dominant. This is not a tension to resolve; it is a fact to internalize.
 
 The information-theoretic case says Elias gamma is more efficient for small values, Elias delta is more efficient for a wide range of values, and Rice coding is more efficient when the distribution is geometric and you know the mean. All of these statements are true. In bits per symbol, VByte loses.
 
-But the engineering analysis says the constant factor of bit-vs-byte operations swamps the small length savings for high-throughput workloads. A gamma decoder that saves 3 bits per integer but decodes at 150 MB/s is slower in wall-clock time than a VByte decoder that wastes 5 bits per integer but decodes at 3 GB/s.
+The engineering analysis says the constant factor of bit-vs-byte operations swamps the small length savings for high-throughput workloads. A gamma decoder that saves 3 bits per integer but decodes at 150 MB/s is slower in wall-clock time than a VByte decoder that wastes 5 bits per integer but decodes at 3 GB/s. Byte-aligned and theoretically suboptimal beats bit-optimal and slow. This is not a coincidence; it is why byte-alignment exists.
 
-This pattern recurs throughout systems engineering: theoretically optimal solutions often lose to implementation-friendly approximations. A theoretically optimal sort requires $O(n \log n)$ comparisons; radix sort uses $O(nk)$ operations and often wins in practice because $k$ is fixed and the constant factor is small. VByte is the radix sort of integer compression.
+This pattern recurs throughout systems engineering. A theoretically optimal sort requires $O(n \log n)$ comparisons; radix sort uses $O(nk)$ operations and often wins in practice because $k$ is fixed and the constant factor is small. VByte is the radix sort of integer compression.
 
 The lesson is not that theory is wrong. It is that the relevant model for engineering decisions includes hardware constants, cache effects, and parallelism, not just asymptotic bit counts.
 
