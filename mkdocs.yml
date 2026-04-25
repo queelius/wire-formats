@@ -36,3 +36,6 @@ nav:
   - "Foundations":
       - "Kraft's Inequality": "post/2020-03-kraft-wire-formats/index.md"
       - "McMillan's Converse": "post/2020-09-mcmillan-wire-formats/index.md"
+  - "Universal Codes":
+      - "Universal Codes as Priors": "post/2022-01-priors-wire-formats/index.md"
+      - "Unary and Elias Gamma": "post/2022-06-elias-gamma-wire-formats/index.md"
