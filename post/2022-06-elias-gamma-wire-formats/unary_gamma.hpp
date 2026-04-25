@@ -103,4 +103,29 @@ struct Gamma {
     }
 };
 
+// ---- Length-vector generators (pedagogical helpers) ------------------------
+//
+// These generate the codeword-length vectors for Unary and Gamma for use
+// with the priors library (implied_prior, entropy, expected_length, redundancy).
+
+// unary_lengths(K): lengths for symbols 1..K under Unary coding.
+// l_n = n for n = 1..K.
+inline std::vector<std::size_t> unary_lengths(std::size_t K) {
+    std::vector<std::size_t> v(K);
+    for (std::size_t i = 0; i < K; ++i) v[i] = i + 1;
+    return v;
+}
+
+// gamma_lengths(N): lengths for symbols 1..N under Gamma coding.
+// l_n = 2*floor(log2(n)) + 1.
+inline std::vector<std::size_t> gamma_lengths(std::size_t N) {
+    std::vector<std::size_t> v(N);
+    for (std::size_t i = 0; i < N; ++i) {
+        std::size_t n = i + 1;
+        std::size_t k = std::bit_width(n) - 1;  // floor(log2(n))
+        v[i] = 2 * k + 1;
+    }
+    return v;
+}
+
 }  // namespace unary_gamma

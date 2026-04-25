@@ -140,3 +140,35 @@ TEST(UnaryGammaTest, GammaEncoding4Is00100) {
     EXPECT_EQ(buf.bits[3], false);
     EXPECT_EQ(buf.bits[4], false);
 }
+
+// unary_lengths(K) returns {1, 2, 3, ..., K}.
+TEST(UnaryGammaTest, UnaryLengthsVector) {
+    auto v = unary_lengths(5);
+    ASSERT_EQ(v.size(), 5u);
+    for (std::size_t i = 0; i < 5; ++i) {
+        EXPECT_EQ(v[i], i + 1) << "i=" << i;
+    }
+}
+
+// gamma_lengths(N) returns the Gamma codeword lengths for 1..N.
+TEST(UnaryGammaTest, GammaLengthsVector) {
+    // Spot-check: gamma(1)=1, gamma(2)=3, gamma(3)=3, gamma(4)=5, gamma(8)=7.
+    auto v = gamma_lengths(8);
+    ASSERT_EQ(v.size(), 8u);
+    EXPECT_EQ(v[0], 1u);  // n=1
+    EXPECT_EQ(v[1], 3u);  // n=2
+    EXPECT_EQ(v[2], 3u);  // n=3
+    EXPECT_EQ(v[3], 5u);  // n=4
+    EXPECT_EQ(v[4], 5u);  // n=5
+    EXPECT_EQ(v[5], 5u);  // n=6
+    EXPECT_EQ(v[6], 5u);  // n=7
+    EXPECT_EQ(v[7], 7u);  // n=8
+}
+
+// gamma_lengths agrees with the bit-count measured by Gamma::encode.
+TEST(UnaryGammaTest, GammaLengthsMatchEncode) {
+    auto v = gamma_lengths(32);
+    for (std::size_t i = 0; i < 32; ++i) {
+        EXPECT_EQ(v[i], gamma_bit_count(static_cast<uint64_t>(i + 1))) << "n=" << (i+1);
+    }
+}
