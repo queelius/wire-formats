@@ -16,6 +16,16 @@
 
 namespace succinct_bv {
 
+// ---- popcount_word ---------------------------------------------------------
+//
+// Returns the number of set bits in a single 64-bit word.
+// Uses std::popcount (C++20), which compiles to a single hardware instruction
+// (POPCNT) on x86-64 and equivalent on ARM.
+
+[[nodiscard]] inline std::size_t popcount_word(std::uint64_t w) noexcept {
+    return static_cast<std::size_t>(std::popcount(w));
+}
+
 // ---- SuccinctBitVector --------------------------------------------------
 //
 // Stores a bit vector in packed uint64_t words. The auxiliary rank/select

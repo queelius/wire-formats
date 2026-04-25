@@ -57,3 +57,24 @@ TEST(SuccinctBVTest, CrossWordBoundary) {
     EXPECT_FALSE(bv.bit(62));
     EXPECT_FALSE(bv.bit(65));
 }
+
+// popcount_word uses std::popcount (C++20).
+TEST(SuccinctBVTest, PopcountWordZero) {
+    EXPECT_EQ(succinct_bv::popcount_word(uint64_t{0}), 0u);
+}
+
+TEST(SuccinctBVTest, PopcountWordAllOnes) {
+    EXPECT_EQ(succinct_bv::popcount_word(~uint64_t{0}), 64u);
+}
+
+TEST(SuccinctBVTest, PopcountWordSingleBit) {
+    EXPECT_EQ(succinct_bv::popcount_word(uint64_t{1}), 1u);
+    EXPECT_EQ(succinct_bv::popcount_word(uint64_t{1} << 63), 1u);
+}
+
+TEST(SuccinctBVTest, PopcountWordKnown) {
+    // 0b1010'1010 = 0xAA: 4 set bits.
+    EXPECT_EQ(succinct_bv::popcount_word(uint64_t{0xAAAA'AAAA'AAAA'AAAA}), 32u);
+    // 0x0F0F...: alternating nibbles, 32 bits set.
+    EXPECT_EQ(succinct_bv::popcount_word(uint64_t{0x0F0F'0F0F'0F0F'0F0F}), 32u);
+}
