@@ -62,4 +62,41 @@ public:
     }
 };
 
+// ---- BitmapContainer --------------------------------------------------------
+//
+// Dense bit vector covering the full 16-bit value space (65536 values).
+// Stored as 1024 uint64_t words (65536 / 64 = 1024), occupying exactly 8 KB.
+//
+// Contains check: O(1) word lookup + bit test.
+// Add: O(1) word lookup + bit set.
+// Cardinality: O(1024) = O(1) amortized, scanning all words with popcount.
+//
+// Used when a chunk has more than ARRAY_MAX = 4096 elements.
+
+class BitmapContainer {
+    static constexpr std::size_t NUM_WORDS = 65536 / 64;  // 1024 words = 8 KB.
+    std::vector<uint64_t> words_;
+
+public:
+    BitmapContainer() : words_(NUM_WORDS, uint64_t{0}) {}
+
+    void add(uint16_t v) noexcept {
+        words_[v / 64] |= (uint64_t{1} << (v % 64));
+    }
+
+    [[nodiscard]] bool contains(uint16_t v) const noexcept {
+        return (words_[v / 64] >> (v % 64)) & uint64_t{1};
+    }
+
+    [[nodiscard]] std::size_t cardinality() const noexcept {
+        std::size_t count = 0;
+        for (auto w : words_) count += static_cast<std::size_t>(__builtin_popcountll(w));
+        return count;
+    }
+
+    [[nodiscard]] const std::vector<uint64_t>& raw_words() const noexcept {
+        return words_;
+    }
+};
+
 }  // namespace roaring
