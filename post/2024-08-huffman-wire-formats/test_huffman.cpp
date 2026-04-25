@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <vector>
 #include "huffman.hpp"
+#include "../2022-01-priors-wire-formats/priors.hpp"
 
 using namespace huffman;
 
@@ -214,4 +215,101 @@ TEST(HuffmanTest, RoundTripBinaryUniform) {
     for (int expected : input) {
         EXPECT_EQ(decode(root.get(), bv), expected);
     }
+}
+
+// Helper: extract codeword lengths from a codebook, indexed by symbol.
+static std::vector<std::size_t> codebook_lengths(
+        const std::map<int, std::string>& cb, std::size_t n) {
+    std::vector<std::size_t> lens(n);
+    for (const auto& [sym, cw] : cb) {
+        assert(static_cast<std::size_t>(sym) < n);
+        lens[static_cast<std::size_t>(sym)] = cw.size();
+    }
+    return lens;
+}
+
+// Optimality test: uniform distribution over 4 symbols.
+// Entropy = 2 bits. Expected length = 2 bits (Huffman gives fixed-width code).
+// Redundancy = 0.
+TEST(HuffmanTest, OptimalityUniform4) {
+    std::vector<double> freqs = {0.25, 0.25, 0.25, 0.25};
+    auto root = build_huffman_tree(freqs);
+    auto cb   = tree_to_codebook(root.get());
+    auto lens = codebook_lengths(cb, freqs.size());
+    double H  = priors::entropy(freqs);
+    double L  = priors::expected_length(freqs, lens);
+    EXPECT_NEAR(H, 2.0, 1e-12);
+    EXPECT_NEAR(L, 2.0, 1e-12);  // Huffman achieves entropy exactly here.
+    EXPECT_GE(L, H - 1e-9);
+    EXPECT_LE(L, H + 1.0 + 1e-9);
+}
+
+// Optimality test: dyadic distribution {0.5, 0.25, 0.125, 0.125}.
+// Entropy = 1.75 bits. Huffman achieves exactly 1.75 bits.
+TEST(HuffmanTest, OptimalityDyadic) {
+    std::vector<double> freqs = {0.5, 0.25, 0.125, 0.125};
+    auto root = build_huffman_tree(freqs);
+    auto cb   = tree_to_codebook(root.get());
+    auto lens = codebook_lengths(cb, freqs.size());
+    double H  = priors::entropy(freqs);
+    double L  = priors::expected_length(freqs, lens);
+    EXPECT_NEAR(H, 1.75, 1e-12);
+    EXPECT_NEAR(L, H, 1e-9);  // Dyadic: Huffman achieves entropy exactly.
+    EXPECT_GE(L, H - 1e-9);
+    EXPECT_LE(L, H + 1.0 + 1e-9);
+}
+
+// Optimality test: geometric(1/2) truncated to 8 symbols.
+// H < L <= H + 1.
+TEST(HuffmanTest, OptimalityGeometric) {
+    const std::size_t K = 8;
+    std::vector<double> freqs(K);
+    double z = 0.0;
+    for (std::size_t i = 0; i < K; ++i) {
+        freqs[i] = std::ldexp(1.0, -static_cast<int>(i + 1));
+        z += freqs[i];
+    }
+    for (double& f : freqs) f /= z;
+    auto root = build_huffman_tree(freqs);
+    auto cb   = tree_to_codebook(root.get());
+    auto lens = codebook_lengths(cb, freqs.size());
+    double H  = priors::entropy(freqs);
+    double L  = priors::expected_length(freqs, lens);
+    EXPECT_GE(L, H - 1e-9);
+    EXPECT_LE(L, H + 1.0 + 1e-9);
+}
+
+// Optimality test: Zipf distribution over 8 symbols (p_i = C/i).
+TEST(HuffmanTest, OptimalityZipf) {
+    const std::size_t N = 8;
+    std::vector<double> freqs(N);
+    double z = 0.0;
+    for (std::size_t i = 0; i < N; ++i) {
+        freqs[i] = 1.0 / static_cast<double>(i + 1);
+        z += freqs[i];
+    }
+    for (double& f : freqs) f /= z;
+    auto root = build_huffman_tree(freqs);
+    auto cb   = tree_to_codebook(root.get());
+    auto lens = codebook_lengths(cb, freqs.size());
+    double H  = priors::entropy(freqs);
+    double L  = priors::expected_length(freqs, lens);
+    EXPECT_GE(L, H - 1e-9);
+    EXPECT_LE(L, H + 1.0 + 1e-9);
+}
+
+// Optimality test: highly skewed binary source (p0 = 0.99, p1 = 0.01).
+// Entropy ~ 0.081 bits. Huffman cannot compress below 1 bit/symbol
+// (the integer-length constraint). L = 1.0 > H.
+TEST(HuffmanTest, OptimalityHighlySkewedBinary) {
+    std::vector<double> freqs = {0.99, 0.01};
+    auto root = build_huffman_tree(freqs);
+    auto cb   = tree_to_codebook(root.get());
+    auto lens = codebook_lengths(cb, freqs.size());
+    double H  = priors::entropy(freqs);
+    double L  = priors::expected_length(freqs, lens);
+    EXPECT_LT(H, 0.15);        // Entropy is very low.
+    EXPECT_NEAR(L, 1.0, 1e-9); // Huffman is stuck at 1 bit/symbol.
+    EXPECT_GE(L, H - 1e-9);
+    EXPECT_LE(L, H + 1.0 + 1e-9);
 }
