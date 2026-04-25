@@ -23,16 +23,17 @@ linked_project:
 - pfc
 - wire-formats
 ---
+*Every code in this series so far has been fixed. Rice and Golomb are different: they take a parameter, and the parameter is your model of the data.*
 
 ## The First Parametric Code
 
 Every code examined so far in this series has been monolithic. Unary coding is just unary coding. Elias gamma is just Elias gamma. Each one encodes all non-negative integers with a single fixed strategy. You do not get to choose anything about the code beyond whether to use it.
 
-Rice and Golomb codes break this pattern. They are *parametric*: a single integer parameter, $k$ for Rice or $m$ for Golomb, tunes the code to a specific source distribution. Rice$(k)$ is not one code but a family of codes, one per value of $k$. Each member of the family is optimal for a specific geometric distribution. Choosing $k$ is choosing your prior precisely.
+Rice and Golomb codes break this pattern. They are parametric: a single integer parameter, $k$ for Rice or $m$ for Golomb, tunes the code to a specific source distribution. Rice$(k)$ is not one code but a family of codes, one per value of $k$. Each member of the family is optimal for a specific geometric distribution. Choosing $k$ is choosing your prior precisely.
 
 This matters because data sources are rarely uniform. Run-length encodings, inter-frame video differences, and the gap sequences in inverted indexes are all approximately geometrically distributed. If you know the mean of your source, you can pick $k$ so that Rice$(k)$ performs near-optimally, without the overhead of a Huffman table or arithmetic coding.
 
-The key insight: for a geometric source with mean approximately $2^k$, Rice$(k)$ is within a small constant of entropy. No other universal code discussed in this series achieves this: Elias gamma and delta codes perform well asymptotically but can be far from optimal for a specific geometric distribution with a known mean.
+The key insight: for a geometric source with mean approximately $2^k$, Rice$(k)$ is within a small constant of entropy. No other universal code in this series achieves this. Elias gamma and delta perform well asymptotically but can be far from optimal for a specific geometric distribution with a known mean. Rice exploits that knowledge directly.
 
 ---
 
@@ -85,13 +86,13 @@ struct Rice {
 };
 ```
 
-The decode mirrors the encode exactly: count zeros for $q$, read $k$ bits for $r$, reconstruct $n = (q \ll k) \mid r$.
+The decode mirrors the encode exactly: count zeros for $q$, read $k$ bits for $r$, reconstruct $n = (q \ll k) \mid r$. No tables, no branches beyond the unary scan.
 
 ---
 
 ## Golomb Coding
 
-Rice coding requires $m = 2^k$ (a power-of-two divisor). For sources where the optimal mean is not a power of two, this forces a choice: round $k$ down (underfit) or round $k$ up (overfit). Golomb coding removes this restriction by allowing any positive integer $m$ as the divisor.
+Rice coding requires $m = 2^k$, a power-of-two divisor. For sources where the optimal mean is not a power of two, this forces a choice: round $k$ down and underfit, or round $k$ up and overfit. Golomb coding removes the restriction by allowing any positive integer $m$.
 
 The quotient part is the same: $q = \lfloor n / m \rfloor$ zero bits, then a stop `1`. The remainder $r = n \bmod m$ is encoded in *truncated binary* rather than a fixed-width field.
 
@@ -135,6 +136,8 @@ struct Golomb {
 };
 ```
 
+Rice is the fast path, Golomb is the general case. I use Rice when the data distribution is known well enough that a power-of-two mean is a reasonable approximation, and Golomb when I need the extra precision.
+
 ---
 
 ## The Parameter Selection
@@ -167,29 +170,29 @@ inline std::size_t optimal_rice_k(double mean) {
 
 The optimality property is verifiable: on a geometric source with mean $\approx 2^3 = 8$, Rice$\langle 3 \rangle$ has much lower redundancy than Rice$\langle 1 \rangle$. The redundancy test in the companion test suite (using the priors library from [post 3](/post/2022-01-priors-wire-formats/)) confirms this: `r3 < r1` by a wide margin, around 2 bits vs 10 bits of expected excess.
 
-The takeaway: knowing the data's mean lets you pick a near-optimal code, and the selection formula is a one-liner.
+Knowing the mean gives you near-optimal compression for free. The selection formula is a one-liner. The engineering work is estimating the mean, and for most practical sources that estimate is available from the data itself.
 
 ---
 
 ## Use Cases
 
-Rice coding is the standard for lossless audio compression. FLAC (Free Lossless Audio Codec) encodes the residuals of a linear prediction filter using Rice codes. Audio residuals, after prediction, are approximately geometrically distributed with a mean that can be estimated from recent samples. FLAC selects $k$ adaptively per frame, achieving near-optimal compression with simple, fast decode.
+Rice coding is standard in lossless audio compression. FLAC encodes the residuals of a linear prediction filter using Rice codes. Audio residuals, after prediction, are approximately geometrically distributed with a mean that can be estimated from recent samples. FLAC selects $k$ adaptively per frame, achieving near-optimal compression with simple, fast decode.
 
-Golomb coding appears in image compression. JPEG-LS (the lossless variant of JPEG) uses Golomb codes for its residuals. The non-power-of-2 divisors let JPEG-LS adapt more precisely to the local statistics of image data, squeezing out the small efficiency loss from rounding $m$ to a power of two.
+Golomb coding appears in image compression. JPEG-LS uses Golomb codes for its residuals. The non-power-of-2 divisors let JPEG-LS adapt more precisely to local image statistics, squeezing out the small efficiency loss from rounding $m$ to a power of two.
 
-Bitmap formats and run-length encodings also use Golomb codes. A run of identical pixels has a geometrically distributed length (under standard assumptions), and Golomb codes match this distribution exactly.
+Bitmap formats and run-length encodings also use Golomb codes. A run of identical pixels has a geometrically distributed length under standard assumptions, and Golomb codes match that distribution directly.
 
-The pattern: when your data is genuinely geometrically distributed and you can estimate the mean, Rice or Golomb beats every other universal code discussed in this series. The estimating-the-mean step is the engineering work. Once you have the mean, the code selection is trivial.
+The pattern: when your data is genuinely geometrically distributed and you can estimate the mean, Rice or Golomb beats every other universal code in this series. Estimating the mean is the engineering work. Once you have it, the code selection is trivial.
 
 ---
 
 ## The Connection to Huffman
 
-Rice and Golomb are parametric codes: given $k$ or $m$, the codewords are determined by a formula. Huffman coding, which we will examine in post 9, is a *constructed* code: given the source probabilities, Huffman builds an optimal prefix-free code by a greedy tree construction.
+Rice and Golomb are parametric codes: given $k$ or $m$, the codewords are determined by a formula. Huffman coding, which we examine in post 9, is a *constructed* code: given the source probabilities, Huffman builds an optimal prefix-free code by a greedy tree construction.
 
 For a geometric source with the optimal $k$, Rice coding is asymptotically as efficient as Huffman coding on that source. Rice has a small constant overhead (at most 1 bit above entropy per symbol) because it cannot achieve the exact codeword lengths that Huffman can. But Rice does not require building a tree at run time, transmitting the tree to the decoder, or storing the probability model. Rice decode is a single shift, mask, and unary scan. Huffman decode is a tree traversal.
 
-The trade is real: Huffman is slightly more efficient on average, Rice is simpler and faster. For sources that are approximately geometric (which covers a wide swath of practical data), Rice is the better engineering choice. For sources with arbitrary distributions, you need Huffman (or arithmetic coding, which we examine later in the series).
+The trade is real: Huffman is slightly more efficient on average, Rice is simpler and faster. For sources that are approximately geometric, Rice is the better engineering choice. For sources with arbitrary distributions, you need Huffman or arithmetic coding, which we examine later in the series.
 
 Forthcoming: post 9 covers Huffman coding.
 
