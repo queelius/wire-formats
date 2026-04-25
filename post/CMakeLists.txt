@@ -91,5 +91,9 @@ add_test(NAME test_rice_golomb COMMAND test_rice_golomb)
 # =============================================================================
 add_executable(test_vbyte 2024-02-vbyte-wire-formats/test_vbyte.cpp)
 target_link_libraries(test_vbyte GTest::gtest_main)
-target_include_directories(test_vbyte PRIVATE 2024-02-vbyte-wire-formats)
+target_include_directories(test_vbyte PRIVATE
+    2024-02-vbyte-wire-formats
+    2022-01-priors-wire-formats
+    2022-06-elias-gamma-wire-formats
+    2022-11-elias-delta-omega-wire-formats)
 add_test(NAME test_vbyte COMMAND test_vbyte)

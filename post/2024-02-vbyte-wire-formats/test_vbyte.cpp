@@ -125,3 +125,95 @@ TEST(VByteTest, Encoding128) {
 TEST(VByteTest, RoundTripZero) {
     EXPECT_EQ(vbyte_round_trip(std::uint64_t{0}), std::uint64_t{0});
 }
+
+#include "../2022-01-priors-wire-formats/priors.hpp"
+#include "../2022-06-elias-gamma-wire-formats/unary_gamma.hpp"
+#include "../2022-11-elias-delta-omega-wire-formats/elias_delta_omega.hpp"
+
+// Helper: compute VByte length in bits for n.
+// Formula: 8 * ceil(log2(n+1) / 7), minimum 8.
+static std::size_t vbyte_length_formula(std::uint64_t n) {
+    if (n < 128) return 8;
+    std::uint64_t tmp = n;
+    std::size_t bytes = 0;
+    while (tmp > 0) {
+        ++bytes;
+        tmp >>= 7;
+    }
+    return bytes * 8;
+}
+
+// Verify VByte formula matches actual encode bit count.
+TEST(VByteTest, LengthFormulaMatchesEncode) {
+    for (std::uint64_t n : {std::uint64_t{0}, std::uint64_t{1}, std::uint64_t{100},
+                             std::uint64_t{127}, std::uint64_t{128}, std::uint64_t{1000},
+                             std::uint64_t{16383}, std::uint64_t{16384},
+                             std::uint64_t{1048575}, std::uint64_t{1048576}}) {
+        EXPECT_EQ(vbyte_bit_count(n), vbyte_length_formula(n)) << "n=" << n;
+    }
+}
+
+// Length comparison table (verified against actual implementations):
+// | n       | VByte | Gamma | Delta |
+// | 1       | 8     | 1     | 1     |
+// | 100     | 8     | 13    | 11    |
+// | 1000    | 16    | 19    | 16    |
+// | 2^20    | 24    | 41    | 29    |
+// | 2^32    | 40    | 65    | 43    |
+//
+// Delta length formula: Gamma(bit_width(n)) + bit_width(n) - 1.
+// For large n, Delta grows as ~2*log2(log2(n)) + log2(n), faster than VByte.
+//
+// Gamma and Delta lengths are derived from their encoding bit counts.
+
+// Helper: Gamma bit count for n.
+static std::size_t gamma_bit_count_for(std::uint64_t n) {
+    struct BitCounter {
+        std::size_t count = 0;
+        void write(bool) { ++count; }
+    } counter;
+    unary_gamma::Gamma::encode(n, counter);
+    return counter.count;
+}
+
+// Helper: Delta bit count for n.
+static std::size_t delta_bit_count_for(std::uint64_t n) {
+    struct BitCounter {
+        std::size_t count = 0;
+        void write(bool) { ++count; }
+    } counter;
+    elias_delta_omega::Delta::encode(n, counter);
+    return counter.count;
+}
+
+TEST(VByteTest, LengthTableN1) {
+    EXPECT_EQ(vbyte_bit_count(1u), 8u);
+    EXPECT_EQ(gamma_bit_count_for(1u), 1u);
+    EXPECT_EQ(delta_bit_count_for(1u), 1u);
+}
+
+TEST(VByteTest, LengthTableN100) {
+    EXPECT_EQ(vbyte_bit_count(100u), 8u);
+    EXPECT_EQ(gamma_bit_count_for(100u), 13u);
+    EXPECT_EQ(delta_bit_count_for(100u), 11u);
+}
+
+TEST(VByteTest, LengthTableN1000) {
+    EXPECT_EQ(vbyte_bit_count(1000u), 16u);
+    EXPECT_EQ(gamma_bit_count_for(1000u), 19u);
+    EXPECT_EQ(delta_bit_count_for(1000u), 16u);
+}
+
+TEST(VByteTest, LengthTableN2pow20) {
+    std::uint64_t n = 1u << 20;
+    EXPECT_EQ(vbyte_bit_count(n), 24u);
+    EXPECT_EQ(gamma_bit_count_for(n), 41u);
+    EXPECT_EQ(delta_bit_count_for(n), 29u);
+}
+
+TEST(VByteTest, LengthTableN2pow32) {
+    std::uint64_t n = std::uint64_t{1} << 32;
+    EXPECT_EQ(vbyte_bit_count(n), 40u);
+    EXPECT_EQ(gamma_bit_count_for(n), 65u);
+    EXPECT_EQ(delta_bit_count_for(n), 43u);
+}
