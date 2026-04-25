@@ -21,9 +21,11 @@ linked_project:
 - wire-formats
 ---
 
+*No single representation is optimal across all density regimes. RoaringBitmap does not try to pick one. It measures, then decides, per chunk.*
+
 ## Hybrid Representation as Polyalgorithm
 
-A compressed integer set faces a fundamental tradeoff: the right representation depends on the density of the data. Four density regimes each have a natural winner:
+Representing a compressed integer set forces a decision you cannot avoid: the best encoding depends on how dense the data is. Four density regimes each have a natural winner:
 
 - **Very sparse** (fewer than ~4096 elements in a 64K range): a sorted array of 16-bit values. Each element costs 2 bytes; 4096 elements cost 8 KB.
 - **Moderate to dense** (more than ~4096 elements): a dense bit vector, 8 KB for the full 64K range. Contains-check is O(1) via bit indexing.
@@ -118,6 +120,8 @@ void optimize() {
 }
 ```
 
+The automatic conversion on `add` handles sparse-to-dense transitions. Run detection is deferred to `optimize()` because detecting runs incrementally during insertion is not worth the overhead. Bulk-load first, then call `optimize()`.
+
 ## The Operations
 
 Set operations work chunk-by-chunk. Each chunk dispatches on its container type via `std::visit`. Union iterates over the other bitmap's chunks and adds each element into the result. Intersection only considers chunks present in both bitmaps. Difference keeps elements from the first bitmap not present in the second.
@@ -148,7 +152,7 @@ Each chunk's operation is `std::visit` dispatching to the algorithm that matches
 
 RoaringBitmap has been measured to compress 50 to 90 percent versus uncompressed bit arrays in typical workloads, and 2 to 5 times better than EWAH (Enhanced Word-Aligned Hybrid) and CONCISE, which are earlier competing bitmap compression formats.
 
-The reasons:
+The reasons are structural, not incidental:
 
 - **Adaptive**: each chunk independently picks the right encoding. A bitmap with one dense chunk and many sparse chunks does not pay the 8 KB overhead for every chunk.
 - **Fast operations**: union and intersection iterate only over present chunks. A chunk absent in either operand contributes nothing to the result.
@@ -159,17 +163,13 @@ Real-world adoption: Apache Lucene uses RoaringBitmap for posting lists. Apache 
 
 ## The Polyalgorithm Pattern
 
-The pattern here has a name: polyalgorithm. A single interface dispatches to the algorithm optimal for the current input characteristics. The decision is made at runtime based on measured data properties (chunk density), not by the caller.
+What RoaringBitmap does has a name: polyalgorithm. A single interface dispatches to the algorithm optimal for the current input characteristics. The decision is made at runtime based on measured data properties (chunk density), not by the caller.
 
-Other examples of the same pattern:
+This is not unusual. `std::sort` dispatches to insertion sort for small ranges and introsort for larger ones. Hash table resize policies switch behavior based on load factor. Compiler optimization pipelines route functions through different pass sequences based on size and structure. The pattern is common because the underlying problem is common: no single algorithm is uniformly best, and the right answer depends on properties you only know at runtime.
 
-- `std::sort` dispatches to insertion sort for small ranges, introsort (quicksort with heapsort fallback) for larger ranges.
-- Hash table resize policies dispatch between linear probing, robin-hood hashing, and open addressing based on load factor.
-- Compiler optimization pipelines dispatch between O0, O1, O2, O3 passes based on function size and loop structure.
+The connection to this series: each container type in RoaringBitmap is the right choice for a specific prior over chunk density. The array container assumes density is low; the bitmap assumes moderate to high; the run container assumes clustering. Post 3 of this series framed a coding choice as an implicit prior over the data distribution. RoaringBitmap makes that explicit, maintaining three priors simultaneously and selecting the matching one per chunk. It does not commit to a prior globally because no global prior fits all chunks.
 
-The connection to this series: each container type in RoaringBitmap is the right choice for a specific prior over chunk density. The array container assumes density is low; the bitmap assumes moderate to high; the run container assumes clustering. RoaringBitmap is the result of not committing to a single prior and instead measuring the data and choosing per chunk.
-
-Post 3 of this series showed that a coding choice is a prior. RoaringBitmap makes that explicit: it maintains three priors simultaneously and applies the matching one per chunk. The synthesis of this idea, in post 13, will close the arc: codecs as structure, structure as the wire format itself.
+The synthesis of this idea comes in post 13, which closes the arc: codecs as structure, structure as the wire format itself.
 
 ## Cross-References
 
