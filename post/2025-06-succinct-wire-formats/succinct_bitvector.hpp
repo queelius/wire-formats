@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <algorithm> // std::min
 #include <bit>       // std::popcount (C++20)
 #include <cassert>
 #include <cstddef>
@@ -103,6 +104,64 @@ public:
             result += popcount_word(bits_[blk] & mask);
         }
         return result;
+    }
+
+    // select1(j): position of the j-th set bit (0-indexed). O(log n).
+    //
+    // Algorithm:
+    //   1. Binary search superblock_ranks_ to find the superblock sb where the
+    //      j-th 1-bit lies: largest sb s.t. superblock_ranks_[sb] <= j.
+    //   2. Walk blocks within sb linearly until the running sum exceeds j.
+    //   3. Within the found block, scan set bits to find the exact position.
+    //
+    // Worst case: O(log(n/4096)) for the binary search + O(64) constant for the
+    // block and bit scans = O(log n) total.
+    [[nodiscard]] std::size_t select1(std::size_t j) const noexcept {
+        // Step 1: binary search over superblock_ranks_.
+        // Find the largest sb such that superblock_ranks_[sb] <= j.
+        std::size_t lo = 0;
+        std::size_t hi = superblock_ranks_.size();  // Exclusive upper bound.
+        while (lo + 1 < hi) {
+            std::size_t mid = lo + (hi - lo) / 2;
+            if (superblock_ranks_[mid] <= j) {
+                lo = mid;
+            } else {
+                hi = mid;
+            }
+        }
+        std::size_t sb = lo;
+
+        // Step 2: linear scan over blocks within superblock sb.
+        // Find the last block whose cumulative rank (absolute) <= j.
+        std::size_t first_blk = sb * BLOCKS_PER_SB;
+        std::size_t last_blk  = std::min(first_blk + BLOCKS_PER_SB,
+                                          block_ranks_.size());
+        std::size_t blk = first_blk;
+        for (std::size_t b = first_blk + 1; b < last_blk; ++b) {
+            // Absolute rank at start of block b.
+            std::size_t abs_rank = superblock_ranks_[sb] + block_ranks_[b];
+            if (abs_rank > j) break;
+            blk = b;
+        }
+
+        // Absolute rank at start of block blk.
+        std::size_t base = superblock_ranks_[sb] + block_ranks_[blk];
+        // We need the (j - base)-th set bit (0-indexed) within bits_[blk].
+        std::size_t target = j - base;
+
+        // Step 3: find the target-th set bit in bits_[blk].
+        // Iterate over set bits by repeatedly clearing the lowest set bit.
+        uint64_t word = bits_[blk];
+        std::size_t bit_pos = blk * BLOCK_BITS;
+        for (std::size_t k = 0; k < target; ++k) {
+            // Clear lowest set bit; advance bit_pos past it.
+            std::size_t low = static_cast<std::size_t>(__builtin_ctzll(word));
+            bit_pos = blk * BLOCK_BITS + low + 1;
+            word &= word - 1;
+        }
+        // The answer is the position of the lowest set bit now remaining in word.
+        std::size_t final_low = static_cast<std::size_t>(__builtin_ctzll(word));
+        return blk * BLOCK_BITS + final_low;
     }
 
     // Expose the naive O(n/64) rank for testing and index-correctness verification.

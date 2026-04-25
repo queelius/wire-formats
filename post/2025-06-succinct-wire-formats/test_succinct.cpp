@@ -188,3 +188,59 @@ TEST(SuccinctBVTest, IndexedRank1AtSuperblockBoundaries) {
     EXPECT_EQ(bv.rank1(8192), bv.rank1_naive(8192));
     EXPECT_EQ(bv.rank1(N),    bv.rank1_naive(N));
 }
+
+// select1(j) returns the position of the j-th set bit (0-indexed).
+// For bit vector {1,0,1,0,1}: select1(0)=0, select1(1)=2, select1(2)=4.
+TEST(SuccinctBVTest, Select1SmallPattern) {
+    SuccinctBitVector bv({true, false, true, false, true});
+    EXPECT_EQ(bv.select1(0), 0u);
+    EXPECT_EQ(bv.select1(1), 2u);
+    EXPECT_EQ(bv.select1(2), 4u);
+}
+
+// All-ones: select1(j) == j.
+TEST(SuccinctBVTest, Select1AllOnes) {
+    std::vector<bool> bits(200, true);
+    SuccinctBitVector bv(bits);
+    for (std::size_t j = 0; j < 200; ++j) {
+        EXPECT_EQ(bv.select1(j), j) << "j=" << j;
+    }
+}
+
+// select1 across a word boundary.
+TEST(SuccinctBVTest, Select1CrossWordBoundary) {
+    std::vector<bool> bits(128, false);
+    bits[63] = true;
+    bits[64] = true;
+    SuccinctBitVector bv(bits);
+    EXPECT_EQ(bv.select1(0), 63u);
+    EXPECT_EQ(bv.select1(1), 64u);
+}
+
+// select1 across a superblock boundary.
+TEST(SuccinctBVTest, Select1CrossSuperblockBoundary) {
+    const std::size_t N = 4096 * 2 + 10;
+    std::vector<bool> bits(N, false);
+    bits[4090] = true;   // In superblock 0.
+    bits[4096] = true;   // First bit of superblock 1.
+    bits[4097] = true;
+    bits[8200] = true;   // In superblock 2.
+    SuccinctBitVector bv(bits);
+    EXPECT_EQ(bv.select1(0), 4090u);
+    EXPECT_EQ(bv.select1(1), 4096u);
+    EXPECT_EQ(bv.select1(2), 4097u);
+    EXPECT_EQ(bv.select1(3), 8200u);
+}
+
+// select1 and rank1 are inverses: rank1(select1(j)+1) == j+1.
+TEST(SuccinctBVTest, Select1RankInverse) {
+    const std::size_t N = 300;
+    std::vector<bool> bits(N, false);
+    for (std::size_t i = 0; i < N; i += 7) bits[i] = true;
+    SuccinctBitVector bv(bits);
+    std::size_t total_ones = bv.rank1(N);
+    for (std::size_t j = 0; j < total_ones; ++j) {
+        std::size_t pos = bv.select1(j);
+        EXPECT_EQ(bv.rank1(pos + 1), j + 1) << "j=" << j;
+    }
+}
