@@ -313,3 +313,61 @@ TEST(RoaringSetOpsTest, SetOpsAcrossChunks) {
     EXPECT_EQ(inter.cardinality(), 1u);
     EXPECT_TRUE(inter.contains(10));
 }
+
+// ---- Round-trip and space-efficiency tests ----------------------------------
+
+// Very sparse: 100 random-ish values in [0, 2^32). Should stay as ArrayContainers.
+TEST(RoaringSpaceTest, SparseSetsUseFewChunks) {
+    RoaringBitmap rb;
+    for (uint32_t i = 0; i < 100; ++i) {
+        rb.add(i * 65536u + (i * 13u % 65536u));  // One value per chunk.
+    }
+    EXPECT_EQ(rb.cardinality(), 100u);
+    for (uint32_t i = 0; i < 100; ++i) {
+        EXPECT_TRUE(rb.contains(i * 65536u + (i * 13u % 65536u)));
+    }
+}
+
+// Moderately dense: 5000 values in chunk 0. Should trigger array -> bitmap.
+TEST(RoaringSpaceTest, ModeratelDenseTriggersBitmapConversion) {
+    RoaringBitmap rb;
+    for (uint32_t i = 0; i < 5000; ++i) rb.add(i);
+    EXPECT_EQ(rb.cardinality(), 5000u);
+    // All 5000 values must still be present after conversion.
+    for (uint32_t i = 0; i < 5000; ++i) EXPECT_TRUE(rb.contains(i));
+    EXPECT_FALSE(rb.contains(5000));
+}
+
+// Clustered: large run of consecutive values. optimize() yields RunContainer.
+TEST(RoaringSpaceTest, ClusteredRunOptimizesToRunContainer) {
+    RoaringBitmap rb;
+    for (uint32_t i = 1000; i < 2000; ++i) rb.add(i);  // 1000 consecutive values.
+    EXPECT_EQ(rb.cardinality(), 1000u);
+    rb.optimize();  // Should convert the array into a RunContainer.
+    // Cardinality and membership must be unchanged after optimize().
+    EXPECT_EQ(rb.cardinality(), 1000u);
+    for (uint32_t i = 1000; i < 2000; ++i) EXPECT_TRUE(rb.contains(i));
+    EXPECT_FALSE(rb.contains(999));
+    EXPECT_FALSE(rb.contains(2000));
+}
+
+// Dense: full chunk (all 65536 values in chunk 0).
+TEST(RoaringSpaceTest, FullChunkAllValuesPresent) {
+    RoaringBitmap rb;
+    for (uint32_t i = 0; i < 65536; ++i) rb.add(i);
+    EXPECT_EQ(rb.cardinality(), 65536u);
+    EXPECT_TRUE(rb.contains(0));
+    EXPECT_TRUE(rb.contains(65535));
+    EXPECT_FALSE(rb.contains(65536));
+}
+
+// Union preserves cardinality: |A union B| = |A| + |B| - |A intersect B|.
+TEST(RoaringSpaceTest, UnionCardinalityFormula) {
+    RoaringBitmap a, b;
+    for (uint32_t i = 0; i < 100; ++i) a.add(i);
+    for (uint32_t i = 50; i < 150; ++i) b.add(i);
+    RoaringBitmap u     = a.union_with(b);
+    RoaringBitmap inter = a.intersection_with(b);
+    EXPECT_EQ(u.cardinality(),
+              a.cardinality() + b.cardinality() - inter.cardinality());
+}
