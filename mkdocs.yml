@@ -41,3 +41,5 @@ nav:
       - "Unary and Elias Gamma": "post/2022-06-elias-gamma-wire-formats/index.md"
       - "Elias Delta and Omega": "post/2022-11-elias-delta-omega-wire-formats/index.md"
       - "Fibonacci Coding": "post/2023-04-fibonacci-wire-formats/index.md"
+      - "Rice / Golomb": "post/2023-09-rice-golomb-wire-formats/index.md"
+      - "VByte / Varint": "post/2024-02-vbyte-wire-formats/index.md"
