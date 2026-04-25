@@ -15,8 +15,8 @@ The series is planned for 13 posts spanning 2020 through 2026, roughly 2 posts p
 | 2 | McMillan's Converse | 2020-09-13 | Published |
 | 3 | Universal Codes as Priors | 2022-01-15 | Published |
 | 4 | Unary and Elias Gamma | 2022-06-19 | Published |
-| 5 | Elias Delta and Omega | 2022-02-13 | Forthcoming |
-| 6 | Fibonacci Coding | 2022-07-17 | Forthcoming |
+| 5 | Elias Delta and Omega | 2022-11-13 | Published |
+| 6 | Fibonacci Coding | 2023-04-23 | Published |
 | 7 | Rice / Golomb | 2023-02-19 | Forthcoming |
 | 8 | VByte / Varint | 2023-08-14 | Forthcoming |
 | 9 | Huffman | 2024-03-25 | Forthcoming |
