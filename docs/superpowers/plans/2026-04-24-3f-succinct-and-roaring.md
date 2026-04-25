@@ -103,7 +103,7 @@ Create `post/2025-06-succinct-wire-formats/succinct_bitvector.hpp` with header g
 //
 // Production version: PFC include/pfc/succinct.hpp (SuccinctBitVector class with
 // BlockRankSupport, O(1) rank, O(log n) select).
-// https://github.com/queelius/pfc
+// https://github.com/queelius/wire-formats/tree/master/lib/pfc
 
 #pragma once
 
@@ -1113,7 +1113,7 @@ Create `post/2025-12-roaring-bitmap-wire-formats/roaring_bitmap.hpp` with header
 //
 // Production version: PFC include/pfc/succinct.hpp (RoaringBitmap class with
 // three container types: array, bitmap, run).
-// https://github.com/queelius/pfc
+// https://github.com/queelius/wire-formats/tree/master/lib/pfc
 
 #pragma once
 

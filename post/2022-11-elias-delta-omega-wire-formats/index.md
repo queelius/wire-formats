@@ -35,7 +35,7 @@ The fix is obvious once you see it: encode $L$ itself in some shorter code inste
 
 Both codes are universal: they assign finite codewords to every positive integer, and the expected codeword length is within a constant factor of optimal for any source whose probabilities decrease with $n$. The improvement over gamma is real and measurable once $n$ grows past a few dozen.
 
-This post shows both implementations, their implied priors, and the crossover points where each code wins. As in the rest of this series, the code is pedagogical: each header stands alone and the struct-with-encode/decode pattern maps directly onto the [PFC library](https://github.com/queelius/pfc)'s `EliasDelta` and `EliasOmega` in `codecs.hpp`.
+This post shows both implementations, their implied priors, and the crossover points where each code wins. As in the rest of this series, the code is pedagogical: each header stands alone and the struct-with-encode/decode pattern maps directly onto the [PFC library](https://github.com/queelius/wire-formats/tree/master/lib/pfc)'s `EliasDelta` and `EliasOmega` in `codecs.hpp`.
 
 ---
 
@@ -214,4 +214,4 @@ So omega is the theoretical ceiling, delta is the practical ceiling, and gamma i
 
 **Cross-series:** The Stepanov bridge posts ([Bits Follow Types](/post/2026-05-codecs-functors-stepanov/) and [When Lists Become Bits](/post/2026-05-prefix-free-stepanov/)) show how these codecs become functors over algebraic types, connecting the universal-code theory to the type-algebra layer.
 
-**Production code:** `include/pfc/codecs.hpp` in the [PFC library](https://github.com/queelius/pfc) contains `EliasDelta` and `EliasOmega`, production implementations with the same encode/decode interface but zero-copy byte-buffer I/O.
+**Production code:** `include/pfc/codecs.hpp` in the [PFC library](https://github.com/queelius/wire-formats/tree/master/lib/pfc) contains `EliasDelta` and `EliasOmega`, production implementations with the same encode/decode interface but zero-copy byte-buffer I/O.

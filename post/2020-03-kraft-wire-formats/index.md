@@ -268,4 +268,4 @@ The [When Lists Become Bits](/post/2026-05-prefix-free-stepanov/) post in the sa
 
 ---
 
-PFC ([github.com/queelius/pfc](https://github.com/queelius/pfc)) provides production codecs that all satisfy Kraft. The whole library is structured around Kraft-satisfying universal codes; see `include/pfc/codecs.hpp` for the full catalog including Elias gamma, Elias delta, Fibonacci, Rice, VByte, and Exp-Golomb codes.
+PFC ([github.com/queelius/wire-formats/tree/master/lib/pfc](https://github.com/queelius/wire-formats/tree/master/lib/pfc)) provides production codecs that all satisfy Kraft. The whole library is structured around Kraft-satisfying universal codes; see `include/pfc/codecs.hpp` for the full catalog including Elias gamma, Elias delta, Fibonacci, Rice, VByte, and Exp-Golomb codes.

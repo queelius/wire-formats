@@ -188,7 +188,7 @@ Fibonacci is a niche code. Its 44% overhead relative to entropy is real: for mos
 
 In practice, most systems handle errors at a lower layer (CRC, FEC codes, RAID parity) rather than at the codec level. Where those exist, Fibonacci's self-sync property is irrelevant and the Elias codes or Huffman are better choices.
 
-The [PFC library](https://github.com/queelius/pfc) includes `Fibonacci` in `codecs.hpp` alongside the Elias codes. It is there because the use cases are real, even if they are uncommon.
+The [PFC library](https://github.com/queelius/wire-formats/tree/master/lib/pfc) includes `Fibonacci` in `codecs.hpp` alongside the Elias codes. It is there because the use cases are real, even if they are uncommon.
 
 ---
 
@@ -200,4 +200,4 @@ The [PFC library](https://github.com/queelius/pfc) includes `Fibonacci` in `code
 
 **Cross-series:** Fibonacci's self-synchronizing "11" marker is a structural property of the codeword, not of the algebraic type system. The Stepanov bridge posts cover how codecs compose over types. Fibonacci's error properties are orthogonal to that story and are not discussed there.
 
-**Production code:** `include/pfc/codecs.hpp` in the [PFC library](https://github.com/queelius/pfc) has `Fibonacci`, with the same encode/decode interface but zero-copy byte-buffer I/O.
+**Production code:** `include/pfc/codecs.hpp` in the [PFC library](https://github.com/queelius/wire-formats/tree/master/lib/pfc) has `Fibonacci`, with the same encode/decode interface but zero-copy byte-buffer I/O.

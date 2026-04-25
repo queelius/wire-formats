@@ -108,7 +108,7 @@ Create `post/2022-11-elias-delta-omega-wire-formats/elias_delta_omega.hpp` with 
 // elias_delta_omega.hpp
 // Pedagogical implementation for the post "Elias Delta and Omega" in the
 // "Algebra over Wire Formats" series. For the production version, see PFC:
-// https://github.com/queelius/pfc (codecs.hpp: EliasDelta, EliasOmega)
+// https://github.com/queelius/wire-formats/tree/master/lib/pfc (codecs.hpp: EliasDelta, EliasOmega)
 //
 // Loose-coupling note: Gamma is re-implemented here rather than included
 // from unary_gamma.hpp. Each post's header stands alone.
@@ -903,7 +903,7 @@ Create `post/2023-04-fibonacci-wire-formats/fibonacci.hpp` with header guards on
 // fibonacci.hpp
 // Pedagogical implementation for the post "Fibonacci Coding" in the
 // "Algebra over Wire Formats" series. For the production version, see PFC:
-// https://github.com/queelius/pfc (codecs.hpp: Fibonacci)
+// https://github.com/queelius/wire-formats/tree/master/lib/pfc (codecs.hpp: Fibonacci)
 
 #pragma once
 

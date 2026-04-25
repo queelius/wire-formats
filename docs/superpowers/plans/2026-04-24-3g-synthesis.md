@@ -16,7 +16,7 @@ See `docs/superpowers/specs/2026-04-24-arc-posts-3-through-13.md`, section "Post
 
 ## Cross-references note
 
-Post 13 is the closing post. Section G links back to every preceding post (3 through 12) and to both Stepanov bridge posts. No forward links (the series ends here). The PFC footnote points to the full library at `https://github.com/queelius/pfc`.
+Post 13 is the closing post. Section G links back to every preceding post (3 through 12) and to both Stepanov bridge posts. No forward links (the series ends here). The PFC footnote points to the full library at `https://github.com/queelius/wire-formats/tree/master/lib/pfc`.
 
 ---
 
@@ -129,7 +129,7 @@ Create `post/2026-05-synthesis-wire-formats/synthesis.hpp` with header guards on
 // synthesis.hpp
 // Pedagogical implementation for the post "Synthesis: Codecs as Structure" in the
 // "Algebra over Wire Formats" series. For the production library, see PFC:
-// https://github.com/queelius/pfc
+// https://github.com/queelius/wire-formats/tree/master/lib/pfc
 
 #pragma once
 
@@ -805,7 +805,7 @@ Use these exact back-links in section G (adjust slug to match actual shipped dir
 - Cross-series: [Bits Follow Types](/post/2026-05-codecs-functors-stepanov/) and
   [When Lists Become Bits](/post/2026-05-prefix-free-stepanov/).
 - **PFC footnote:** The production implementation of all 12 codes (and several more)
-  is at [github.com/queelius/pfc](https://github.com/queelius/pfc). This series
+  is at [github.com/queelius/wire-formats/tree/master/lib/pfc](https://github.com/queelius/wire-formats/tree/master/lib/pfc). This series
   develops the theory; PFC is the practice.
 ```
 
@@ -1074,7 +1074,7 @@ Cross-series links:
 
 Forward links: none. The series ends here.
 
-PFC footnote: `https://github.com/queelius/pfc` (full library, all 12 codes plus several more).
+PFC footnote: `https://github.com/queelius/wire-formats/tree/master/lib/pfc` (full library, all 12 codes plus several more).
 
 ---
 

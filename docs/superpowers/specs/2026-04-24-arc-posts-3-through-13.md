@@ -1200,7 +1200,7 @@ Frame: this series covered the foundation. The frontier moves on, but the core i
 - Back: every post in this series (this is the closing meta-post; link liberally).
 - Cross-series: both Stepanov bridge posts. The closing claim ties the two series together: the algebraic structure of types determines the composition of codecs; the prior over leaf data determines the choice of leaf codec.
 - Forward: nothing in this series; the series ends here. The Stepanov series may extend; future posts there can reference this series's framework.
-- Footnote: PFC ([github.com/queelius/pfc](https://github.com/queelius/pfc)) is the production library that puts all 12 codes (and several more) into a unified, composable system. This series develops the theory; PFC is the practice.
+- Footnote: PFC ([github.com/queelius/wire-formats/tree/master/lib/pfc](https://github.com/queelius/wire-formats/tree/master/lib/pfc)) is the production library that puts all 12 codes (and several more) into a unified, composable system. This series develops the theory; PFC is the practice.
 
 ---
 

@@ -227,7 +227,7 @@ Pedagogical blog posts exploring information theory by construction in C++23.
 
 **A code is a hypothesis about the source.** Each universal code corresponds to a different prior over the integers; each entropy-optimal code (Huffman, arithmetic) is best under different assumptions; each succinct data structure (rank/select bit vectors, RoaringBitmap) is the right answer under different access patterns. The series develops these as one coherent algebraic story.
 
-The production reference for the code in this series is [PFC](https://github.com/queelius/pfc), a header-only C++20 prefix-free codecs library.
+The production reference for the code in this series is [PFC](https://github.com/queelius/wire-formats/tree/master/lib/pfc), a header-only C++20 prefix-free codecs library.
 
 ## Posts
 
@@ -599,7 +599,7 @@ This series walks through the codes that have shown up in practice, treating eac
 
 ## The Production Reference
 
-The code in this series is pedagogical. The production version (with full STL integration, 31k+ test assertions, and the rich combinator library these posts only sketch) lives in [PFC](https://github.com/queelius/pfc).
+The code in this series is pedagogical. The production version (with full STL integration, 31k+ test assertions, and the rich combinator library these posts only sketch) lives in [PFC](https://github.com/queelius/wire-formats/tree/master/lib/pfc).
 
 ## Companion Series
 
@@ -780,7 +780,7 @@ Create `kraft.hpp` with header guards:
 // kraft.hpp
 // Pedagogical implementation for the post "Kraft's Inequality" in the
 // "Algebra over Wire Formats" series. For the production version, see PFC:
-// https://github.com/queelius/pfc
+// https://github.com/queelius/wire-formats/tree/master/lib/pfc
 
 #pragma once
 
@@ -1571,7 +1571,7 @@ Create `mcmillan.hpp`:
 // mcmillan.hpp
 // Pedagogical implementation for the post "McMillan's Converse" in the
 // "Algebra over Wire Formats" series. For the production version, see PFC:
-// https://github.com/queelius/pfc
+// https://github.com/queelius/wire-formats/tree/master/lib/pfc
 
 #pragma once
 

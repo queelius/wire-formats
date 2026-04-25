@@ -202,4 +202,4 @@ What arithmetic coding cannot do is compress below $H(p)$. That is not an implem
 
 **Cross-series:** In the Bits Follow Types framing, arithmetic coding is the entropy-optimal realization of the Either combinator's tag bit. The Either codec tags a choice with 1 bit regardless of probability; arithmetic coding replaces the tag with a fractional contribution proportional to the symbol's true information content.
 
-**Footnote:** The production implementation lives at `include/pfc/arithmetic_coding.hpp` in the [PFC library](https://github.com/queelius/pfc). It includes both the integer range coder developed here and a higher-level adaptive variant with configurable context models.
+**Footnote:** The production implementation lives at `include/pfc/arithmetic_coding.hpp` in the [PFC library](https://github.com/queelius/wire-formats/tree/master/lib/pfc). It includes both the integer range coder developed here and a higher-level adaptive variant with configurable context models.

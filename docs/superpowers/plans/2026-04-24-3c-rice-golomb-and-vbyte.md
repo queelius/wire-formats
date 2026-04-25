@@ -112,7 +112,7 @@ Create `post/2023-09-rice-golomb-wire-formats/rice_golomb.hpp` with header guard
 // rice_golomb.hpp
 // Pedagogical implementation for the post "Rice / Golomb" in the
 // "Algebra over Wire Formats" series. For the production version, see PFC:
-// https://github.com/queelius/pfc (codecs.hpp: Rice<K>, Golomb<M>)
+// https://github.com/queelius/wire-formats/tree/master/lib/pfc (codecs.hpp: Rice<K>, Golomb<M>)
 
 #pragma once
 
@@ -1002,7 +1002,7 @@ Create `post/2024-02-vbyte-wire-formats/vbyte.hpp` with header guards only:
 // vbyte.hpp
 // Pedagogical implementation for the post "VByte / Varint" in the
 // "Algebra over Wire Formats" series. For the production version, see PFC:
-// https://github.com/queelius/pfc (codecs.hpp: VByte)
+// https://github.com/queelius/wire-formats/tree/master/lib/pfc (codecs.hpp: VByte)
 //
 // Note: real VByte implementations operate on bytes directly, not individual
 // bits. This bit-level implementation is for consistency with the rest of the

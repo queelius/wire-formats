@@ -8,7 +8,7 @@ Pedagogical blog posts exploring information theory by construction in C++23.
 
 **A code is a hypothesis about the source.** Each universal code corresponds to a different prior over the integers; each entropy-optimal code (Huffman, arithmetic) is best under different assumptions; each succinct data structure (rank/select bit vectors, RoaringBitmap) is the right answer under different access patterns. The series develops these as one coherent algebraic story.
 
-The production reference for the code in this series is [PFC](https://github.com/queelius/pfc), a header-only C++20 prefix-free codecs library.
+The production reference for the code in this series is [PFC](https://github.com/queelius/wire-formats/tree/master/lib/pfc), a header-only C++20 prefix-free codecs library.
 
 ## Posts
 

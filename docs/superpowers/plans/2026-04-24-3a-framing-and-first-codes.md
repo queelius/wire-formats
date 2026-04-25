@@ -105,7 +105,7 @@ Create `post/2022-01-priors-wire-formats/priors.hpp` with header guards only:
 // priors.hpp
 // Pedagogical implementation for the post "Universal Codes as Priors" in the
 // "Algebra over Wire Formats" series. For the production version, see PFC:
-// https://github.com/queelius/pfc
+// https://github.com/queelius/wire-formats/tree/master/lib/pfc
 
 #pragma once
 
@@ -704,7 +704,7 @@ Create `post/2022-06-elias-gamma-wire-formats/unary_gamma.hpp` with header guard
 // unary_gamma.hpp
 // Pedagogical implementation for the post "Unary and Elias Gamma" in the
 // "Algebra over Wire Formats" series. For the production version, see PFC:
-// https://github.com/queelius/pfc (codecs.hpp: Unary, EliasGamma)
+// https://github.com/queelius/wire-formats/tree/master/lib/pfc (codecs.hpp: Unary, EliasGamma)
 
 #pragma once
 

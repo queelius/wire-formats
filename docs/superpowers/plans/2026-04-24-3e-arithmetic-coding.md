@@ -104,7 +104,7 @@ Create `post/2025-01-arithmetic-coding-wire-formats/arithmetic_coding.hpp` with 
 // arithmetic_coding.hpp
 // Pedagogical integer range coder for the post "Arithmetic Coding" in the
 // "Algebra over Wire Formats" series. For the production version, see PFC:
-// https://github.com/queelius/pfc (include/pfc/arithmetic_coding.hpp)
+// https://github.com/queelius/wire-formats/tree/master/lib/pfc (include/pfc/arithmetic_coding.hpp)
 //
 // Reference: Witten, Neal, Cleary, "Arithmetic Coding for Data Compression,"
 // CACM 30(6), 1987.

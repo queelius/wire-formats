@@ -73,7 +73,7 @@ protected:
 };
 ```
 
-The production version lives in [PFC's `include/pfc/succinct.hpp`](https://github.com/queelius/pfc). The pedagogical version in this post strips the production features to the core structure.
+The production version lives in [PFC's `include/pfc/succinct.hpp`](https://github.com/queelius/wire-formats/tree/master/lib/pfc). The pedagogical version in this post strips the production features to the core structure.
 
 ## Why Constant Time
 

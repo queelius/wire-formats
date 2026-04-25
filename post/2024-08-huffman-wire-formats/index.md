@@ -215,4 +215,4 @@ Arithmetic coding, the subject of the next post, resolves all three limitations 
 
 **Cross-series:** [Bits Follow Types](/post/2026-05-codecs-functors-stepanov/) (Stepanov series): when a `PackedEither` combinator chooses among $N$ type variants, it pays $\lceil \log_2 N \rceil$ tag bits per value. Huffman provides the entropy-optimal alternative when the variant frequencies are known, replacing the fixed $\log_2 N$ cost with a code tuned to the actual distribution of variants.
 
-**Production implementation:** The pedagogical `huffman.hpp` here is a self-contained teaching tool. The production version lives at `include/pfc/huffman.hpp` in the [PFC library](https://github.com/queelius/pfc).
+**Production implementation:** The pedagogical `huffman.hpp` here is a self-contained teaching tool. The production version lives at `include/pfc/huffman.hpp` in the [PFC library](https://github.com/queelius/wire-formats/tree/master/lib/pfc).

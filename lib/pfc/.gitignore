@@ -1,0 +1,30 @@
+# Build artifacts
+build/
+*.o
+*.out
+*.bin
+a.out
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# MkDocs built site
+site/
+
+# Doxygen output
+docs/api-reference/
+
+# Python
+__pycache__/
+*.egg-info/
+*.so
+*.pyd
+dist/
+.venv/
+.pytest_cache/
+.hypothesis/
+.coverage
+*.whl

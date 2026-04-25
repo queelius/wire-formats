@@ -164,5 +164,5 @@ Cross-series: [Bits Follow Types](/post/2026-05-codecs-functors-stepanov/) and
 [When Lists Become Bits](/post/2026-05-prefix-free-stepanov/).
 
 **PFC footnote:** The production implementation of all 12 codes (and several more)
-is at [github.com/queelius/pfc](https://github.com/queelius/pfc). This series
+is at [github.com/queelius/wire-formats/tree/master/lib/pfc](https://github.com/queelius/wire-formats/tree/master/lib/pfc). This series
 develops the theory; PFC is the practice.

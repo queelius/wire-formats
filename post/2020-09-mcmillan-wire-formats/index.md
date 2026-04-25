@@ -209,4 +209,4 @@ The pedagogical code in this post is the cleaner predecessor, freed from probabi
 
 ---
 
-PFC ([github.com/queelius/pfc](https://github.com/queelius/pfc)) provides the production version of McMillan's construction with probability optimization. See `include/pfc/huffman.hpp` for the full `StaticHuffman` implementation and `include/pfc/codecs.hpp` for the catalog of universal codes (Elias gamma, Elias delta, Fibonacci, Rice, VByte, Exp-Golomb) that all satisfy Kraft.
+PFC ([github.com/queelius/wire-formats/tree/master/lib/pfc](https://github.com/queelius/wire-formats/tree/master/lib/pfc)) provides the production version of McMillan's construction with probability optimization. See `include/pfc/huffman.hpp` for the full `StaticHuffman` implementation and `include/pfc/codecs.hpp` for the catalog of universal codes (Elias gamma, Elias delta, Fibonacci, Rice, VByte, Exp-Golomb) that all satisfy Kraft.

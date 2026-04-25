@@ -1,0 +1,104 @@
+site_name: PFC - Prefix-Free Codecs
+site_description: A header-only C++20 library for zero-copy, prefix-free data representations
+site_author: queelius
+site_url: https://queelius.github.io/pfc/
+
+repo_name: queelius/pfc
+repo_url: https://github.com/queelius/pfc
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - admonition
+  - tables
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: guides/installation.md
+    - Quick Start: guides/quick-start.md
+    - Design Principles: guides/design-principles.md
+  - API Reference:
+    - Overview: api/overview.md
+    - Core: api/core.md
+    - Codecs: api/codecs.md
+    - Numeric Codecs: api/numeric-codecs.md
+    - Packed Types: api/packed.md
+    - Algebraic Types: api/algebraic.md
+    - STL Integration: api/stl-integration.md
+    - Algorithms: api/algorithms.md
+    - Coordinates: api/coordinates.md
+    - Error Handling: api/error-handling.md
+    - Compression: api/compression.md
+    - Succinct Structures: api/succinct.md
+    - CRC: api/crc.md
+  - Examples:
+    - Basic Usage: examples/basic.md
+    - Codecs: examples/codecs.md
+    - Containers: examples/containers.md
+    - Algebraic Types: examples/algebraic.md
+    - Compression: examples/compression.md
+    - Advanced: examples/advanced.md
+  - Guides:
+    - Creating Custom Codecs: guides/custom-codecs.md
+    - Performance Optimization: guides/performance.md
+    - Error Handling: guides/error-handling.md
+    - Best Practices: guides/best-practices.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/queelius/pfc
+  version:
+    provider: mike
+
+copyright: Copyright &copy; 2025 PFC Contributors

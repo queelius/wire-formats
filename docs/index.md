@@ -26,7 +26,7 @@ This series walks through the codes that have shown up in practice, treating eac
 
 ## The Production Reference
 
-The code in this series is pedagogical. The production version (with full STL integration, 31k+ test assertions, and the rich combinator library these posts only sketch) lives in [PFC](https://github.com/queelius/pfc).
+The code in this series is pedagogical. The production version (with full STL integration, 31k+ test assertions, and the rich combinator library these posts only sketch) lives in [PFC](https://github.com/queelius/wire-formats/tree/master/lib/pfc).
 
 ## Companion Series
 
