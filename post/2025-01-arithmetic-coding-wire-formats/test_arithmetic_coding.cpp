@@ -125,3 +125,34 @@ TEST(ArithmeticDecoderTest, ConstructorPrimesCode) {
     // code_ should be some 32-bit value -- we just verify it is accessible.
     EXPECT_NO_THROW({ (void)dec.code(); });
 }
+
+// Encoding then decoding a single symbol should recover the original.
+// Use two equiprobable symbols (total=2, cumulative freqs {0,1,2}).
+TEST(ArithmeticDecoderTest, DecodeSymbolAfterEncodeRoundTrips) {
+    // Cumulative frequency table: sym 0 -> [0,1), sym 1 -> [1,2). Total=2.
+    // Symbol lookup callback: given scaled_value in [0,total), return symbol.
+    auto get_freq = [](std::uint32_t scaled) -> std::size_t {
+        return (scaled >= 1) ? 1u : 0u;
+    };
+    // Cumulative intervals for update: sym 0 -> [0,1), sym 1 -> [1,2).
+    auto cum_range = [](std::size_t sym)
+        -> std::pair<std::uint32_t, std::uint32_t> {
+        if (sym == 0) return {0, 1};
+        return {1, 2};
+    };
+
+    for (std::size_t expected_sym : {0u, 1u}) {
+        BitWriter bw;
+        {
+            ArithmeticEncoder enc(bw);
+            auto [lo, hi] = cum_range(expected_sym);
+            enc.encode_symbol(lo, hi, 2);
+            enc.finish();
+        }
+        bw.flush();
+        BitReader br(bw.bytes());
+        ArithmeticDecoder dec(br);
+        std::size_t got = dec.decode_symbol(get_freq, cum_range, 2);
+        EXPECT_EQ(got, expected_sym);
+    }
+}
