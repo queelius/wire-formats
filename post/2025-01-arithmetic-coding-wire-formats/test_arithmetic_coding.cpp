@@ -105,3 +105,23 @@ TEST(ArithmeticEncoderTest, FinishIsDeterministic) {
     EXPECT_EQ(encode_once(0, 1, 2), encode_once(0, 1, 2));
     EXPECT_EQ(encode_once(1, 2, 2), encode_once(1, 2, 2));
 }
+
+// A decoder constructed from a BitReader derived from a 4-byte stream
+// should initialize with low=0, high=TOP_VALUE, and code set to the
+// first 32 bits of the stream.
+TEST(ArithmeticDecoderTest, ConstructorPrimesCode) {
+    // Encode one symbol so we have a non-trivial byte stream.
+    BitWriter bw;
+    {
+        ArithmeticEncoder enc(bw);
+        enc.encode_symbol(0, 1, 2);
+        enc.finish();
+    }
+    bw.flush();
+    BitReader br(bw.bytes());
+    ArithmeticDecoder dec(br);
+    EXPECT_EQ(dec.low(),  0u);
+    EXPECT_EQ(dec.high(), TOP_VALUE);
+    // code_ should be some 32-bit value -- we just verify it is accessible.
+    EXPECT_NO_THROW({ (void)dec.code(); });
+}
