@@ -200,3 +200,50 @@ TEST(ConversionTest, ArrayBitmapArrayRoundTrip) {
         EXPECT_TRUE(a_back.contains(val));
     }
 }
+
+// ---- RoaringBitmap tests ----------------------------------------------------
+
+TEST(RoaringBitmapTest, EmptyOnConstruct) {
+    RoaringBitmap rb;
+    EXPECT_EQ(rb.cardinality(), 0u);
+    EXPECT_FALSE(rb.contains(0));
+    EXPECT_FALSE(rb.contains(0xFFFFFFFF));
+}
+
+TEST(RoaringBitmapTest, AddAndContains) {
+    RoaringBitmap rb;
+    rb.add(0);
+    rb.add(65535);             // Same chunk as 0 (high bits = 0).
+    rb.add(65536);             // Different chunk (high bits = 1).
+    rb.add(0xFFFFFFFF);        // Highest possible value.
+    EXPECT_TRUE(rb.contains(0));
+    EXPECT_TRUE(rb.contains(65535));
+    EXPECT_TRUE(rb.contains(65536));
+    EXPECT_TRUE(rb.contains(0xFFFFFFFF));
+    EXPECT_FALSE(rb.contains(1));
+    EXPECT_FALSE(rb.contains(65534));
+}
+
+TEST(RoaringBitmapTest, CardinalityAcrossChunks) {
+    RoaringBitmap rb;
+    for (uint32_t i = 0; i < 10; ++i) rb.add(i);         // Chunk 0.
+    for (uint32_t i = 65536; i < 65540; ++i) rb.add(i);  // Chunk 1.
+    EXPECT_EQ(rb.cardinality(), 14u);
+}
+
+TEST(RoaringBitmapTest, DuplicateAddNoChange) {
+    RoaringBitmap rb;
+    rb.add(100);
+    rb.add(100);
+    EXPECT_EQ(rb.cardinality(), 1u);
+}
+
+TEST(RoaringBitmapTest, AutoConvertArrayToBitmap) {
+    RoaringBitmap rb;
+    // Adding ARRAY_MAX + 1 distinct values to chunk 0 forces array -> bitmap.
+    for (uint32_t i = 0; i <= 4096; ++i) rb.add(i);
+    EXPECT_EQ(rb.cardinality(), 4097u);
+    // All values must still be accessible.
+    for (uint32_t i = 0; i <= 4096; ++i) EXPECT_TRUE(rb.contains(i));
+    EXPECT_FALSE(rb.contains(4097));
+}

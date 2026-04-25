@@ -221,4 +221,214 @@ public:
     return array_to_run(bitmap_to_array(b));
 }
 
+// ---- RoaringBitmap ----------------------------------------------------------
+//
+// A compressed integer set over uint32_t values. The 32-bit space is divided
+// into 64K-integer chunks (high 16 bits select the chunk; low 16 bits index
+// within). Each chunk uses the optimal container type based on cardinality:
+//
+//   cardinality <= ARRAY_MAX (4096): ArrayContainer  (sparse)
+//   cardinality >  ARRAY_MAX:        BitmapContainer (dense)
+//   after optimize():                RunContainer    (clustered)
+//
+// The variant dispatch ensures each chunk's operations use the right algorithm.
+// std::visit lets callers write single generic lambdas instead of manual
+// switch-on-type dispatch.
+
+using ContainerVariant = std::variant<ArrayContainer, BitmapContainer, RunContainer>;
+
+class RoaringBitmap {
+    std::map<uint16_t, ContainerVariant> chunks_;  // chunk-id -> container.
+
+    // Extract the high 16 bits (chunk-id) and low 16 bits of a 32-bit value.
+    static uint16_t chunk_id(uint32_t v) noexcept { return static_cast<uint16_t>(v >> 16); }
+    static uint16_t low_bits(uint32_t v) noexcept { return static_cast<uint16_t>(v & 0xFFFF); }
+
+public:
+    RoaringBitmap() = default;
+
+    // Add value v. Creates the chunk if it does not exist (starts as ArrayContainer).
+    // Automatically converts Array -> Bitmap if the chunk exceeds ARRAY_MAX.
+    void add(uint32_t v) {
+        uint16_t cid = chunk_id(v);
+        uint16_t low = low_bits(v);
+
+        auto it = chunks_.find(cid);
+        if (it == chunks_.end()) {
+            chunks_.emplace(cid, ArrayContainer{});
+            it = chunks_.find(cid);
+        }
+
+        std::visit([&](auto& container) {
+            using T = std::decay_t<decltype(container)>;
+            if constexpr (std::is_same_v<T, ArrayContainer>) {
+                container.add(low);
+                // Threshold check: convert to bitmap when array exceeds ARRAY_MAX.
+                if (container.cardinality() > ARRAY_MAX) {
+                    it->second = array_to_bitmap(container);
+                }
+            } else if constexpr (std::is_same_v<T, BitmapContainer>) {
+                container.add(low);
+            } else {
+                // RunContainer: convert to bitmap, add, then rebuild runs.
+                BitmapContainer b;
+                for (const auto& [start, len] : container.run_list()) {
+                    for (std::size_t i = 0; i <= len; ++i)
+                        b.add(static_cast<uint16_t>(start + i));
+                }
+                b.add(low);
+                it->second = bitmap_to_run(b);
+            }
+        }, it->second);
+    }
+
+    // Returns true if v is in the bitmap.
+    [[nodiscard]] bool contains(uint32_t v) const noexcept {
+        auto it = chunks_.find(chunk_id(v));
+        if (it == chunks_.end()) return false;
+        return std::visit([low = low_bits(v)](const auto& c) {
+            return c.contains(low);
+        }, it->second);
+    }
+
+    // Total number of distinct values.
+    [[nodiscard]] std::size_t cardinality() const noexcept {
+        std::size_t total = 0;
+        for (const auto& [cid, variant] : chunks_) {
+            total += std::visit([](const auto& c) { return c.cardinality(); }, variant);
+        }
+        return total;
+    }
+
+    // optimize(): convert each chunk to RunContainer if that reduces space.
+    // Called explicitly after bulk-loading; not called automatically.
+    void optimize() {
+        for (auto& [cid, variant] : chunks_) {
+            std::visit([&variant](const auto& c) {
+                using T = std::decay_t<decltype(c)>;
+                if constexpr (std::is_same_v<T, ArrayContainer>) {
+                    variant = array_to_run(c);
+                } else if constexpr (std::is_same_v<T, BitmapContainer>) {
+                    variant = bitmap_to_run(c);
+                }
+                // RunContainer: already optimized; leave as is.
+            }, variant);
+        }
+    }
+
+    // union_with: all values in either *this or other.
+    [[nodiscard]] RoaringBitmap union_with(const RoaringBitmap& other) const {
+        RoaringBitmap result = *this;  // Start with a copy of *this.
+        for (const auto& [cid, variant] : other.chunks_) {
+            std::visit([&](const auto& c) {
+                using T = std::decay_t<decltype(c)>;
+                if constexpr (std::is_same_v<T, ArrayContainer>) {
+                    for (uint16_t v : c.elements()) {
+                        result.add(static_cast<uint32_t>(cid) << 16 | v);
+                    }
+                } else if constexpr (std::is_same_v<T, BitmapContainer>) {
+                    const auto& words = c.raw_words();
+                    for (std::size_t w = 0; w < words.size(); ++w) {
+                        uint64_t word = words[w];
+                        while (word) {
+                            std::size_t bit = static_cast<std::size_t>(__builtin_ctzll(word));
+                            result.add(static_cast<uint32_t>(cid) << 16 |
+                                       static_cast<uint32_t>(w * 64 + bit));
+                            word &= word - 1;
+                        }
+                    }
+                } else {
+                    for (const auto& [start, len] : c.run_list()) {
+                        for (std::size_t i = 0; i <= len; ++i) {
+                            result.add(static_cast<uint32_t>(cid) << 16 |
+                                       static_cast<uint32_t>(start + i));
+                        }
+                    }
+                }
+            }, variant);
+        }
+        return result;
+    }
+
+    // intersection_with: only values present in both *this and other.
+    [[nodiscard]] RoaringBitmap intersection_with(const RoaringBitmap& other) const {
+        RoaringBitmap result;
+        for (const auto& [cid, variant] : chunks_) {
+            auto it = other.chunks_.find(cid);
+            if (it == other.chunks_.end()) continue;
+            // Both chunks exist: add values present in both containers.
+            std::visit([&](const auto& c) {
+                using T = std::decay_t<decltype(c)>;
+                if constexpr (std::is_same_v<T, ArrayContainer>) {
+                    for (uint16_t v : c.elements()) {
+                        if (std::visit([v](const auto& o) { return o.contains(v); }, it->second)) {
+                            result.add(static_cast<uint32_t>(cid) << 16 | v);
+                        }
+                    }
+                } else if constexpr (std::is_same_v<T, BitmapContainer>) {
+                    const auto& words = c.raw_words();
+                    for (std::size_t w = 0; w < words.size(); ++w) {
+                        uint64_t word = words[w];
+                        while (word) {
+                            std::size_t bit = static_cast<std::size_t>(__builtin_ctzll(word));
+                            uint16_t v = static_cast<uint16_t>(w * 64 + bit);
+                            if (std::visit([v](const auto& o) { return o.contains(v); }, it->second)) {
+                                result.add(static_cast<uint32_t>(cid) << 16 | v);
+                            }
+                            word &= word - 1;
+                        }
+                    }
+                } else {
+                    for (const auto& [start, len] : c.run_list()) {
+                        for (std::size_t i = 0; i <= len; ++i) {
+                            uint16_t v = static_cast<uint16_t>(start + i);
+                            if (std::visit([v](const auto& o) { return o.contains(v); }, it->second)) {
+                                result.add(static_cast<uint32_t>(cid) << 16 | v);
+                            }
+                        }
+                    }
+                }
+            }, variant);
+        }
+        return result;
+    }
+
+    // difference: values in *this but not in other.
+    [[nodiscard]] RoaringBitmap difference(const RoaringBitmap& other) const {
+        RoaringBitmap result;
+        for (const auto& [cid, variant] : chunks_) {
+            auto it = other.chunks_.find(cid);
+            std::visit([&](const auto& c) {
+                using T = std::decay_t<decltype(c)>;
+                auto add_if_absent = [&](uint16_t v) {
+                    if (it == other.chunks_.end() ||
+                        !std::visit([v](const auto& o) { return o.contains(v); }, it->second)) {
+                        result.add(static_cast<uint32_t>(cid) << 16 | v);
+                    }
+                };
+                if constexpr (std::is_same_v<T, ArrayContainer>) {
+                    for (uint16_t v : c.elements()) add_if_absent(v);
+                } else if constexpr (std::is_same_v<T, BitmapContainer>) {
+                    const auto& words = c.raw_words();
+                    for (std::size_t w = 0; w < words.size(); ++w) {
+                        uint64_t word = words[w];
+                        while (word) {
+                            std::size_t bit = static_cast<std::size_t>(__builtin_ctzll(word));
+                            add_if_absent(static_cast<uint16_t>(w * 64 + bit));
+                            word &= word - 1;
+                        }
+                    }
+                } else {
+                    for (const auto& [start, len] : c.run_list()) {
+                        for (std::size_t i = 0; i <= len; ++i) {
+                            add_if_absent(static_cast<uint16_t>(start + i));
+                        }
+                    }
+                }
+            }, variant);
+        }
+        return result;
+    }
+};
+
 }  // namespace roaring
