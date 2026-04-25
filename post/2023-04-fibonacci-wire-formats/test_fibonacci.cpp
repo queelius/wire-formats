@@ -84,3 +84,104 @@ TEST(FibonacciTest, ZeckendorfDeterministic) {
         EXPECT_EQ(to_zeckendorf(n), to_zeckendorf(n)) << "n=" << n;
     }
 }
+
+// ---- Fibonacci codec tests --------------------------------------------------
+
+// Minimal in-memory BitSink/BitSource for tests.
+struct BitBuffer {
+    std::vector<bool> bits;
+    void write(bool b) { bits.push_back(b); }
+    bool read() {
+        bool b = bits[pos_];
+        ++pos_;
+        return b;
+    }
+    std::size_t pos_ = 0;
+};
+
+static uint64_t fib_round_trip(uint64_t n) {
+    BitBuffer buf;
+    Fibonacci::encode(n, buf);
+    buf.pos_ = 0;
+    return Fibonacci::decode(buf);
+}
+
+static std::size_t fib_bit_count(uint64_t n) {
+    BitBuffer buf;
+    Fibonacci::encode(n, buf);
+    return buf.bits.size();
+}
+
+TEST(FibonacciTest, FibonacciRoundTrip) {
+    for (uint64_t n = 1; n <= 200; ++n) {
+        EXPECT_EQ(fib_round_trip(n), n) << "n=" << n;
+    }
+}
+
+TEST(FibonacciTest, FibonacciRoundTripLarge) {
+    for (uint64_t n : {uint64_t{1000}, uint64_t{10000}, uint64_t{100000}}) {
+        EXPECT_EQ(fib_round_trip(n), n) << "n=" << n;
+    }
+}
+
+// Spot-check known codewords from the spec:
+// 1 -> "11" (F_2 bit + terminator)
+// 2 -> "011" (F_3 bit + terminator: bits={0,1}, append 1)
+// 3 -> "0011" (F_4: bits={0,0,1}, append 1)
+// 4 -> "1011" (F_2+F_4: bits={1,0,1}, append 1)
+// 8 -> "000011" (F_6: bits={0,0,0,0,1}, append 1)
+
+TEST(FibonacciTest, FibonacciEncoding1Is11) {
+    BitBuffer buf;
+    Fibonacci::encode(uint64_t{1}, buf);
+    ASSERT_EQ(buf.bits.size(), 2u);
+    EXPECT_EQ(buf.bits[0], true);   // F_2 bit
+    EXPECT_EQ(buf.bits[1], true);   // terminator
+}
+
+TEST(FibonacciTest, FibonacciEncoding2Is011) {
+    BitBuffer buf;
+    Fibonacci::encode(uint64_t{2}, buf);
+    ASSERT_EQ(buf.bits.size(), 3u);
+    EXPECT_EQ(buf.bits[0], false);  // F_2 bit = 0
+    EXPECT_EQ(buf.bits[1], true);   // F_3 bit = 1
+    EXPECT_EQ(buf.bits[2], true);   // terminator
+}
+
+TEST(FibonacciTest, FibonacciEncoding4Is1011) {
+    BitBuffer buf;
+    Fibonacci::encode(uint64_t{4}, buf);
+    ASSERT_EQ(buf.bits.size(), 4u);
+    EXPECT_EQ(buf.bits[0], true);   // F_2=1 bit
+    EXPECT_EQ(buf.bits[1], false);  // F_3=2 bit
+    EXPECT_EQ(buf.bits[2], true);   // F_4=3 bit
+    EXPECT_EQ(buf.bits[3], true);   // terminator
+}
+
+// Every codeword ends in "11" (Zeckendorf bits followed by terminator '1').
+// The last Zeckendorf bit is always 1 (it is the highest Fibonacci in the sum).
+TEST(FibonacciTest, AllCodewordsEndIn11) {
+    for (uint64_t n = 1; n <= 100; ++n) {
+        BitBuffer buf;
+        Fibonacci::encode(n, buf);
+        std::size_t len = buf.bits.size();
+        ASSERT_GE(len, 2u) << "n=" << n;
+        // The last two bits must both be 1.
+        EXPECT_EQ(buf.bits[len - 1], true) << "terminator missing for n=" << n;
+        EXPECT_EQ(buf.bits[len - 2], true) << "last Zeckendorf bit not 1 for n=" << n;
+    }
+}
+
+// No codeword contains "11" except at the very end.
+TEST(FibonacciTest, NoInternalConsecutiveOnes) {
+    for (uint64_t n = 1; n <= 100; ++n) {
+        BitBuffer buf;
+        Fibonacci::encode(n, buf);
+        std::size_t len = buf.bits.size();
+        // Check all pairs except the final pair (which is the "11" terminator).
+        for (std::size_t i = 0; i + 2 < len; ++i) {
+            EXPECT_FALSE(buf.bits[i] && buf.bits[i+1])
+                << "Internal '11' at position " << i << " for n=" << n;
+        }
+    }
+}
