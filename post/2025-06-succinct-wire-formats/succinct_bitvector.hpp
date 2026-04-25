@@ -46,7 +46,7 @@ public:
                 bits_[i / 64] |= (uint64_t{1} << (i % 64));
             }
         }
-        // Index built in Tasks 6-7; constructor is complete for Tasks 3-5.
+        build_index();  // Builds superblock_ranks_ and block_ranks_.
     }
 
     // Logical size in bits.
@@ -76,6 +76,34 @@ public:
         return count;
     }
 
+    // Expose the naive O(n/64) rank for testing and index-correctness verification.
+    [[nodiscard]] std::size_t rank1_naive(std::size_t i) const noexcept {
+        // Same logic as Task 5's rank1 but kept separately so rank1 can be
+        // switched to the indexed version in Task 7.
+        if (i == 0) return 0;
+        std::size_t word_idx    = i / BLOCK_BITS;
+        std::size_t within_word = i % BLOCK_BITS;
+        std::size_t count = 0;
+        for (std::size_t w = 0; w < word_idx; ++w) {
+            count += popcount_word(bits_[w]);
+        }
+        if (within_word > 0) {
+            uint64_t mask = (uint64_t{1} << within_word) - uint64_t{1};
+            count += popcount_word(bits_[word_idx] & mask);
+        }
+        return count;
+    }
+
+    // Test accessor: absolute cumulative rank at superblock sb's start.
+    [[nodiscard]] std::size_t superblock_rank_at(std::size_t sb) const noexcept {
+        return (sb < superblock_ranks_.size()) ? superblock_ranks_[sb] : 0;
+    }
+
+    // Test accessor: block-relative rank for block blk (relative to its superblock start).
+    [[nodiscard]] std::size_t block_rank_at(std::size_t blk) const noexcept {
+        return (blk < block_ranks_.size()) ? block_ranks_[blk] : 0;
+    }
+
 protected:
     std::size_t n_;                    // Logical bit count.
     std::vector<uint64_t> bits_;       // Packed bit array, LSB-first.
@@ -85,6 +113,49 @@ protected:
     static constexpr std::size_t SUPERBLOCK_BITS = 4096;  // 64 words per superblock.
     static constexpr std::size_t BLOCK_BITS      = 64;    // One uint64_t word per block.
     static constexpr std::size_t BLOCKS_PER_SB   = SUPERBLOCK_BITS / BLOCK_BITS;  // 64.
+
+    // build_index(): construct superblock_ranks_ and block_ranks_ from bits_.
+    //
+    // Index layout:
+    //   superblock: every SUPERBLOCK_BITS bits (4096 bits = 64 words).
+    //               One uint64_t per superblock storing the *absolute* cumulative
+    //               rank from bit 0 to the start of this superblock.
+    //   block: every BLOCK_BITS bits (64 bits = one word).
+    //          One uint16_t per block storing the *superblock-relative* cumulative
+    //          rank from the start of the enclosing superblock to the start of
+    //          this block.
+    //
+    // Space: superblock_ranks_ has ceil(n/4096) entries of 8 bytes each.
+    //        block_ranks_ has ceil(n/64) entries of 2 bytes each.
+    //        Total index: ~ n/512 + n/32 bytes = ~ 0.2 * n/8 bytes (roughly 3% of n bits).
+    //        Asymptotically o(n) and in practice small.
+    void build_index() {
+        if (n_ == 0) return;
+        std::size_t num_superblocks = (n_ + SUPERBLOCK_BITS - 1) / SUPERBLOCK_BITS;
+        std::size_t num_blocks      = (n_ + BLOCK_BITS      - 1) / BLOCK_BITS;
+
+        superblock_ranks_.resize(num_superblocks, 0);
+        block_ranks_.resize(num_blocks, 0);
+
+        std::size_t cumulative    = 0;  // Absolute rank from bit 0.
+        std::size_t sb_cumulative = 0;  // Rank within the current superblock.
+
+        for (std::size_t blk = 0; blk < num_blocks; ++blk) {
+            std::size_t sb = blk / BLOCKS_PER_SB;  // Which superblock.
+            // At the start of each superblock: record absolute rank.
+            if (blk % BLOCKS_PER_SB == 0) {
+                superblock_ranks_[sb] = cumulative;
+                sb_cumulative = 0;
+            }
+            // Record the block-relative rank (before counting this block's bits).
+            block_ranks_[blk] = static_cast<uint16_t>(sb_cumulative);
+
+            // Count bits in this block.
+            std::size_t count = popcount_word(bits_[blk]);
+            cumulative    += count;
+            sb_cumulative += count;
+        }
+    }
 };
 
 }  // namespace succinct_bv

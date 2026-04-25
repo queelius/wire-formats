@@ -130,3 +130,36 @@ TEST(SuccinctBVTest, Rank1CrossWordBoundary) {
     EXPECT_EQ(bv.rank1(66), 2u);
     EXPECT_EQ(bv.rank1(128), 3u);
 }
+
+// Verify superblock_rank_at(sb) matches the naive rank at the superblock start.
+// Accessor exposed for testing only.
+TEST(SuccinctBVTest, SuperblockRankMatchesNaive) {
+    // Build a bit vector that spans several superblocks.
+    const std::size_t N = 4096 * 3 + 100;  // 3 full superblocks + 100 extra bits.
+    std::vector<bool> bits(N, false);
+    // Set every 7th bit so the pattern is non-trivial.
+    for (std::size_t i = 0; i < N; i += 7) bits[i] = true;
+    SuccinctBitVector bv(bits);
+    // Compare superblock entry to naive scan result at each superblock boundary.
+    for (std::size_t sb = 0; sb < 4; ++sb) {
+        std::size_t pos = sb * 4096;
+        if (pos > N) break;
+        EXPECT_EQ(bv.superblock_rank_at(sb), bv.rank1_naive(pos))
+            << "superblock=" << sb;
+    }
+}
+
+// Verify block_rank_at(block) matches naive scan from the superblock start.
+TEST(SuccinctBVTest, BlockRankMatchesNaive) {
+    const std::size_t N = 4096 + 512;  // One full superblock + a bit more.
+    std::vector<bool> bits(N, false);
+    for (std::size_t i = 0; i < N; i += 3) bits[i] = true;
+    SuccinctBitVector bv(bits);
+    // Check blocks 0..64 (within superblock 0).
+    for (std::size_t blk = 0; blk < 64; ++blk) {
+        std::size_t pos = blk * 64;  // Block start position.
+        // Block rank is relative to superblock 0, which starts at 0.
+        EXPECT_EQ(bv.block_rank_at(blk), bv.rank1_naive(pos))
+            << "block=" << blk;
+    }
+}
