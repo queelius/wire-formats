@@ -78,3 +78,55 @@ TEST(SuccinctBVTest, PopcountWordKnown) {
     // 0x0F0F...: alternating nibbles, 32 bits set.
     EXPECT_EQ(succinct_bv::popcount_word(uint64_t{0x0F0F'0F0F'0F0F'0F0F}), 32u);
 }
+
+// rank1(i) counts set bits in [0, i) -- i.e., strictly before position i.
+// rank1(0) is always 0 (no bits before position 0).
+TEST(SuccinctBVTest, Rank1AtZero) {
+    SuccinctBitVector bv({true, false, true});
+    EXPECT_EQ(bv.rank1(0), 0u);
+}
+
+// All-zeros: rank1 is always 0.
+TEST(SuccinctBVTest, Rank1AllZeros) {
+    std::vector<bool> bits(200, false);
+    SuccinctBitVector bv(bits);
+    for (std::size_t i = 0; i <= 200; ++i) {
+        EXPECT_EQ(bv.rank1(i), 0u) << "i=" << i;
+    }
+}
+
+// All-ones: rank1(i) == i.
+TEST(SuccinctBVTest, Rank1AllOnes) {
+    std::vector<bool> bits(200, true);
+    SuccinctBitVector bv(bits);
+    for (std::size_t i = 0; i <= 200; ++i) {
+        EXPECT_EQ(bv.rank1(i), i) << "i=" << i;
+    }
+}
+
+// Known pattern: 1,0,1,0,1,0,1 -> rank1(k) = ceil(k/2).
+TEST(SuccinctBVTest, Rank1Alternating) {
+    SuccinctBitVector bv({true, false, true, false, true, false, true});
+    EXPECT_EQ(bv.rank1(0), 0u);
+    EXPECT_EQ(bv.rank1(1), 1u);
+    EXPECT_EQ(bv.rank1(2), 1u);
+    EXPECT_EQ(bv.rank1(3), 2u);
+    EXPECT_EQ(bv.rank1(4), 2u);
+    EXPECT_EQ(bv.rank1(5), 3u);
+    EXPECT_EQ(bv.rank1(6), 3u);
+    EXPECT_EQ(bv.rank1(7), 4u);
+}
+
+// rank1 across a word boundary (tests that word 0 and word 1 both contribute).
+TEST(SuccinctBVTest, Rank1CrossWordBoundary) {
+    std::vector<bool> bits(128, false);
+    bits[60] = true;
+    bits[65] = true;
+    bits[127] = true;
+    SuccinctBitVector bv(bits);
+    EXPECT_EQ(bv.rank1(60), 0u);
+    EXPECT_EQ(bv.rank1(61), 1u);
+    EXPECT_EQ(bv.rank1(65), 1u);
+    EXPECT_EQ(bv.rank1(66), 2u);
+    EXPECT_EQ(bv.rank1(128), 3u);
+}

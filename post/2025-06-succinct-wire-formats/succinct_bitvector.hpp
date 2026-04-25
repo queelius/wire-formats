@@ -57,6 +57,25 @@ public:
         return (bits_[i / 64] >> (i % 64)) & uint64_t{1};
     }
 
+    // rank1(i): count of 1-bits in positions [0, i).
+    // This O(n/64) version scans word-by-word; it is correct but not constant-time.
+    // Replaced by the indexed version in Task 7.
+    [[nodiscard]] std::size_t rank1(std::size_t i) const noexcept {
+        if (i == 0) return 0;
+        std::size_t word_idx    = i / BLOCK_BITS;   // Full words before i.
+        std::size_t within_word = i % BLOCK_BITS;   // Remaining bits.
+        std::size_t count = 0;
+        for (std::size_t w = 0; w < word_idx; ++w) {
+            count += popcount_word(bits_[w]);
+        }
+        if (within_word > 0) {
+            // Mask off bits at position within_word and beyond (keep bits 0..within_word-1).
+            uint64_t mask = (uint64_t{1} << within_word) - uint64_t{1};
+            count += popcount_word(bits_[word_idx] & mask);
+        }
+        return count;
+    }
+
 protected:
     std::size_t n_;                    // Logical bit count.
     std::vector<uint64_t> bits_;       // Packed bit array, LSB-first.
