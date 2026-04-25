@@ -45,3 +45,4 @@ nav:
       - "VByte / Varint": "post/2024-02-vbyte-wire-formats/index.md"
   - "Entropy-Optimal":
       - "Huffman Coding": "post/2024-08-huffman-wire-formats/index.md"
+      - "Arithmetic Coding": "post/2025-01-arithmetic-coding-wire-formats/index.md"
