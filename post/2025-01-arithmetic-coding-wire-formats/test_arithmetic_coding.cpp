@@ -79,3 +79,29 @@ TEST(ArithmeticEncoderTest, UnderflowIncrements) {
     enc.encode_symbol(1, 3, 4);
     EXPECT_GE(enc.underflow_count(), 1u);
 }
+
+// After encoding one symbol and calling finish(), the bit stream should be
+// non-empty and the encoder should be in a defined terminal state.
+TEST(ArithmeticEncoderTest, FinishProducesNonEmptyStream) {
+    BitWriter bw;
+    ArithmeticEncoder enc(bw);
+    enc.encode_symbol(0, 1, 2);  // symbol 0 of {0,1} equiprobable
+    enc.finish();
+    bw.flush();
+    EXPECT_GT(bw.bytes().size(), 0u);
+}
+
+// Encoding the same sequence twice should produce identical bit streams.
+TEST(ArithmeticEncoderTest, FinishIsDeterministic) {
+    auto encode_once = [](std::uint32_t sym_low, std::uint32_t sym_high,
+                          std::uint32_t total) {
+        BitWriter bw;
+        ArithmeticEncoder enc(bw);
+        enc.encode_symbol(sym_low, sym_high, total);
+        enc.finish();
+        bw.flush();
+        return bw.bytes();
+    };
+    EXPECT_EQ(encode_once(0, 1, 2), encode_once(0, 1, 2));
+    EXPECT_EQ(encode_once(1, 2, 2), encode_once(1, 2, 2));
+}
