@@ -314,3 +314,52 @@ TEST(ConvergenceTest, NearEntropyForUniform) {
     double bps = measure_bits_per_symbol(10000, 1, 2);
     EXPECT_NEAR(bps, h, 0.1) << "bps=" << bps << " H=" << h;
 }
+
+// The compelling comparison: Bernoulli(0.99) with 1000 symbols.
+// Huffman: cannot compress below 1 bit/symbol for a binary source.
+// Arithmetic: achieves ~0.082 bits/symbol -> ~82 bits total.
+TEST(BinarySourceDemoTest, Bernoulli99OneThousandSymbols) {
+    // Generate a 1000-symbol sequence with ~1% ones.
+    const std::size_t N = 1000;
+    std::vector<std::size_t> syms(N, 0u);
+    for (std::size_t i = 10; i < N; i += 100) syms[i] = 1u;
+
+    BitWriter bw;
+    {
+        ArithmeticEncoder enc(bw);
+        for (std::size_t sym : syms) {
+            if (sym == 0) enc.encode_symbol(0, 99, 100);
+            else          enc.encode_symbol(99, 100, 100);
+        }
+        enc.finish();
+    }
+    bw.flush();
+
+    // Bytes * 8 = total bits emitted.
+    std::size_t bits = bw.bytes().size() * 8;
+    double bps = static_cast<double>(bits) / static_cast<double>(N);
+
+    // Arithmetic coding on this source should achieve well under 1 bit/symbol.
+    EXPECT_LT(bps, 1.0)
+        << "Expected arithmetic coding to beat 1 bit/symbol; got " << bps;
+
+    // And should be in the right ballpark of entropy (within 1 bit/symbol).
+    std::vector<double> dist = {0.99, 0.01};
+    double h = priors::entropy(dist);  // ~0.081 bits/symbol
+    EXPECT_LT(bps, h + 1.0)
+        << "Expected close to H=" << h << " bits/symbol; got " << bps;
+
+    // Verify round-trip still works on this sequence.
+    BitReader br(bw.bytes());
+    ArithmeticDecoder dec(br);
+    auto get_freq  = [](std::uint32_t s) -> std::size_t { return (s >= 99) ? 1u : 0u; };
+    auto cum_range = [](std::size_t sym)
+        -> std::pair<std::uint32_t, std::uint32_t> {
+        return sym == 0 ? std::make_pair(0u, 99u)
+                        : std::make_pair(99u, 100u);
+    };
+    for (std::size_t i = 0; i < N; ++i) {
+        EXPECT_EQ(dec.decode_symbol(get_freq, cum_range, 100), syms[i])
+            << "mismatch at symbol " << i;
+    }
+}
