@@ -6,7 +6,7 @@
 using namespace priors;
 
 // Helper: check that two double vectors are element-wise close.
-static void expect_close(const std::vector<double>& a,
+[[maybe_unused]] static void expect_close(const std::vector<double>& a,
                          const std::vector<double>& b,
                          double tol = 1e-9) {
     ASSERT_EQ(a.size(), b.size());
