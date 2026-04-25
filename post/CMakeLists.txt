@@ -97,3 +97,13 @@ target_include_directories(test_vbyte PRIVATE
     2022-06-elias-gamma-wire-formats
     2022-11-elias-delta-omega-wire-formats)
 add_test(NAME test_vbyte COMMAND test_vbyte)
+
+# =============================================================================
+# Huffman Coding (post 9, 2024-08-04)
+# =============================================================================
+add_executable(test_huffman 2024-08-huffman-wire-formats/test_huffman.cpp)
+target_link_libraries(test_huffman GTest::gtest_main)
+target_include_directories(test_huffman PRIVATE
+    2024-08-huffman-wire-formats
+    2022-01-priors-wire-formats)
+add_test(NAME test_huffman COMMAND test_huffman)
