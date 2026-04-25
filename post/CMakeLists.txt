@@ -118,3 +118,11 @@ target_include_directories(test_arithmetic_coding PRIVATE
     2025-01-arithmetic-coding-wire-formats
     2022-01-priors-wire-formats)
 add_test(NAME test_arithmetic_coding COMMAND test_arithmetic_coding)
+
+# =============================================================================
+# Succinct Bit Vectors and Rank/Select (post 11, 2025-06-22)
+# =============================================================================
+add_executable(test_succinct_bv 2025-06-succinct-wire-formats/test_succinct.cpp)
+target_link_libraries(test_succinct_bv GTest::gtest_main)
+target_include_directories(test_succinct_bv PRIVATE 2025-06-succinct-wire-formats)
+add_test(NAME test_succinct_bv COMMAND test_succinct_bv)
