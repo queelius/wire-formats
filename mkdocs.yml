@@ -49,3 +49,5 @@ nav:
   - "Succinct Data Structures":
       - "Succinct Bit Vectors and Rank/Select": "post/2025-06-succinct-wire-formats/index.md"
       - "RoaringBitmap": "post/2025-12-roaring-bitmap-wire-formats/index.md"
+  - "Synthesis":
+      - "Codecs as Structure": "post/2026-05-synthesis-wire-formats/index.md"
