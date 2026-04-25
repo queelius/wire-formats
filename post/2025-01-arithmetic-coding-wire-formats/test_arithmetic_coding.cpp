@@ -156,3 +156,55 @@ TEST(ArithmeticDecoderTest, DecodeSymbolAfterEncodeRoundTrips) {
         EXPECT_EQ(got, expected_sym);
     }
 }
+
+// Helper: encode a single symbol from a two-symbol source, then decode and
+// verify. The two-symbol table has sym0=[0,sep) and sym1=[sep,total).
+// When encoding sym0 we call encode_symbol(0, sep, total); sep=hi_cum.
+// When encoding sym1 we call encode_symbol(sep, total, total); sep=lo_cum.
+static std::size_t encode_decode_single(std::uint32_t lo_cum,
+                                        std::uint32_t hi_cum,
+                                        std::uint32_t total,
+                                        std::size_t   /*expected_sym*/) {
+    BitWriter bw;
+    {
+        ArithmeticEncoder enc(bw);
+        enc.encode_symbol(lo_cum, hi_cum, total);
+        enc.finish();
+    }
+    bw.flush();
+    BitReader br(bw.bytes());
+    ArithmeticDecoder dec(br);
+
+    // sep is the boundary between sym0 and sym1 in the 2-symbol table.
+    // If lo_cum == 0 we are encoding sym0 whose upper bound is hi_cum.
+    // Otherwise we are encoding sym1 whose lower bound is lo_cum.
+    std::uint32_t sep = (lo_cum == 0) ? hi_cum : lo_cum;
+
+    auto get_freq = [=](std::uint32_t scaled) -> std::size_t {
+        return (scaled >= sep) ? 1u : 0u;
+    };
+    auto cum_range = [=](std::size_t sym)
+        -> std::pair<std::uint32_t, std::uint32_t> {
+        if (sym == 0) return {0, sep};
+        return {sep, total};
+    };
+    return dec.decode_symbol(get_freq, cum_range, total);
+}
+
+// Equiprobable (50/50)
+TEST(RoundTripTest, SingleSymbolEquiprobable) {
+    EXPECT_EQ(encode_decode_single(0, 1, 2, 0u), 0u);
+    EXPECT_EQ(encode_decode_single(1, 2, 2, 1u), 1u);
+}
+
+// Skewed 90/10
+TEST(RoundTripTest, SingleSymbolSkewed90) {
+    EXPECT_EQ(encode_decode_single(0, 9, 10, 0u), 0u);
+    EXPECT_EQ(encode_decode_single(9, 10, 10, 1u), 1u);
+}
+
+// Skewed 99/1
+TEST(RoundTripTest, SingleSymbolSkewed99) {
+    EXPECT_EQ(encode_decode_single(0, 99, 100, 0u), 0u);
+    EXPECT_EQ(encode_decode_single(99, 100, 100, 1u), 1u);
+}
