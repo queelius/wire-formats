@@ -99,4 +99,84 @@ public:
     }
 };
 
+// ---- RunContainer -----------------------------------------------------------
+//
+// Stores consecutive-integer runs as (start, length-1) pairs, sorted by start.
+// Run (s, l) covers integers s through s+l inclusive (l+1 values).
+//
+// Optimal when a chunk has many long runs: space = 4 * num_runs bytes.
+// Example: integers 0-999 stored as one run (0, 999) = 4 bytes vs 2000 bytes
+// as an array or 8192 bytes as a bitmap.
+//
+// add: inserts a value, extending or merging runs as needed. Amortized O(runs).
+// contains: linear scan; replace with binary search for production use.
+// cardinality: sums (length+1) for each run.
+
+class RunContainer {
+    // Run: integers in [start, start + length] (inclusive on both ends).
+    std::vector<std::pair<uint16_t, uint16_t>> runs_;  // (start, length-1), sorted.
+
+public:
+    RunContainer() = default;
+
+    void add(uint16_t v) {
+        // Find the first run whose start >= v (lower_bound with < comparator).
+        auto it = std::lower_bound(runs_.begin(), runs_.end(),
+                                   std::pair<uint16_t, uint16_t>{v, 0u},
+                                   [](const auto& a, const auto& b) {
+                                       return a.first < b.first;
+                                   });
+
+        // Check if v falls within the run at 'it' itself (it->first == v means covered).
+        if (it != runs_.end() && it->first == v) return;  // v is the start of run 'it'.
+
+        // Check if v is already in the run immediately before it.
+        if (it != runs_.begin()) {
+            auto prev = std::prev(it);
+            uint16_t end = prev->first + prev->second;  // Last value in prev run.
+            if (v <= end) return;                        // Already covered.
+            if (v == static_cast<uint16_t>(end + 1)) {  // Extends prev run.
+                ++prev->second;
+                // Check if prev now touches 'it'.
+                if (it != runs_.end() && static_cast<uint16_t>(prev->first + prev->second + 1) == it->first) {
+                    prev->second += it->second + 1;
+                    runs_.erase(it);
+                }
+                return;
+            }
+        }
+
+        // Check if v == it->first - 1 (prepend to 'it' run).
+        if (it != runs_.end() && it->first > 0 && v == static_cast<uint16_t>(it->first - 1)) {
+            --it->first;
+            ++it->second;
+            return;
+        }
+
+        // v is isolated: insert a new run of length 1 (length-1 = 0).
+        runs_.insert(it, {v, uint16_t{0}});
+    }
+
+    [[nodiscard]] bool contains(uint16_t v) const noexcept {
+        for (const auto& [start, len] : runs_) {
+            if (v >= start && v <= static_cast<uint16_t>(start + len)) return true;
+            if (start > v) break;
+        }
+        return false;
+    }
+
+    [[nodiscard]] std::size_t cardinality() const noexcept {
+        std::size_t total = 0;
+        for (const auto& [start, len] : runs_) total += static_cast<std::size_t>(len) + 1;
+        return total;
+    }
+
+    // Number of runs (for testing).
+    [[nodiscard]] std::size_t num_runs() const noexcept { return runs_.size(); }
+
+    [[nodiscard]] const std::vector<std::pair<uint16_t, uint16_t>>& run_list() const noexcept {
+        return runs_;
+    }
+};
+
 }  // namespace roaring

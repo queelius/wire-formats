@@ -96,3 +96,63 @@ TEST(BitmapContainerTest, WordBoundaryBits) {
     EXPECT_FALSE(c.contains(62));
     EXPECT_FALSE(c.contains(65));
 }
+
+// ---- RunContainer tests -----------------------------------------------------
+
+TEST(RunContainerTest, EmptyOnConstruct) {
+    RunContainer c;
+    EXPECT_EQ(c.cardinality(), 0u);
+    EXPECT_FALSE(c.contains(0));
+}
+
+TEST(RunContainerTest, SingleElement) {
+    RunContainer c;
+    c.add(42);
+    EXPECT_EQ(c.cardinality(), 1u);
+    EXPECT_TRUE(c.contains(42));
+    EXPECT_FALSE(c.contains(41));
+    EXPECT_FALSE(c.contains(43));
+}
+
+TEST(RunContainerTest, ConsecutiveAddsMergeRun) {
+    RunContainer c;
+    c.add(10);
+    c.add(11);
+    c.add(12);
+    EXPECT_EQ(c.cardinality(), 3u);
+    EXPECT_EQ(c.num_runs(), 1u);  // All merged into one run [10,12].
+    EXPECT_TRUE(c.contains(10));
+    EXPECT_TRUE(c.contains(11));
+    EXPECT_TRUE(c.contains(12));
+    EXPECT_FALSE(c.contains(9));
+    EXPECT_FALSE(c.contains(13));
+}
+
+TEST(RunContainerTest, NonConsecutiveAddsTwoRuns) {
+    RunContainer c;
+    c.add(5);
+    c.add(6);
+    c.add(10);
+    c.add(11);
+    EXPECT_EQ(c.cardinality(), 4u);
+    EXPECT_EQ(c.num_runs(), 2u);
+}
+
+TEST(RunContainerTest, AddAtBoundaryExtendsPriorRun) {
+    RunContainer c;
+    c.add(100);
+    c.add(101);
+    c.add(102);
+    c.add(103);  // Should extend [100,102] to [100,103].
+    EXPECT_EQ(c.num_runs(), 1u);
+    EXPECT_EQ(c.cardinality(), 4u);
+}
+
+TEST(RunContainerTest, DuplicateAddNoChange) {
+    RunContainer c;
+    c.add(7);
+    c.add(8);
+    c.add(7);  // Duplicate.
+    EXPECT_EQ(c.cardinality(), 2u);
+    EXPECT_EQ(c.num_runs(), 1u);
+}
