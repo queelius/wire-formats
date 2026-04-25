@@ -55,4 +55,52 @@ struct Unary {
     }
 };
 
+// ---- Gamma -- Elias gamma code (Peter Elias, 1975) -------------------------
+//
+// Encodes positive integer n >= 1:
+//   1. Write floor(log2(n)) zero bits.
+//   2. Write a '1' bit.
+//   3. Write the binary representation of n minus its leading 1 bit (MSB first),
+//      using floor(log2(n)) bits.
+//
+// Examples: 1->"1", 2->"010", 3->"011", 4->"00100", 5->"00101",
+//           6->"00110", 7->"00111", 8->"0001000".
+//
+// Length: 2*floor(log2(n)) + 1 bits.
+// Kraft sum: sum_{k=0}^{inf} 2^k * 2^{-(2k+1)} = sum_{k=0}^{inf} 2^{-(k+1)} = 1.
+// Implied prior: p_n = 2^{-(2*floor(log2(n))+1)}, approximately 1/(2n^2).
+// Optimal source: power-law with exponent ~2 (e.g., word frequencies).
+
+struct Gamma {
+    using value_type = std::uint64_t;
+
+    template<BitSink S>
+    static void encode(value_type n, S& sink) {
+        assert(n >= 1 && "Gamma is undefined for n = 0");
+        // k = floor(log2(n)): number of leading zeros and number of trailing bits.
+        std::size_t k = std::bit_width(n) - 1;
+        // Write k zeros.
+        for (std::size_t i = 0; i < k; ++i) sink.write(false);
+        // Write the one separator bit.
+        sink.write(true);
+        // Write the k trailing bits of n (after the implicit leading 1), MSB first.
+        for (std::size_t i = k; i > 0; --i) {
+            sink.write(((n >> (i - 1)) & 1u) != 0u);
+        }
+    }
+
+    template<BitSource S>
+    static value_type decode(S& source) {
+        // Count leading zeros to get k.
+        std::size_t k = 0;
+        while (!source.read()) ++k;
+        // Read k more bits to reconstruct n (starting from the implicit leading 1).
+        value_type n = 1;
+        for (std::size_t i = 0; i < k; ++i) {
+            n = (n << 1) | (source.read() ? value_type{1} : value_type{0});
+        }
+        return n;
+    }
+};
+
 }  // namespace unary_gamma
