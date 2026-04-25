@@ -6,6 +6,20 @@
 
 using namespace huffman;
 
+// Minimal BitSink + BitSource backed by a std::vector<bool>.
+// Used only in round-trip tests.
+struct BitVector {
+    std::vector<bool> bits;
+    std::size_t read_pos = 0;
+
+    void write(bool b) { bits.push_back(b); }
+    bool read() {
+        assert(read_pos < bits.size());
+        return bits[read_pos++];
+    }
+    void reset() { read_pos = 0; }
+};
+
 // Helper: count the total number of leaves reachable from a node.
 static int count_leaves(const Node* node) {
     if (!node) return 0;
@@ -144,4 +158,60 @@ TEST(HuffmanTest, SingleSymbolCodebook) {
     auto cb = tree_to_codebook(root.get());
     ASSERT_EQ(cb.size(), 1u);
     EXPECT_FALSE(cb.at(0).empty());
+}
+
+// Round-trip single symbol: encode then decode must recover the symbol.
+TEST(HuffmanTest, RoundTripSingleSymbol) {
+    std::vector<double> freqs = {1.0};
+    auto root   = build_huffman_tree(freqs);
+    auto cb     = tree_to_codebook(root.get());
+    BitVector bv;
+    encode(0, cb, bv);
+    bv.reset();
+    int sym = decode(root.get(), bv);
+    EXPECT_EQ(sym, 0);
+}
+
+// Round-trip for each symbol of a 4-symbol distribution.
+TEST(HuffmanTest, RoundTripFourSymbols) {
+    std::vector<double> freqs = {0.4, 0.3, 0.2, 0.1};
+    auto root = build_huffman_tree(freqs);
+    auto cb   = tree_to_codebook(root.get());
+    for (int s = 0; s < 4; ++s) {
+        BitVector bv;
+        encode(s, cb, bv);
+        bv.reset();
+        int decoded = decode(root.get(), bv);
+        EXPECT_EQ(decoded, s) << "symbol " << s << " did not round-trip";
+    }
+}
+
+// Round-trip for a longer sequence of symbols.
+// Encodes [0, 1, 2, 3, 0, 2, 1, 3] and decodes them back in order.
+TEST(HuffmanTest, RoundTripSequence) {
+    std::vector<double> freqs = {0.4, 0.3, 0.2, 0.1};
+    auto root = build_huffman_tree(freqs);
+    auto cb   = tree_to_codebook(root.get());
+    std::vector<int> input = {0, 1, 2, 3, 0, 2, 1, 3};
+    BitVector bv;
+    for (int s : input) encode(s, cb, bv);
+    bv.reset();
+    for (int expected : input) {
+        int got = decode(root.get(), bv);
+        EXPECT_EQ(got, expected);
+    }
+}
+
+// Round-trip: uniform binary source (2 symbols).
+TEST(HuffmanTest, RoundTripBinaryUniform) {
+    std::vector<double> freqs = {0.5, 0.5};
+    auto root = build_huffman_tree(freqs);
+    auto cb   = tree_to_codebook(root.get());
+    std::vector<int> input = {0, 1, 0, 0, 1, 1, 0, 1};
+    BitVector bv;
+    for (int s : input) encode(s, cb, bv);
+    bv.reset();
+    for (int expected : input) {
+        EXPECT_EQ(decode(root.get(), bv), expected);
+    }
 }

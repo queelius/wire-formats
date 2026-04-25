@@ -139,4 +139,44 @@ inline std::map<int, std::string> tree_to_codebook(const Node* root,
     return result;
 }
 
+// ---- encode -- write a symbol's Huffman codeword into a BitSink -------------
+//
+// Looks up the symbol in the codebook and writes each bit ('0' -> false,
+// '1' -> true) into sink. Asserts that the symbol is present in the codebook.
+
+template<BitSink S>
+inline void encode(int symbol,
+                   const std::map<int, std::string>& codebook,
+                   S& sink) {
+    auto it = codebook.find(symbol);
+    assert(it != codebook.end() && "encode: symbol not in codebook");
+    for (char c : it->second) {
+        sink.write(c == '1');
+    }
+}
+
+// ---- decode -- walk the Huffman tree and return the symbol at the leaf -------
+//
+// Reads bits from source, going left on 0 and right on 1, until a leaf is
+// reached. Returns the leaf's symbol index.
+// Asserts that the tree is well-formed (every internal node has two children).
+
+template<BitSource S>
+inline int decode(const Node* root, S& source) {
+    assert(root != nullptr && "decode called with null root");
+    const Node* cur = root;
+    while (cur->symbol < 0) {
+        // Internal node: consume one bit.
+        bool bit = source.read();
+        if (bit) {
+            assert(cur->right && "decode: null right child on internal node");
+            cur = cur->right.get();
+        } else {
+            assert(cur->left && "decode: null left child on internal node");
+            cur = cur->left.get();
+        }
+    }
+    return cur->symbol;
+}
+
 }  // namespace huffman
