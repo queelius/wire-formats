@@ -244,3 +244,20 @@ TEST(SuccinctBVTest, Select1RankInverse) {
         EXPECT_EQ(bv.rank1(pos + 1), j + 1) << "j=" << j;
     }
 }
+
+// index_bytes() returns the total bytes used by superblock_ranks_ and block_ranks_.
+// bit_bytes() returns ceil(n / 8) bytes for the bit vector itself.
+// The index must be smaller than the bit vector.
+TEST(SuccinctBVTest, AuxIndexSmallerThanBitVector) {
+    const std::size_t N = 10000;
+    std::vector<bool> bits(N, false);
+    for (std::size_t i = 0; i < N; i += 3) bits[i] = true;
+    SuccinctBitVector bv(bits);
+
+    std::size_t bv_bytes    = bv.bit_bytes();     // ceil(N/8).
+    std::size_t idx_bytes   = bv.index_bytes();   // superblock + block arrays.
+
+    EXPECT_LT(idx_bytes, bv_bytes)
+        << "Index (" << idx_bytes << " B) must be smaller than bit vector ("
+        << bv_bytes << " B) for n=" << N;
+}

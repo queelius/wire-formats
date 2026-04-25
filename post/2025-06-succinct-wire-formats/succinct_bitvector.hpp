@@ -164,6 +164,17 @@ public:
         return blk * BLOCK_BITS + final_low;
     }
 
+    // Space occupied by the raw bit array (bytes).
+    [[nodiscard]] std::size_t bit_bytes() const noexcept {
+        return bits_.size() * sizeof(uint64_t);
+    }
+
+    // Space occupied by the auxiliary index (superblock + block arrays, bytes).
+    [[nodiscard]] std::size_t index_bytes() const noexcept {
+        return superblock_ranks_.size() * sizeof(uint64_t)
+             + block_ranks_.size()      * sizeof(uint16_t);
+    }
+
     // Expose the naive O(n/64) rank for testing and index-correctness verification.
     [[nodiscard]] std::size_t rank1_naive(std::size_t i) const noexcept {
         // Same logic as Task 5's rank1 but kept separately so rank1 can be
