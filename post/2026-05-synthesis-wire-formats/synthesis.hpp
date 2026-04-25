@@ -153,4 +153,54 @@ inline std::size_t length_for(std::string_view code_name, std::uint64_t n)
     return 0;
 }
 
+// ---- redundancy_for -- expected codeword length minus entropy ---------------
+//
+// Computes the redundancy of a named code on a given empirical distribution:
+//   R = sum_v dist(v) * length_for(code, v) - entropy_of(dist)
+//
+// Redundancy is always >= 0 (Shannon's source-coding theorem). A lower value
+// means the code's implied prior is a closer match to the actual source.
+
+inline double redundancy_for(std::string_view code_name,
+                             const std::map<std::uint64_t, double>& dist)
+{
+    double expected_len = 0.0;
+    for (const auto& [v, p] : dist) {
+        expected_len += p * static_cast<double>(length_for(code_name, v));
+    }
+    return expected_len - entropy_of(dist);
+}
+
+// ---- recommend_code -- select the universal code with minimum redundancy ----
+//
+// Given a sample of positive integers, estimates the empirical distribution,
+// computes the redundancy of each candidate universal code, and returns the
+// name of the code with the smallest redundancy.
+//
+// Candidates: Unary, Gamma, Delta, Omega, Fibonacci, VByte.
+// Huffman and Arithmetic are not candidates because they require the
+// distribution as input rather than a sample, and they are not universal codes
+// in the same sense.
+//
+// The function makes the code-selection process concrete: there is no "best
+// code in general," but there is a best code given a sample.
+
+inline std::string recommend_code(const std::vector<std::uint64_t>& sample)
+{
+    auto dist = empirical_distribution(sample);
+    constexpr std::string_view candidates[] = {
+        "Unary", "Gamma", "Delta", "Omega", "Fibonacci", "VByte"
+    };
+    double best_redundancy = std::numeric_limits<double>::infinity();
+    std::string best_code;
+    for (std::string_view candidate : candidates) {
+        double r = redundancy_for(candidate, dist);
+        if (r < best_redundancy) {
+            best_redundancy = r;
+            best_code = std::string(candidate);
+        }
+    }
+    return best_code;
+}
+
 }  // namespace synthesis
