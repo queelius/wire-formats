@@ -61,5 +61,6 @@ add_executable(test_elias_delta_omega
     2022-11-elias-delta-omega-wire-formats/test_elias_delta_omega.cpp)
 target_link_libraries(test_elias_delta_omega GTest::gtest_main)
 target_include_directories(test_elias_delta_omega PRIVATE
-    2022-11-elias-delta-omega-wire-formats)
+    2022-11-elias-delta-omega-wire-formats
+    2022-01-priors-wire-formats)
 add_test(NAME test_elias_delta_omega COMMAND test_elias_delta_omega)
