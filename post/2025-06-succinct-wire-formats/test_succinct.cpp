@@ -163,3 +163,28 @@ TEST(SuccinctBVTest, BlockRankMatchesNaive) {
             << "block=" << blk;
     }
 }
+
+// For a large bit vector, the indexed rank1 must agree with naive at every position.
+TEST(SuccinctBVTest, IndexedRank1AgreesWithNaive) {
+    const std::size_t N = 4096 * 2 + 300;  // Two full superblocks + tail.
+    std::vector<bool> bits(N, false);
+    for (std::size_t i = 0; i < N; i += 13) bits[i] = true;
+    SuccinctBitVector bv(bits);
+    // Sample 200 random-ish positions and compare indexed to naive.
+    for (std::size_t k = 0; k <= 200; ++k) {
+        std::size_t pos = (k * 43) % (N + 1);  // Pseudo-random positions in [0, N].
+        EXPECT_EQ(bv.rank1(pos), bv.rank1_naive(pos)) << "pos=" << pos;
+    }
+}
+
+// Specifically test rank at superblock and block boundaries.
+TEST(SuccinctBVTest, IndexedRank1AtSuperblockBoundaries) {
+    const std::size_t N = 4096 * 3;
+    std::vector<bool> bits(N, false);
+    for (std::size_t i = 0; i < N; i += 5) bits[i] = true;
+    SuccinctBitVector bv(bits);
+    EXPECT_EQ(bv.rank1(0),    bv.rank1_naive(0));
+    EXPECT_EQ(bv.rank1(4096), bv.rank1_naive(4096));
+    EXPECT_EQ(bv.rank1(8192), bv.rank1_naive(8192));
+    EXPECT_EQ(bv.rank1(N),    bv.rank1_naive(N));
+}

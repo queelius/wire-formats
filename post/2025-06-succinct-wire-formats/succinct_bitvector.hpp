@@ -57,23 +57,52 @@ public:
         return (bits_[i / 64] >> (i % 64)) & uint64_t{1};
     }
 
-    // rank1(i): count of 1-bits in positions [0, i).
-    // This O(n/64) version scans word-by-word; it is correct but not constant-time.
-    // Replaced by the indexed version in Task 7.
+    // rank1(i): count of 1-bits in [0, i). O(1) using superblock + block + popcount.
+    //
+    // Algorithm:
+    //   1. Find superblock:  sb = i / SUPERBLOCK_BITS.
+    //   2. Find block:       blk = i / BLOCK_BITS.
+    //   3. Find within-word: w_off = i % BLOCK_BITS.
+    //   4. Return superblock_ranks_[sb]
+    //            + block_ranks_[blk]
+    //            + popcount(bits_[blk] & ((1<<w_off)-1)).
+    //
+    // Three array lookups and one popcount: all constant-time operations.
+    // Special case: when w_off == 0 and blk == bits_.size() (i.e., i == n_
+    // and n_ is a multiple of BLOCK_BITS), we clamp blk to the last valid
+    // block and add its full popcount instead of accessing out-of-range memory.
     [[nodiscard]] std::size_t rank1(std::size_t i) const noexcept {
         if (i == 0) return 0;
-        std::size_t word_idx    = i / BLOCK_BITS;   // Full words before i.
-        std::size_t within_word = i % BLOCK_BITS;   // Remaining bits.
-        std::size_t count = 0;
-        for (std::size_t w = 0; w < word_idx; ++w) {
-            count += popcount_word(bits_[w]);
+        std::size_t sb      = i / SUPERBLOCK_BITS;
+        std::size_t blk     = i / BLOCK_BITS;
+        std::size_t w_off   = i % BLOCK_BITS;
+
+        // Guard: when i == n_ and n_ is an exact multiple of BLOCK_BITS,
+        // blk == bits_.size() which is out of range.  In that case, the
+        // answer is the absolute cumulative rank up to the start of superblock
+        // sb, plus the superblock-relative cumulative rank stored for blk-1,
+        // plus the full popcount of the last word.
+        if (blk >= bits_.size()) {
+            // Sum: superblock rank + block rank of last block + its popcount.
+            if (bits_.empty()) return 0;
+            std::size_t last_blk = bits_.size() - 1;
+            std::size_t last_sb  = last_blk / BLOCKS_PER_SB;
+            std::size_t result   = superblock_ranks_[last_sb];
+            result += block_ranks_[last_blk];
+            result += popcount_word(bits_[last_blk]);
+            return result;
         }
-        if (within_word > 0) {
-            // Mask off bits at position within_word and beyond (keep bits 0..within_word-1).
-            uint64_t mask = (uint64_t{1} << within_word) - uint64_t{1};
-            count += popcount_word(bits_[word_idx] & mask);
+
+        // Absolute rank up to this superblock's start.
+        std::size_t result  = superblock_ranks_[sb];
+        // Add block-relative rank (within the superblock, before this block).
+        result += block_ranks_[blk];
+        // Add count of set bits in bits_[blk] strictly before bit w_off.
+        if (w_off > 0) {
+            uint64_t mask = (uint64_t{1} << w_off) - uint64_t{1};
+            result += popcount_word(bits_[blk] & mask);
         }
-        return count;
+        return result;
     }
 
     // Expose the naive O(n/64) rank for testing and index-correctness verification.
