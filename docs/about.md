@@ -17,8 +17,8 @@ The series is planned for 13 posts spanning 2020 through 2026, roughly 2 posts p
 | 4 | Unary and Elias Gamma | 2022-06-19 | Published |
 | 5 | Elias Delta and Omega | 2022-11-13 | Published |
 | 6 | Fibonacci Coding | 2023-04-23 | Published |
-| 7 | Rice / Golomb | 2023-02-19 | Forthcoming |
-| 8 | VByte / Varint | 2023-08-14 | Forthcoming |
+| 7 | Rice / Golomb | 2023-09-17 | Published |
+| 8 | VByte / Varint | 2024-02-25 | Published |
 | 9 | Huffman | 2024-03-25 | Forthcoming |
 | 10 | Arithmetic Coding | 2024-09-04 | Forthcoming |
 | 11 | Succinct Bit Vectors and Rank/Select | 2025-03-09 | Forthcoming |
