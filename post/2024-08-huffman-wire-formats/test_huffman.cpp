@@ -389,3 +389,48 @@ TEST(HuffmanTest, RoundTripLongSequence) {
         EXPECT_EQ(decode(root.get(), bv), expected);
     }
 }
+
+// Two-pass round-trip: learn frequencies from a training sequence, then
+// build Huffman, encode the same sequence, decode and verify.
+TEST(HuffmanTest, RoundTripLearnedDistribution) {
+    // Training sequence: 5-symbol alphabet with skewed frequency.
+    std::vector<int> train = {
+        0, 0, 0, 1, 0, 0, 2, 0, 1, 0,
+        0, 3, 0, 0, 1, 0, 0, 4, 0, 0,
+        1, 0, 0, 0, 2, 0, 1, 0, 0, 0
+    };
+    const std::size_t alphabet_size = 5;
+
+    // Count frequencies.
+    std::vector<double> freqs(alphabet_size, 0.0);
+    for (int s : train) {
+        assert(s >= 0 && static_cast<std::size_t>(s) < alphabet_size);
+        freqs[static_cast<std::size_t>(s)] += 1.0;
+    }
+    // Normalize.
+    double total = 0.0;
+    for (double f : freqs) total += f;
+    for (double& f : freqs) f /= total;
+
+    // Build codec.
+    auto root = build_huffman_tree(freqs);
+    auto cb   = tree_to_codebook(root.get());
+
+    // Encode and decode.
+    BitVector bv;
+    for (int s : train) encode(s, cb, bv);
+    bv.reset();
+    std::vector<int> decoded;
+    for (std::size_t i = 0; i < train.size(); ++i) {
+        decoded.push_back(decode(root.get(), bv));
+    }
+
+    EXPECT_EQ(decoded, train);
+
+    // Verify expected length is within 1 bit of entropy.
+    auto lens = codebook_lengths(cb, alphabet_size);
+    double H  = priors::entropy(freqs);
+    double L  = priors::expected_length(freqs, lens);
+    EXPECT_GE(L, H - 1e-9);
+    EXPECT_LE(L, H + 1.0 + 1e-9);
+}
