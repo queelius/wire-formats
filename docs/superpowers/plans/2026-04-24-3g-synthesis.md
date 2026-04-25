@@ -52,16 +52,16 @@ Expected: at minimum these twelve directories (plus CMakeLists.txt and build/):
 ```
 2020-03-kraft-wire-formats
 2020-09-mcmillan-wire-formats
-2021-03-priors-wire-formats
-2021-08-elias-gamma-wire-formats
-2022-02-elias-delta-omega-wire-formats
-2022-07-fibonacci-wire-formats
-2023-02-rice-golomb-wire-formats
-2023-08-vbyte-wire-formats
-2024-03-huffman-wire-formats
-2024-09-arithmetic-coding-wire-formats
-2025-03-succinct-wire-formats
-2025-08-roaring-bitmap-wire-formats
+2022-01-priors-wire-formats
+2022-06-elias-gamma-wire-formats
+2022-11-elias-delta-omega-wire-formats
+2023-04-fibonacci-wire-formats
+2023-09-rice-golomb-wire-formats
+2024-02-vbyte-wire-formats
+2024-08-huffman-wire-formats
+2025-01-arithmetic-coding-wire-formats
+2025-06-succinct-wire-formats
+2025-12-roaring-bitmap-wire-formats
 ```
 
 If any are missing, do NOT proceed with the cross-reference links for those posts (use plain text "forthcoming" for any not-yet-shipped post). Record which are present and which are absent.
@@ -174,11 +174,11 @@ add_executable(test_synthesis 2026-05-synthesis-wire-formats/test_synthesis.cpp)
 target_link_libraries(test_synthesis GTest::gtest_main)
 target_include_directories(test_synthesis PRIVATE
     2026-05-synthesis-wire-formats
-    2021-03-priors-wire-formats)
+    2022-01-priors-wire-formats)
 add_test(NAME test_synthesis COMMAND test_synthesis)
 ```
 
-Note: the `target_include_directories` includes `2021-03-priors-wire-formats` so that `synthesis.hpp` can include `priors.hpp` from post 3 (for `entropy_of` and related helpers). If `2021-03-priors-wire-formats` does not yet exist (see Task 1 Step 3), omit that line and implement a local `entropy_of` inside `synthesis.hpp` instead (see the implementation note in Task 5).
+Note: the `target_include_directories` includes `2022-01-priors-wire-formats` so that `synthesis.hpp` can include `priors.hpp` from post 3 (for `entropy_of` and related helpers). If `2022-01-priors-wire-formats` does not yet exist (see Task 1 Step 3), omit that line and implement a local `entropy_of` inside `synthesis.hpp` instead (see the implementation note in Task 5).
 
 - [ ] **Step 3: Build and verify placeholder test passes**
 
@@ -792,16 +792,16 @@ Use these exact back-links in section G (adjust slug to match actual shipped dir
 - Posts in this series (in order):
   [Kraft's Inequality](/post/2020-03-kraft-wire-formats/),
   [McMillan's Converse](/post/2020-09-mcmillan-wire-formats/),
-  [Universal Codes as Priors](/post/2021-03-priors-wire-formats/),
-  [Unary and Elias Gamma](/post/2021-08-elias-gamma-wire-formats/),
-  [Elias Delta and Omega](/post/2022-02-elias-delta-omega-wire-formats/),
-  [Fibonacci Coding](/post/2022-07-fibonacci-wire-formats/),
-  [Rice / Golomb](/post/2023-02-rice-golomb-wire-formats/),
-  [VByte / Varint](/post/2023-08-vbyte-wire-formats/),
-  [Huffman](/post/2024-03-huffman-wire-formats/),
-  [Arithmetic Coding](/post/2024-09-arithmetic-coding-wire-formats/),
-  [Succinct Bit Vectors](/post/2025-03-succinct-wire-formats/),
-  [RoaringBitmap](/post/2025-08-roaring-bitmap-wire-formats/).
+  [Universal Codes as Priors](/post/2022-01-priors-wire-formats/),
+  [Unary and Elias Gamma](/post/2022-06-elias-gamma-wire-formats/),
+  [Elias Delta and Omega](/post/2022-11-elias-delta-omega-wire-formats/),
+  [Fibonacci Coding](/post/2023-04-fibonacci-wire-formats/),
+  [Rice / Golomb](/post/2023-09-rice-golomb-wire-formats/),
+  [VByte / Varint](/post/2024-02-vbyte-wire-formats/),
+  [Huffman](/post/2024-08-huffman-wire-formats/),
+  [Arithmetic Coding](/post/2025-01-arithmetic-coding-wire-formats/),
+  [Succinct Bit Vectors](/post/2025-06-succinct-wire-formats/),
+  [RoaringBitmap](/post/2025-12-roaring-bitmap-wire-formats/).
 - Cross-series: [Bits Follow Types](/post/2026-05-codecs-functors-stepanov/) and
   [When Lists Become Bits](/post/2026-05-prefix-free-stepanov/).
 - **PFC footnote:** The production implementation of all 12 codes (and several more)
@@ -893,18 +893,18 @@ nav:
       - "Kraft's Inequality": "post/2020-03-kraft-wire-formats/index.md"
       - "McMillan's Converse": "post/2020-09-mcmillan-wire-formats/index.md"
   - "Universal Codes":
-      - "Universal Codes as Priors": "post/2021-03-priors-wire-formats/index.md"
-      - "Unary and Elias Gamma": "post/2021-08-elias-gamma-wire-formats/index.md"
-      - "Elias Delta and Omega": "post/2022-02-elias-delta-omega-wire-formats/index.md"
-      - "Fibonacci Coding": "post/2022-07-fibonacci-wire-formats/index.md"
-      - "Rice / Golomb": "post/2023-02-rice-golomb-wire-formats/index.md"
-      - "VByte / Varint": "post/2023-08-vbyte-wire-formats/index.md"
+      - "Universal Codes as Priors": "post/2022-01-priors-wire-formats/index.md"
+      - "Unary and Elias Gamma": "post/2022-06-elias-gamma-wire-formats/index.md"
+      - "Elias Delta and Omega": "post/2022-11-elias-delta-omega-wire-formats/index.md"
+      - "Fibonacci Coding": "post/2023-04-fibonacci-wire-formats/index.md"
+      - "Rice / Golomb": "post/2023-09-rice-golomb-wire-formats/index.md"
+      - "VByte / Varint": "post/2024-02-vbyte-wire-formats/index.md"
   - "Entropy-Optimal":
-      - "Huffman": "post/2024-03-huffman-wire-formats/index.md"
-      - "Arithmetic Coding": "post/2024-09-arithmetic-coding-wire-formats/index.md"
+      - "Huffman": "post/2024-08-huffman-wire-formats/index.md"
+      - "Arithmetic Coding": "post/2025-01-arithmetic-coding-wire-formats/index.md"
   - "Succinct Data Structures":
-      - "Succinct Bit Vectors": "post/2025-03-succinct-wire-formats/index.md"
-      - "RoaringBitmap": "post/2025-08-roaring-bitmap-wire-formats/index.md"
+      - "Succinct Bit Vectors": "post/2025-06-succinct-wire-formats/index.md"
+      - "RoaringBitmap": "post/2025-12-roaring-bitmap-wire-formats/index.md"
   - "Synthesis":
       - "Codecs as Structure": "post/2026-05-synthesis-wire-formats/index.md"
 ```
@@ -1057,16 +1057,16 @@ Back-links (all live if all preceding posts exist):
 |---|---|
 | 1 | `/post/2020-03-kraft-wire-formats/` |
 | 2 | `/post/2020-09-mcmillan-wire-formats/` |
-| 3 | `/post/2021-03-priors-wire-formats/` |
-| 4 | `/post/2021-08-elias-gamma-wire-formats/` |
-| 5 | `/post/2022-02-elias-delta-omega-wire-formats/` |
-| 6 | `/post/2022-07-fibonacci-wire-formats/` |
-| 7 | `/post/2023-02-rice-golomb-wire-formats/` |
-| 8 | `/post/2023-08-vbyte-wire-formats/` |
-| 9 | `/post/2024-03-huffman-wire-formats/` |
-| 10 | `/post/2024-09-arithmetic-coding-wire-formats/` |
-| 11 | `/post/2025-03-succinct-wire-formats/` |
-| 12 | `/post/2025-08-roaring-bitmap-wire-formats/` |
+| 3 | `/post/2022-01-priors-wire-formats/` |
+| 4 | `/post/2022-06-elias-gamma-wire-formats/` |
+| 5 | `/post/2022-11-elias-delta-omega-wire-formats/` |
+| 6 | `/post/2023-04-fibonacci-wire-formats/` |
+| 7 | `/post/2023-09-rice-golomb-wire-formats/` |
+| 8 | `/post/2024-02-vbyte-wire-formats/` |
+| 9 | `/post/2024-08-huffman-wire-formats/` |
+| 10 | `/post/2025-01-arithmetic-coding-wire-formats/` |
+| 11 | `/post/2025-06-succinct-wire-formats/` |
+| 12 | `/post/2025-12-roaring-bitmap-wire-formats/` |
 
 Cross-series links:
 - [Bits Follow Types](/post/2026-05-codecs-functors-stepanov/)

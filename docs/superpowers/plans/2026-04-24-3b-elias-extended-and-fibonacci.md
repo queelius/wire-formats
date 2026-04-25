@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Ship posts 5 ("Elias Delta and Omega", 2022-02-13) and 6 ("Fibonacci Coding", 2022-07-17) of the Algebra over Wire Formats series, including TDD implementations of `elias_delta_omega.hpp` and `fibonacci.hpp`, full GoogleTest suites, prose drafts, and sync to metafunctor.com.
+**Goal:** Ship posts 5 ("Elias Delta and Omega", 2022-11-13) and 6 ("Fibonacci Coding", 2023-04-23) of the Algebra over Wire Formats series, including TDD implementations of `elias_delta_omega.hpp` and `fibonacci.hpp`, full GoogleTest suites, prose drafts, and sync to metafunctor.com.
 
-**Architecture:** Two new post directories under `post/` (`2022-02-elias-delta-omega-wire-formats/` and `2022-07-fibonacci-wire-formats/`), each with a header, a test file, and `index.md`. Post 5's `elias_delta_omega.hpp` defines `Gamma` (re-implemented locally for loose coupling), `Delta`, and `Omega` codecs in `namespace elias_delta_omega`; the delta and omega implementations follow the spec exactly. Post 6's `fibonacci.hpp` defines `to_zeckendorf` and the `Fibonacci` codec in `namespace fibonacci`. Both posts wire into the existing `post/CMakeLists.txt`, update `docs/about.md` and `mkdocs.yml`, and sync to metafunctor via the Makefile `sync` target.
+**Architecture:** Two new post directories under `post/` (`2022-11-elias-delta-omega-wire-formats/` and `2023-04-fibonacci-wire-formats/`), each with a header, a test file, and `index.md`. Post 5's `elias_delta_omega.hpp` defines `Gamma` (re-implemented locally for loose coupling), `Delta`, and `Omega` codecs in `namespace elias_delta_omega`; the delta and omega implementations follow the spec exactly. Post 6's `fibonacci.hpp` defines `to_zeckendorf` and the `Fibonacci` codec in `namespace fibonacci`. Both posts wire into the existing `post/CMakeLists.txt`, update `docs/about.md` and `mkdocs.yml`, and sync to metafunctor via the Makefile `sync` target.
 
 **Tech Stack:** C++23, GoogleTest v1.14.0 (already wired in `post/CMakeLists.txt`), mkdocs, soul plugin's banned-phrase hook.
 
@@ -30,11 +30,11 @@ Loose-coupling pattern: `elias_delta_omega.hpp` re-implements `Gamma` locally ra
 
 **Files:** read-only.
 
-- [ ] **Step 1: Verify dates 2022-02-13 and 2022-07-17 do not collide with existing metafunctor posts**
+- [ ] **Step 1: Verify dates 2022-11-13 and 2023-04-23 do not collide with existing metafunctor posts**
 
 ```bash
 grep -h "^date:" /home/spinoza/github/repos/metafunctor/content/post/*/index.md 2>/dev/null \
-  | grep -E "^date: 2022-02-13|^date: 2022-07-17" | sort -u
+  | grep -E "^date: 2022-11-13|^date: 2023-04-23" | sort -u
 ```
 
 Expected: empty output. If any dates collide, pick adjacent unused days and record the substitutes before proceeding.
@@ -60,23 +60,23 @@ Expected: the last `add_test` line belongs to `test_unary_gamma`. No commit for 
 ## Task 2: Scaffold post 5 directory and wire CMakeLists
 
 **Files:**
-- Create: `post/2022-02-elias-delta-omega-wire-formats/index.md`
-- Create: `post/2022-02-elias-delta-omega-wire-formats/elias_delta_omega.hpp`
-- Create: `post/2022-02-elias-delta-omega-wire-formats/test_elias_delta_omega.cpp`
+- Create: `post/2022-11-elias-delta-omega-wire-formats/index.md`
+- Create: `post/2022-11-elias-delta-omega-wire-formats/elias_delta_omega.hpp`
+- Create: `post/2022-11-elias-delta-omega-wire-formats/test_elias_delta_omega.cpp`
 - Modify: `post/CMakeLists.txt`
 
 - [ ] **Step 1: Create the post 5 directory and skeleton files**
 
 ```bash
-mkdir -p /home/spinoza/github/metafunctor-series/wire-formats/post/2022-02-elias-delta-omega-wire-formats
+mkdir -p /home/spinoza/github/metafunctor-series/wire-formats/post/2022-11-elias-delta-omega-wire-formats
 ```
 
-Create `post/2022-02-elias-delta-omega-wire-formats/index.md` with placeholder frontmatter:
+Create `post/2022-11-elias-delta-omega-wire-formats/index.md` with placeholder frontmatter:
 
 ```markdown
 ---
 title: "Elias Delta and Omega"
-date: 2022-02-13
+date: 2022-11-13
 draft: true
 tags:
 - C++
@@ -102,7 +102,7 @@ linked_project:
 (Draft in progress. See plan Task 7 for full prose.)
 ```
 
-Create `post/2022-02-elias-delta-omega-wire-formats/elias_delta_omega.hpp` with header guards only:
+Create `post/2022-11-elias-delta-omega-wire-formats/elias_delta_omega.hpp` with header guards only:
 
 ```cpp
 // elias_delta_omega.hpp
@@ -143,7 +143,7 @@ concept BitSource = requires(S& s) {
 }  // namespace elias_delta_omega
 ```
 
-Create `post/2022-02-elias-delta-omega-wire-formats/test_elias_delta_omega.cpp` with a placeholder:
+Create `post/2022-11-elias-delta-omega-wire-formats/test_elias_delta_omega.cpp` with a placeholder:
 
 ```cpp
 #include <gtest/gtest.h>
@@ -161,13 +161,13 @@ Append to `/home/spinoza/github/metafunctor-series/wire-formats/post/CMakeLists.
 ```cmake
 
 # =============================================================================
-# Elias Delta and Omega (post 5, 2022-02-13)
+# Elias Delta and Omega (post 5, 2022-11-13)
 # =============================================================================
 add_executable(test_elias_delta_omega
-    2022-02-elias-delta-omega-wire-formats/test_elias_delta_omega.cpp)
+    2022-11-elias-delta-omega-wire-formats/test_elias_delta_omega.cpp)
 target_link_libraries(test_elias_delta_omega GTest::gtest_main)
 target_include_directories(test_elias_delta_omega PRIVATE
-    2022-02-elias-delta-omega-wire-formats)
+    2022-11-elias-delta-omega-wire-formats)
 add_test(NAME test_elias_delta_omega COMMAND test_elias_delta_omega)
 ```
 
@@ -183,7 +183,7 @@ Expected: all previous tests pass plus the new `test_elias_delta_omega.Placehold
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2022-02-elias-delta-omega-wire-formats post/CMakeLists.txt
+git add post/2022-11-elias-delta-omega-wire-formats post/CMakeLists.txt
 git commit -m "scaffold(elias-delta-omega): add post 5 directory and CMake wiring"
 ```
 
@@ -192,8 +192,8 @@ git commit -m "scaffold(elias-delta-omega): add post 5 directory and CMake wirin
 ## Task 3: TDD -- implement `Gamma` (local re-implementation) and `Delta` codec
 
 **Files:**
-- Modify: `post/2022-02-elias-delta-omega-wire-formats/elias_delta_omega.hpp`
-- Modify: `post/2022-02-elias-delta-omega-wire-formats/test_elias_delta_omega.cpp`
+- Modify: `post/2022-11-elias-delta-omega-wire-formats/elias_delta_omega.hpp`
+- Modify: `post/2022-11-elias-delta-omega-wire-formats/test_elias_delta_omega.cpp`
 
 The spec requires Delta to call `Gamma::encode` internally. Gamma is re-implemented here verbatim from post 4 but inside `namespace elias_delta_omega` so this header stands alone.
 
@@ -444,8 +444,8 @@ Expected: all EliasDeltaOmegaTest cases up to this point pass (GammaLocalRoundTr
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2022-02-elias-delta-omega-wire-formats/elias_delta_omega.hpp \
-        post/2022-02-elias-delta-omega-wire-formats/test_elias_delta_omega.cpp
+git add post/2022-11-elias-delta-omega-wire-formats/elias_delta_omega.hpp \
+        post/2022-11-elias-delta-omega-wire-formats/test_elias_delta_omega.cpp
 git commit -m "feat(elias-delta-omega): implement Gamma (local) and Delta codecs (TDD)"
 ```
 
@@ -454,8 +454,8 @@ git commit -m "feat(elias-delta-omega): implement Gamma (local) and Delta codecs
 ## Task 4: TDD -- implement `Omega` codec
 
 **Files:**
-- Modify: `post/2022-02-elias-delta-omega-wire-formats/elias_delta_omega.hpp`
-- Modify: `post/2022-02-elias-delta-omega-wire-formats/test_elias_delta_omega.cpp`
+- Modify: `post/2022-11-elias-delta-omega-wire-formats/elias_delta_omega.hpp`
+- Modify: `post/2022-11-elias-delta-omega-wire-formats/test_elias_delta_omega.cpp`
 
 The Omega codec uses an iterative encoding with a stack. Encoding builds the stack bottom-up (largest value first); writing occurs in reverse (top of stack first). Decoding reads forward: each group of bits tells you how many bits to read in the next group, until a terminating 0 bit.
 
@@ -609,8 +609,8 @@ Expected: all EliasDeltaOmegaTest cases pass including OmegaRoundTrip, OmegaRoun
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2022-02-elias-delta-omega-wire-formats/elias_delta_omega.hpp \
-        post/2022-02-elias-delta-omega-wire-formats/test_elias_delta_omega.cpp
+git add post/2022-11-elias-delta-omega-wire-formats/elias_delta_omega.hpp \
+        post/2022-11-elias-delta-omega-wire-formats/test_elias_delta_omega.cpp
 git commit -m "feat(elias-delta-omega): implement Omega codec (TDD)"
 ```
 
@@ -619,7 +619,7 @@ git commit -m "feat(elias-delta-omega): implement Omega codec (TDD)"
 ## Task 5: TDD -- length-comparison table test and integration tests for post 5
 
 **Files:**
-- Modify: `post/2022-02-elias-delta-omega-wire-formats/test_elias_delta_omega.cpp`
+- Modify: `post/2022-11-elias-delta-omega-wire-formats/test_elias_delta_omega.cpp`
 - Modify: `post/CMakeLists.txt` (add priors include path)
 
 This task adds: (a) the spec's crossover table test verifying exact bit counts for key values of n, and (b) integration tests via the priors library confirming Delta's implied prior is heavier-tailed than Gamma's.
@@ -630,8 +630,8 @@ In `post/CMakeLists.txt`, update the `target_include_directories` line for `test
 
 ```cmake
 target_include_directories(test_elias_delta_omega PRIVATE
-    2022-02-elias-delta-omega-wire-formats
-    2021-03-priors-wire-formats)
+    2022-11-elias-delta-omega-wire-formats
+    2022-01-priors-wire-formats)
 ```
 
 - [ ] **Step 2: Append the table test and integration tests to test_elias_delta_omega.cpp**
@@ -678,7 +678,7 @@ TEST(EliasDeltaOmegaTest, LengthComparisonTable) {
 
 // ---- Integration tests using the priors library ----------------------------
 
-#include "../2021-03-priors-wire-formats/priors.hpp"
+#include "../2022-01-priors-wire-formats/priors.hpp"
 
 // Helper: build delta length vector for symbols 1..N.
 static std::vector<std::size_t> delta_lengths(std::size_t N) {
@@ -760,7 +760,7 @@ Expected: all EliasDeltaOmegaTest cases pass including the table test and integr
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2022-02-elias-delta-omega-wire-formats/test_elias_delta_omega.cpp \
+git add post/2022-11-elias-delta-omega-wire-formats/test_elias_delta_omega.cpp \
         post/CMakeLists.txt
 git commit -m "test(elias-delta-omega): add length-table test and priors integration tests"
 ```
@@ -806,13 +806,13 @@ No commit for this task (verification only).
 ## Task 7: Draft post 5 prose
 
 **Files:**
-- Modify: `post/2022-02-elias-delta-omega-wire-formats/index.md`
+- Modify: `post/2022-11-elias-delta-omega-wire-formats/index.md`
 
 Draft from the spec's sections A through G for Post 5. Target approximately 2000 words. No em-dashes.
 
 - [ ] **Step 1: Draft the prose**
 
-Replace the placeholder `(Draft in progress...)` line in `post/2022-02-elias-delta-omega-wire-formats/index.md` with the full article body. Use the spec's section-by-section outline:
+Replace the placeholder `(Draft in progress...)` line in `post/2022-11-elias-delta-omega-wire-formats/index.md` with the full article body. Use the spec's section-by-section outline:
 
 Section A ("Where Gamma Stops Being Good", ~200 words, no code): recap gamma's length as `2*log2(n) + 1` bits, note that the unary length prefix wastes half the bits for large n, motivate encoding the length in gamma instead.
 
@@ -827,8 +827,8 @@ Section E ("The Implied Prior Ladder", ~250 words): each recursion step shifts t
 Section F ("The Limit", ~200 words): Omega achieves O(log* n) length, the theoretical minimum for self-delimiting integer codes. Note that Omega is the theoretical endpoint; Delta is the practical choice (the constant overhead in Omega dominates for any realistic n).
 
 Section G ("Cross-references and footnote", ~120 words): per the spec.
-- Forward: link to [Fibonacci Coding](/post/2022-07-fibonacci-wire-formats/) (post 6, will exist after Task 13).
-- Back: [Unary and Elias Gamma](/post/2021-08-elias-gamma-wire-formats/) (post 4); [Universal Codes as Priors](/post/2021-03-priors-wire-formats/) (post 3).
+- Forward: link to [Fibonacci Coding](/post/2023-04-fibonacci-wire-formats/) (post 6, will exist after Task 13).
+- Back: [Unary and Elias Gamma](/post/2022-06-elias-gamma-wire-formats/) (post 4); [Universal Codes as Priors](/post/2022-01-priors-wire-formats/) (post 3).
 - Cross-series: both Stepanov bridge posts ([Bits Follow Types](/post/2026-05-codecs-functors-stepanov/) and [When Lists Become Bits](/post/2026-05-prefix-free-stepanov/)).
 - Footnote: PFC's `include/pfc/codecs.hpp` has `EliasDelta` and `EliasOmega`.
 
@@ -837,7 +837,7 @@ Set `draft: false` when satisfied.
 - [ ] **Step 2: Soul check (no em-dashes)**
 
 ```bash
-grep -n $'\xe2\x80\x94' /home/spinoza/github/metafunctor-series/wire-formats/post/2022-02-elias-delta-omega-wire-formats/index.md | head -5
+grep -n $'\xe2\x80\x94' /home/spinoza/github/metafunctor-series/wire-formats/post/2022-11-elias-delta-omega-wire-formats/index.md | head -5
 ```
 
 Expected: no output (no em-dashes in the file).
@@ -846,7 +846,7 @@ Expected: no output (no em-dashes in the file).
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2022-02-elias-delta-omega-wire-formats/index.md
+git add post/2022-11-elias-delta-omega-wire-formats/index.md
 git commit -m "docs(elias-delta-omega): draft post 5 prose (Elias Delta and Omega)"
 ```
 
@@ -855,23 +855,23 @@ git commit -m "docs(elias-delta-omega): draft post 5 prose (Elias Delta and Omeg
 ## Task 8: Scaffold post 6 directory and wire CMakeLists
 
 **Files:**
-- Create: `post/2022-07-fibonacci-wire-formats/index.md`
-- Create: `post/2022-07-fibonacci-wire-formats/fibonacci.hpp`
-- Create: `post/2022-07-fibonacci-wire-formats/test_fibonacci.cpp`
+- Create: `post/2023-04-fibonacci-wire-formats/index.md`
+- Create: `post/2023-04-fibonacci-wire-formats/fibonacci.hpp`
+- Create: `post/2023-04-fibonacci-wire-formats/test_fibonacci.cpp`
 - Modify: `post/CMakeLists.txt`
 
 - [ ] **Step 1: Create the post 6 directory and skeleton files**
 
 ```bash
-mkdir -p /home/spinoza/github/metafunctor-series/wire-formats/post/2022-07-fibonacci-wire-formats
+mkdir -p /home/spinoza/github/metafunctor-series/wire-formats/post/2023-04-fibonacci-wire-formats
 ```
 
-Create `post/2022-07-fibonacci-wire-formats/index.md` with placeholder frontmatter:
+Create `post/2023-04-fibonacci-wire-formats/index.md` with placeholder frontmatter:
 
 ```markdown
 ---
 title: "Fibonacci Coding"
-date: 2022-07-17
+date: 2023-04-23
 draft: true
 tags:
 - C++
@@ -897,7 +897,7 @@ linked_project:
 (Draft in progress. See plan Task 13 for full prose.)
 ```
 
-Create `post/2022-07-fibonacci-wire-formats/fibonacci.hpp` with header guards only:
+Create `post/2023-04-fibonacci-wire-formats/fibonacci.hpp` with header guards only:
 
 ```cpp
 // fibonacci.hpp
@@ -932,7 +932,7 @@ concept BitSource = requires(S& s) {
 }  // namespace fibonacci
 ```
 
-Create `post/2022-07-fibonacci-wire-formats/test_fibonacci.cpp` with a placeholder:
+Create `post/2023-04-fibonacci-wire-formats/test_fibonacci.cpp` with a placeholder:
 
 ```cpp
 #include <gtest/gtest.h>
@@ -950,13 +950,13 @@ Append to `/home/spinoza/github/metafunctor-series/wire-formats/post/CMakeLists.
 ```cmake
 
 # =============================================================================
-# Fibonacci Coding (post 6, 2022-07-17)
+# Fibonacci Coding (post 6, 2023-04-23)
 # =============================================================================
 add_executable(test_fibonacci
-    2022-07-fibonacci-wire-formats/test_fibonacci.cpp)
+    2023-04-fibonacci-wire-formats/test_fibonacci.cpp)
 target_link_libraries(test_fibonacci GTest::gtest_main)
 target_include_directories(test_fibonacci PRIVATE
-    2022-07-fibonacci-wire-formats)
+    2023-04-fibonacci-wire-formats)
 add_test(NAME test_fibonacci COMMAND test_fibonacci)
 ```
 
@@ -972,7 +972,7 @@ Expected: all previous tests pass plus the new `test_fibonacci.Placeholder` test
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2022-07-fibonacci-wire-formats post/CMakeLists.txt
+git add post/2023-04-fibonacci-wire-formats post/CMakeLists.txt
 git commit -m "scaffold(fibonacci): add post 6 directory and CMake wiring"
 ```
 
@@ -981,8 +981,8 @@ git commit -m "scaffold(fibonacci): add post 6 directory and CMake wiring"
 ## Task 9: TDD -- implement `to_zeckendorf`
 
 **Files:**
-- Modify: `post/2022-07-fibonacci-wire-formats/fibonacci.hpp`
-- Modify: `post/2022-07-fibonacci-wire-formats/test_fibonacci.cpp`
+- Modify: `post/2023-04-fibonacci-wire-formats/fibonacci.hpp`
+- Modify: `post/2023-04-fibonacci-wire-formats/test_fibonacci.cpp`
 
 - [ ] **Step 1: Write failing tests for `to_zeckendorf`**
 
@@ -1136,8 +1136,8 @@ Expected: all FibonacciTest cases up to this point pass (ZeckendorfSpotCheck1, Z
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2022-07-fibonacci-wire-formats/fibonacci.hpp \
-        post/2022-07-fibonacci-wire-formats/test_fibonacci.cpp
+git add post/2023-04-fibonacci-wire-formats/fibonacci.hpp \
+        post/2023-04-fibonacci-wire-formats/test_fibonacci.cpp
 git commit -m "feat(fibonacci): implement to_zeckendorf with greedy decomposition (TDD)"
 ```
 
@@ -1146,8 +1146,8 @@ git commit -m "feat(fibonacci): implement to_zeckendorf with greedy decompositio
 ## Task 10: TDD -- implement `Fibonacci` codec
 
 **Files:**
-- Modify: `post/2022-07-fibonacci-wire-formats/fibonacci.hpp`
-- Modify: `post/2022-07-fibonacci-wire-formats/test_fibonacci.cpp`
+- Modify: `post/2023-04-fibonacci-wire-formats/fibonacci.hpp`
+- Modify: `post/2023-04-fibonacci-wire-formats/test_fibonacci.cpp`
 
 - [ ] **Step 1: Append failing tests for `Fibonacci`**
 
@@ -1358,8 +1358,8 @@ Expected: all FibonacciTest cases pass including round-trip, spot-check encoding
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2022-07-fibonacci-wire-formats/fibonacci.hpp \
-        post/2022-07-fibonacci-wire-formats/test_fibonacci.cpp
+git add post/2023-04-fibonacci-wire-formats/fibonacci.hpp \
+        post/2023-04-fibonacci-wire-formats/test_fibonacci.cpp
 git commit -m "feat(fibonacci): implement Fibonacci codec with encode/decode (TDD)"
 ```
 
@@ -1368,7 +1368,7 @@ git commit -m "feat(fibonacci): implement Fibonacci codec with encode/decode (TD
 ## Task 11: TDD -- bit-flip-stays-local test and integration tests for post 6
 
 **Files:**
-- Modify: `post/2022-07-fibonacci-wire-formats/test_fibonacci.cpp`
+- Modify: `post/2023-04-fibonacci-wire-formats/test_fibonacci.cpp`
 - Modify: `post/CMakeLists.txt` (add priors include path)
 
 This task adds: (a) the self-synchronization demonstration from spec section E, and (b) integration tests via the priors library confirming Fibonacci's implied prior and bounded redundancy.
@@ -1379,8 +1379,8 @@ In `post/CMakeLists.txt`, update the `target_include_directories` line for `test
 
 ```cmake
 target_include_directories(test_fibonacci PRIVATE
-    2022-07-fibonacci-wire-formats
-    2021-03-priors-wire-formats)
+    2023-04-fibonacci-wire-formats
+    2022-01-priors-wire-formats)
 ```
 
 - [ ] **Step 2: Append the self-synchronization test and integration tests**
@@ -1450,7 +1450,7 @@ TEST(FibonacciTest, BitFlipStaysLocal) {
 
 // ---- Integration tests using the priors library ----------------------------
 
-#include "../2021-03-priors-wire-formats/priors.hpp"
+#include "../2022-01-priors-wire-formats/priors.hpp"
 
 // Helper: build fibonacci length vector for symbols 1..N.
 static std::vector<std::size_t> fib_lengths(std::size_t N) {
@@ -1507,7 +1507,7 @@ Expected: all FibonacciTest cases pass including BitFlipStaysLocal, FibonacciSma
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2022-07-fibonacci-wire-formats/test_fibonacci.cpp \
+git add post/2023-04-fibonacci-wire-formats/test_fibonacci.cpp \
         post/CMakeLists.txt
 git commit -m "test(fibonacci): add self-sync test and priors integration tests"
 ```
@@ -1553,13 +1553,13 @@ No commit for this task (verification only).
 ## Task 13: Draft post 6 prose
 
 **Files:**
-- Modify: `post/2022-07-fibonacci-wire-formats/index.md`
+- Modify: `post/2023-04-fibonacci-wire-formats/index.md`
 
 Draft from the spec's sections A through G for Post 6. Target approximately 2000 words. No em-dashes.
 
 - [ ] **Step 1: Draft the prose**
 
-Replace the placeholder `(Draft in progress...)` line in `post/2022-07-fibonacci-wire-formats/index.md` with the full article body:
+Replace the placeholder `(Draft in progress...)` line in `post/2023-04-fibonacci-wire-formats/index.md` with the full article body:
 
 Section A ("A Different Design Goal", ~200 words, no code): contrast Fibonacci with Elias codes. Fibonacci does not optimize for length under a power-law prior; it optimizes for error resilience. A single bit flip in a gamma codeword can desynchronize the entire stream. A single bit flip in a Fibonacci codeword corrupts at most two codewords. Introduce the "11" terminator property.
 
@@ -1575,7 +1575,7 @@ Section F ("When to Use Fibonacci", ~200 words, no code): suitable for noisy cha
 
 Section G ("Cross-references and footnote", ~120 words): per the spec.
 - Forward: plain text mention of post 7 ("Rice / Golomb"), no link (forthcoming).
-- Back: [Universal Codes as Priors](/post/2021-03-priors-wire-formats/) (post 3); [Unary and Elias Gamma](/post/2021-08-elias-gamma-wire-formats/) (post 4).
+- Back: [Universal Codes as Priors](/post/2022-01-priors-wire-formats/) (post 3); [Unary and Elias Gamma](/post/2022-06-elias-gamma-wire-formats/) (post 4).
 - Cross-series: none (Fibonacci is its own animal; the type-algebra side does not need self-synchronization).
 - Footnote: PFC's `include/pfc/codecs.hpp` has `Fibonacci`.
 
@@ -1584,7 +1584,7 @@ Set `draft: false` when satisfied.
 - [ ] **Step 2: Soul check (no em-dashes)**
 
 ```bash
-grep -n $'\xe2\x80\x94' /home/spinoza/github/metafunctor-series/wire-formats/post/2022-07-fibonacci-wire-formats/index.md | head -5
+grep -n $'\xe2\x80\x94' /home/spinoza/github/metafunctor-series/wire-formats/post/2023-04-fibonacci-wire-formats/index.md | head -5
 ```
 
 Expected: no output.
@@ -1593,7 +1593,7 @@ Expected: no output.
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2022-07-fibonacci-wire-formats/index.md
+git add post/2023-04-fibonacci-wire-formats/index.md
 git commit -m "docs(fibonacci): draft post 6 prose (Fibonacci Coding)"
 ```
 
@@ -1610,14 +1610,14 @@ In `docs/about.md`, change the rows for posts 5 and 6 from `Forthcoming` to `Pub
 
 Old lines:
 ```
-| 5 | Elias Delta and Omega | 2022-02-13 | Forthcoming |
-| 6 | Fibonacci Coding | 2022-07-17 | Forthcoming |
+| 5 | Elias Delta and Omega | 2022-11-13 | Forthcoming |
+| 6 | Fibonacci Coding | 2023-04-23 | Forthcoming |
 ```
 
 New lines:
 ```
-| 5 | Elias Delta and Omega | 2022-02-13 | Published |
-| 6 | Fibonacci Coding | 2022-07-17 | Published |
+| 5 | Elias Delta and Omega | 2022-11-13 | Published |
+| 6 | Fibonacci Coding | 2023-04-23 | Published |
 ```
 
 - [ ] **Step 2: Commit**
@@ -1641,10 +1641,10 @@ In `mkdocs.yml`, the "Universal Codes" section already has posts 3 and 4 from su
 
 ```yaml
   - "Universal Codes":
-      - "Universal Codes as Priors": "post/2021-03-priors-wire-formats/index.md"
-      - "Unary and Elias Gamma": "post/2021-08-elias-gamma-wire-formats/index.md"
-      - "Elias Delta and Omega": "post/2022-02-elias-delta-omega-wire-formats/index.md"
-      - "Fibonacci Coding": "post/2022-07-fibonacci-wire-formats/index.md"
+      - "Universal Codes as Priors": "post/2022-01-priors-wire-formats/index.md"
+      - "Unary and Elias Gamma": "post/2022-06-elias-gamma-wire-formats/index.md"
+      - "Elias Delta and Omega": "post/2022-11-elias-delta-omega-wire-formats/index.md"
+      - "Fibonacci Coding": "post/2023-04-fibonacci-wire-formats/index.md"
 ```
 
 - [ ] **Step 2: Commit**
@@ -1673,8 +1673,8 @@ Expected: all six test suites pass (test_kraft, test_mcmillan, test_priors, test
 
 ```bash
 grep -n $'\xe2\x80\x94' \
-    /home/spinoza/github/metafunctor-series/wire-formats/post/2022-02-elias-delta-omega-wire-formats/index.md \
-    /home/spinoza/github/metafunctor-series/wire-formats/post/2022-07-fibonacci-wire-formats/index.md \
+    /home/spinoza/github/metafunctor-series/wire-formats/post/2022-11-elias-delta-omega-wire-formats/index.md \
+    /home/spinoza/github/metafunctor-series/wire-formats/post/2023-04-fibonacci-wire-formats/index.md \
     | head -10
 ```
 
@@ -1704,13 +1704,13 @@ BLOG_POST_DIR=/home/spinoza/github/repos/metafunctor/content/post \
 ```
 
 Expected: rsync output showing two directories synced:
-- `-> 2022-02-elias-delta-omega-wire-formats`
-- `-> 2022-07-fibonacci-wire-formats`
+- `-> 2022-11-elias-delta-omega-wire-formats`
+- `-> 2023-04-fibonacci-wire-formats`
 
 - [ ] **Step 2: Verify metafunctor received both post directories**
 
 ```bash
-ls /home/spinoza/github/repos/metafunctor/content/post/ | grep -E "2022-02-elias-delta|2022-07-fibonacci"
+ls /home/spinoza/github/repos/metafunctor/content/post/ | grep -E "2022-02-elias-delta|2023-04-fibonacci"
 ```
 
 Expected: both directories present.
@@ -1726,7 +1726,7 @@ No commit for this task (sync only; metafunctor commit is a separate step).
 - [ ] **Step 1: Check git status in metafunctor**
 
 ```bash
-cd /home/spinoza/github/repos/metafunctor && git status --short | grep -E "2022-02-elias|2022-07-fibonacci"
+cd /home/spinoza/github/repos/metafunctor && git status --short | grep -E "2022-02-elias|2023-04-fibonacci"
 ```
 
 Expected: two new untracked directories (or staged adds if already added).
@@ -1799,8 +1799,8 @@ git -C /home/spinoza/github/metafunctor-series/wire-formats push origin main
 
 ```bash
 cd /home/spinoza/github/repos/metafunctor
-git add content/post/2022-02-elias-delta-omega-wire-formats \
-        content/post/2022-07-fibonacci-wire-formats
+git add content/post/2022-11-elias-delta-omega-wire-formats \
+        content/post/2023-04-fibonacci-wire-formats
 git commit -m "content(wire-formats): sync posts 5 and 6 (elias-delta-omega, fibonacci)"
 git push origin main
 ```
@@ -1812,7 +1812,7 @@ git push origin main
 - [ ] **Step 1: Produce a summary for the user**
 
 Report:
-- Posts shipped: post 5 ("Elias Delta and Omega", 2022-02-13) and post 6 ("Fibonacci Coding", 2022-07-17).
+- Posts shipped: post 5 ("Elias Delta and Omega", 2022-11-13) and post 6 ("Fibonacci Coding", 2023-04-23).
 - Files created: `elias_delta_omega.hpp` (3 codecs: Gamma local re-implementation, Delta, Omega), `test_elias_delta_omega.cpp` (round-trip, spot-check, length table, priors integration), `fibonacci.hpp` (`to_zeckendorf` + `Fibonacci` codec), `test_fibonacci.cpp` (Zeckendorf properties, round-trip, codeword structure, self-sync, priors integration), `index.md` for each post.
 - Test counts: all six suites pass (test_kraft, test_mcmillan, test_priors, test_unary_gamma, test_elias_delta_omega, test_fibonacci).
 - Navigation: `mkdocs.yml` updated with posts 5 and 6 in "Universal Codes" section; `docs/about.md` updated with Published status for both posts.

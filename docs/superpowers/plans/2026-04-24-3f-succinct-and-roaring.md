@@ -16,7 +16,7 @@ See `docs/superpowers/specs/2026-04-24-arc-posts-3-through-13.md`, sections "Pos
 
 ## Cross-references note
 
-Forward-references to post 13 (Synthesis) in post 12 prose remain plain text only (no link), since post 13 does not yet exist. The live forward link from post 11 to post 12 (`/post/2025-08-roaring-bitmap-wire-formats/`) may be a relative link or a plain text forward reference at prose-draft time; make it a live link only after post 12 scaffold is confirmed in Task 12. Back-references in both posts to earlier posts (posts 1, 3) are live links using the dates from those existing post directories.
+Forward-references to post 13 (Synthesis) in post 12 prose remain plain text only (no link), since post 13 does not yet exist. The live forward link from post 11 to post 12 (`/post/2025-12-roaring-bitmap-wire-formats/`) may be a relative link or a plain text forward reference at prose-draft time; make it a live link only after post 12 scaffold is confirmed in Task 12. Back-references in both posts to earlier posts (posts 1, 3) are live links using the dates from those existing post directories.
 
 ---
 
@@ -24,11 +24,11 @@ Forward-references to post 13 (Synthesis) in post 12 prose remain plain text onl
 
 **Files:** read-only.
 
-- [ ] **Step 1: Verify dates 2025-03-09 and 2025-08-10 do not collide with existing metafunctor posts**
+- [ ] **Step 1: Verify dates 2025-06-22 and 2025-12-07 do not collide with existing metafunctor posts**
 
 ```bash
 grep -h "^date:" /home/spinoza/github/repos/metafunctor/content/post/*/index.md 2>/dev/null \
-  | grep -E "^date: 2025-03-09|^date: 2025-08-10" | sort -u
+  | grep -E "^date: 2025-06-22|^date: 2025-12-07" | sort -u
 ```
 
 Expected: empty output. If any date collides, pick the nearest adjacent unused day (e.g., 2025-03-10 or 2025-08-11) and note the substitution before proceeding.
@@ -54,23 +54,23 @@ Expected: the last `add_test` line belongs to whichever post was added last (lik
 ## Task 2: Scaffold post 11 directory and wire CMakeLists
 
 **Files:**
-- Create: `post/2025-03-succinct-wire-formats/index.md`
-- Create: `post/2025-03-succinct-wire-formats/succinct_bitvector.hpp`
-- Create: `post/2025-03-succinct-wire-formats/test_succinct.cpp`
+- Create: `post/2025-06-succinct-wire-formats/index.md`
+- Create: `post/2025-06-succinct-wire-formats/succinct_bitvector.hpp`
+- Create: `post/2025-06-succinct-wire-formats/test_succinct.cpp`
 - Modify: `post/CMakeLists.txt`
 
 - [ ] **Step 1: Create the post 11 directory and skeleton files**
 
 ```bash
-mkdir -p /home/spinoza/github/metafunctor-series/wire-formats/post/2025-03-succinct-wire-formats
+mkdir -p /home/spinoza/github/metafunctor-series/wire-formats/post/2025-06-succinct-wire-formats
 ```
 
-Create `post/2025-03-succinct-wire-formats/index.md` with placeholder frontmatter:
+Create `post/2025-06-succinct-wire-formats/index.md` with placeholder frontmatter:
 
 ```markdown
 ---
 title: "Succinct Bit Vectors and Rank/Select"
-date: 2025-03-09
+date: 2025-06-22
 draft: true
 tags:
 - C++
@@ -94,7 +94,7 @@ linked_project:
 (Draft in progress. See plan Task 11 for full prose.)
 ```
 
-Create `post/2025-03-succinct-wire-formats/succinct_bitvector.hpp` with header guards only:
+Create `post/2025-06-succinct-wire-formats/succinct_bitvector.hpp` with header guards only:
 
 ```cpp
 // succinct_bitvector.hpp
@@ -120,7 +120,7 @@ namespace succinct_bv {
 }  // namespace succinct_bv
 ```
 
-Create `post/2025-03-succinct-wire-formats/test_succinct.cpp` with a placeholder test:
+Create `post/2025-06-succinct-wire-formats/test_succinct.cpp` with a placeholder test:
 
 ```cpp
 #include <gtest/gtest.h>
@@ -138,11 +138,11 @@ Append to `/home/spinoza/github/metafunctor-series/wire-formats/post/CMakeLists.
 ```cmake
 
 # =============================================================================
-# Succinct Bit Vectors and Rank/Select (post 11, 2025-03-09)
+# Succinct Bit Vectors and Rank/Select (post 11, 2025-06-22)
 # =============================================================================
-add_executable(test_succinct_bv 2025-03-succinct-wire-formats/test_succinct.cpp)
+add_executable(test_succinct_bv 2025-06-succinct-wire-formats/test_succinct.cpp)
 target_link_libraries(test_succinct_bv GTest::gtest_main)
-target_include_directories(test_succinct_bv PRIVATE 2025-03-succinct-wire-formats)
+target_include_directories(test_succinct_bv PRIVATE 2025-06-succinct-wire-formats)
 add_test(NAME test_succinct_bv COMMAND test_succinct_bv)
 ```
 
@@ -158,7 +158,7 @@ Expected: all previous tests pass plus the new `test_succinct_bv.Placeholder` te
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2025-03-succinct-wire-formats post/CMakeLists.txt
+git add post/2025-06-succinct-wire-formats post/CMakeLists.txt
 git commit -m "scaffold(succinct-bv): add post 11 directory and CMake wiring"
 ```
 
@@ -167,8 +167,8 @@ git commit -m "scaffold(succinct-bv): add post 11 directory and CMake wiring"
 ## Task 3: TDD -- `SuccinctBitVector` constructor and `size()`
 
 **Files:**
-- Modify: `post/2025-03-succinct-wire-formats/succinct_bitvector.hpp`
-- Modify: `post/2025-03-succinct-wire-formats/test_succinct.cpp`
+- Modify: `post/2025-06-succinct-wire-formats/succinct_bitvector.hpp`
+- Modify: `post/2025-06-succinct-wire-formats/test_succinct.cpp`
 
 This task establishes the core data representation: the bit vector stored as packed `uint64_t` words, with `size()` returning the logical bit count. No auxiliary index yet.
 
@@ -306,8 +306,8 @@ Expected: all SuccinctBVTest cases pass (EmptyConstruct, SingleBitTrue, SingleBi
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2025-03-succinct-wire-formats/succinct_bitvector.hpp \
-        post/2025-03-succinct-wire-formats/test_succinct.cpp
+git add post/2025-06-succinct-wire-formats/succinct_bitvector.hpp \
+        post/2025-06-succinct-wire-formats/test_succinct.cpp
 git commit -m "feat(succinct-bv): implement constructor and bit() storage (TDD)"
 ```
 
@@ -316,8 +316,8 @@ git commit -m "feat(succinct-bv): implement constructor and bit() storage (TDD)"
 ## Task 4: TDD -- `popcount_word` helper
 
 **Files:**
-- Modify: `post/2025-03-succinct-wire-formats/succinct_bitvector.hpp`
-- Modify: `post/2025-03-succinct-wire-formats/test_succinct.cpp`
+- Modify: `post/2025-06-succinct-wire-formats/succinct_bitvector.hpp`
+- Modify: `post/2025-06-succinct-wire-formats/test_succinct.cpp`
 
 - [ ] **Step 1: Append failing tests**
 
@@ -382,8 +382,8 @@ Expected: all 10 SuccinctBVTest cases pass.
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2025-03-succinct-wire-formats/succinct_bitvector.hpp \
-        post/2025-03-succinct-wire-formats/test_succinct.cpp
+git add post/2025-06-succinct-wire-formats/succinct_bitvector.hpp \
+        post/2025-06-succinct-wire-formats/test_succinct.cpp
 git commit -m "feat(succinct-bv): implement popcount_word using std::popcount (TDD)"
 ```
 
@@ -392,8 +392,8 @@ git commit -m "feat(succinct-bv): implement popcount_word using std::popcount (T
 ## Task 5: TDD -- naive `rank1(i)` (O(n/64) scan, no auxiliary index)
 
 **Files:**
-- Modify: `post/2025-03-succinct-wire-formats/succinct_bitvector.hpp`
-- Modify: `post/2025-03-succinct-wire-formats/test_succinct.cpp`
+- Modify: `post/2025-06-succinct-wire-formats/succinct_bitvector.hpp`
+- Modify: `post/2025-06-succinct-wire-formats/test_succinct.cpp`
 
 This task adds a simple scanning rank to establish correctness before the indexed version. The same test cases will be reused in Task 7 to verify the O(1) version agrees.
 
@@ -500,8 +500,8 @@ Expected: all 14 SuccinctBVTest cases pass.
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2025-03-succinct-wire-formats/succinct_bitvector.hpp \
-        post/2025-03-succinct-wire-formats/test_succinct.cpp
+git add post/2025-06-succinct-wire-formats/succinct_bitvector.hpp \
+        post/2025-06-succinct-wire-formats/test_succinct.cpp
 git commit -m "feat(succinct-bv): implement naive O(n/64) rank1 (TDD, pre-index)"
 ```
 
@@ -510,8 +510,8 @@ git commit -m "feat(succinct-bv): implement naive O(n/64) rank1 (TDD, pre-index)
 ## Task 6: TDD -- build auxiliary index (superblock + block arrays)
 
 **Files:**
-- Modify: `post/2025-03-succinct-wire-formats/succinct_bitvector.hpp`
-- Modify: `post/2025-03-succinct-wire-formats/test_succinct.cpp`
+- Modify: `post/2025-06-succinct-wire-formats/succinct_bitvector.hpp`
+- Modify: `post/2025-06-succinct-wire-formats/test_succinct.cpp`
 
 The auxiliary index stores two arrays: `superblock_ranks_` (one entry per 4096 bits, absolute cumulative rank) and `block_ranks_` (one entry per 64 bits, rank relative to the enclosing superblock). The fields are already declared in the class skeleton from Task 3.
 
@@ -672,8 +672,8 @@ Expected: all prior tests continue to pass plus the two new index-correctness te
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2025-03-succinct-wire-formats/succinct_bitvector.hpp \
-        post/2025-03-succinct-wire-formats/test_succinct.cpp
+git add post/2025-06-succinct-wire-formats/succinct_bitvector.hpp \
+        post/2025-06-succinct-wire-formats/test_succinct.cpp
 git commit -m "feat(succinct-bv): implement build_index() with superblock+block arrays (TDD)"
 ```
 
@@ -682,8 +682,8 @@ git commit -m "feat(succinct-bv): implement build_index() with superblock+block 
 ## Task 7: TDD -- O(1) `rank1(i)` using the auxiliary index
 
 **Files:**
-- Modify: `post/2025-03-succinct-wire-formats/succinct_bitvector.hpp`
-- Modify: `post/2025-03-succinct-wire-formats/test_succinct.cpp`
+- Modify: `post/2025-06-succinct-wire-formats/succinct_bitvector.hpp`
+- Modify: `post/2025-06-succinct-wire-formats/test_succinct.cpp`
 
 Replace the O(n/64) scanning `rank1` from Task 5 with the constant-time indexed version. All existing rank tests must continue to pass.
 
@@ -764,8 +764,8 @@ Expected: all SuccinctBVTest cases pass, including the four rank tests from Task
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2025-03-succinct-wire-formats/succinct_bitvector.hpp \
-        post/2025-03-succinct-wire-formats/test_succinct.cpp
+git add post/2025-06-succinct-wire-formats/succinct_bitvector.hpp \
+        post/2025-06-succinct-wire-formats/test_succinct.cpp
 git commit -m "feat(succinct-bv): replace naive rank1 with O(1) indexed version (TDD)"
 ```
 
@@ -774,8 +774,8 @@ git commit -m "feat(succinct-bv): replace naive rank1 with O(1) indexed version 
 ## Task 8: TDD -- `select1(j)` via O(log n) binary search
 
 **Files:**
-- Modify: `post/2025-03-succinct-wire-formats/succinct_bitvector.hpp`
-- Modify: `post/2025-03-succinct-wire-formats/test_succinct.cpp`
+- Modify: `post/2025-06-succinct-wire-formats/succinct_bitvector.hpp`
+- Modify: `post/2025-06-succinct-wire-formats/test_succinct.cpp`
 
 `select1(j)` returns the position of the j-th set bit (0-indexed: j=0 means the first set bit). Strategy: binary search over `superblock_ranks_` to find which superblock contains the j-th 1-bit, then linear scan within the superblock's blocks, then bit-level scan within the final word.
 
@@ -923,8 +923,8 @@ Expected: all SuccinctBVTest cases pass including the five new select tests.
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2025-03-succinct-wire-formats/succinct_bitvector.hpp \
-        post/2025-03-succinct-wire-formats/test_succinct.cpp
+git add post/2025-06-succinct-wire-formats/succinct_bitvector.hpp \
+        post/2025-06-succinct-wire-formats/test_succinct.cpp
 git commit -m "feat(succinct-bv): implement select1 via O(log n) binary search (TDD)"
 ```
 
@@ -933,7 +933,7 @@ git commit -m "feat(succinct-bv): implement select1 via O(log n) binary search (
 ## Task 9: TDD -- space-efficiency test
 
 **Files:**
-- Modify: `post/2025-03-succinct-wire-formats/test_succinct.cpp`
+- Modify: `post/2025-06-succinct-wire-formats/test_succinct.cpp`
 
 Verify that the auxiliary index is strictly smaller than the bit vector itself, confirming the o(n) claim holds for a practical n (10000 bits).
 
@@ -989,8 +989,8 @@ Expected: all SuccinctBVTest cases pass. For N=10000: bit_bytes = 1256 B, index_
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2025-03-succinct-wire-formats/succinct_bitvector.hpp \
-        post/2025-03-succinct-wire-formats/test_succinct.cpp
+git add post/2025-06-succinct-wire-formats/succinct_bitvector.hpp \
+        post/2025-06-succinct-wire-formats/test_succinct.cpp
 git commit -m "test(succinct-bv): space-efficiency: aux index smaller than bit vector"
 ```
 
@@ -1023,13 +1023,13 @@ No commit for this task.
 ## Task 11: Draft post 11 prose
 
 **Files:**
-- Modify: `post/2025-03-succinct-wire-formats/index.md`
+- Modify: `post/2025-06-succinct-wire-formats/index.md`
 
 Draft from the spec's sections A through G. Target: approximately 2000 words. Use the section labels (A through G) as invisible structural guides; do not render them as headings. All headings are H2 or H3. No em-dashes anywhere.
 
 - [ ] **Step 1: Replace the `index.md` placeholder with the full prose draft**
 
-Write `post/2025-03-succinct-wire-formats/index.md` with content matching spec sections:
+Write `post/2025-06-succinct-wire-formats/index.md` with content matching spec sections:
 
 - **Opening H2:** "Constant-Time Queries on Bit Vectors"
 - **A (The Shift, ~200 words):** Transition from entropy coding (posts 1-10) to query data structures. Define rank_1(i) and select_1(j). State the trilemma: O(n) space + O(n) time (naive), O(n log n) space + O(1) time (full table), n + o(n) space + O(1) time (succinct target).
@@ -1046,7 +1046,7 @@ Key constraint: no em-dashes. Use commas, colons, or parentheses instead.
 
 ```bash
 grep -c $'\xE2\x80\x94' \
-    /home/spinoza/github/metafunctor-series/wire-formats/post/2025-03-succinct-wire-formats/index.md
+    /home/spinoza/github/metafunctor-series/wire-formats/post/2025-06-succinct-wire-formats/index.md
 ```
 
 Expected: 0. If non-zero, edit to remove em-dashes before proceeding.
@@ -1055,7 +1055,7 @@ Expected: 0. If non-zero, edit to remove em-dashes before proceeding.
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2025-03-succinct-wire-formats/index.md
+git add post/2025-06-succinct-wire-formats/index.md
 git commit -m "content(post-11): draft prose for Succinct Bit Vectors and Rank/Select"
 ```
 
@@ -1064,23 +1064,23 @@ git commit -m "content(post-11): draft prose for Succinct Bit Vectors and Rank/S
 ## Task 12: Scaffold post 12 directory and wire CMakeLists
 
 **Files:**
-- Create: `post/2025-08-roaring-bitmap-wire-formats/index.md`
-- Create: `post/2025-08-roaring-bitmap-wire-formats/roaring_bitmap.hpp`
-- Create: `post/2025-08-roaring-bitmap-wire-formats/test_roaring.cpp`
+- Create: `post/2025-12-roaring-bitmap-wire-formats/index.md`
+- Create: `post/2025-12-roaring-bitmap-wire-formats/roaring_bitmap.hpp`
+- Create: `post/2025-12-roaring-bitmap-wire-formats/test_roaring.cpp`
 - Modify: `post/CMakeLists.txt`
 
 - [ ] **Step 1: Create the post 12 directory and skeleton files**
 
 ```bash
-mkdir -p /home/spinoza/github/metafunctor-series/wire-formats/post/2025-08-roaring-bitmap-wire-formats
+mkdir -p /home/spinoza/github/metafunctor-series/wire-formats/post/2025-12-roaring-bitmap-wire-formats
 ```
 
-Create `post/2025-08-roaring-bitmap-wire-formats/index.md` with placeholder frontmatter:
+Create `post/2025-12-roaring-bitmap-wire-formats/index.md` with placeholder frontmatter:
 
 ```markdown
 ---
 title: "RoaringBitmap"
-date: 2025-08-10
+date: 2025-12-07
 draft: true
 tags:
 - C++
@@ -1104,7 +1104,7 @@ linked_project:
 (Draft in progress. See plan Task 21 for full prose.)
 ```
 
-Create `post/2025-08-roaring-bitmap-wire-formats/roaring_bitmap.hpp` with header guards only:
+Create `post/2025-12-roaring-bitmap-wire-formats/roaring_bitmap.hpp` with header guards only:
 
 ```cpp
 // roaring_bitmap.hpp
@@ -1133,7 +1133,7 @@ namespace roaring {
 }  // namespace roaring
 ```
 
-Create `post/2025-08-roaring-bitmap-wire-formats/test_roaring.cpp` with a placeholder test:
+Create `post/2025-12-roaring-bitmap-wire-formats/test_roaring.cpp` with a placeholder test:
 
 ```cpp
 #include <gtest/gtest.h>
@@ -1151,11 +1151,11 @@ Append to `/home/spinoza/github/metafunctor-series/wire-formats/post/CMakeLists.
 ```cmake
 
 # =============================================================================
-# RoaringBitmap (post 12, 2025-08-10)
+# RoaringBitmap (post 12, 2025-12-07)
 # =============================================================================
-add_executable(test_roaring 2025-08-roaring-bitmap-wire-formats/test_roaring.cpp)
+add_executable(test_roaring 2025-12-roaring-bitmap-wire-formats/test_roaring.cpp)
 target_link_libraries(test_roaring GTest::gtest_main)
-target_include_directories(test_roaring PRIVATE 2025-08-roaring-bitmap-wire-formats)
+target_include_directories(test_roaring PRIVATE 2025-12-roaring-bitmap-wire-formats)
 add_test(NAME test_roaring COMMAND test_roaring)
 ```
 
@@ -1171,7 +1171,7 @@ Expected: all previous tests pass plus the new `test_roaring.Placeholder` test.
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2025-08-roaring-bitmap-wire-formats post/CMakeLists.txt
+git add post/2025-12-roaring-bitmap-wire-formats post/CMakeLists.txt
 git commit -m "scaffold(roaring): add post 12 directory and CMake wiring"
 ```
 
@@ -1180,8 +1180,8 @@ git commit -m "scaffold(roaring): add post 12 directory and CMake wiring"
 ## Task 13: TDD -- `ArrayContainer`
 
 **Files:**
-- Modify: `post/2025-08-roaring-bitmap-wire-formats/roaring_bitmap.hpp`
-- Modify: `post/2025-08-roaring-bitmap-wire-formats/test_roaring.cpp`
+- Modify: `post/2025-12-roaring-bitmap-wire-formats/roaring_bitmap.hpp`
+- Modify: `post/2025-12-roaring-bitmap-wire-formats/test_roaring.cpp`
 
 `ArrayContainer` stores a sorted `std::vector<uint16_t>`. Used when a chunk has at most 4096 elements. Supports `add`, `contains`, and `cardinality`.
 
@@ -1314,8 +1314,8 @@ Expected: all ArrayContainerTest cases pass.
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2025-08-roaring-bitmap-wire-formats/roaring_bitmap.hpp \
-        post/2025-08-roaring-bitmap-wire-formats/test_roaring.cpp
+git add post/2025-12-roaring-bitmap-wire-formats/roaring_bitmap.hpp \
+        post/2025-12-roaring-bitmap-wire-formats/test_roaring.cpp
 git commit -m "feat(roaring): implement ArrayContainer with add/contains/cardinality (TDD)"
 ```
 
@@ -1324,8 +1324,8 @@ git commit -m "feat(roaring): implement ArrayContainer with add/contains/cardina
 ## Task 14: TDD -- `BitmapContainer`
 
 **Files:**
-- Modify: `post/2025-08-roaring-bitmap-wire-formats/roaring_bitmap.hpp`
-- Modify: `post/2025-08-roaring-bitmap-wire-formats/test_roaring.cpp`
+- Modify: `post/2025-12-roaring-bitmap-wire-formats/roaring_bitmap.hpp`
+- Modify: `post/2025-12-roaring-bitmap-wire-formats/test_roaring.cpp`
 
 `BitmapContainer` is a 4096-byte (32768-bit) bit vector representing a 16-bit integer space. Supports `add`, `contains`, and `cardinality` (via popcount over 512 words).
 
@@ -1443,8 +1443,8 @@ Expected: all BitmapContainerTest cases pass alongside ArrayContainerTest.
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2025-08-roaring-bitmap-wire-formats/roaring_bitmap.hpp \
-        post/2025-08-roaring-bitmap-wire-formats/test_roaring.cpp
+git add post/2025-12-roaring-bitmap-wire-formats/roaring_bitmap.hpp \
+        post/2025-12-roaring-bitmap-wire-formats/test_roaring.cpp
 git commit -m "feat(roaring): implement BitmapContainer with add/contains/cardinality (TDD)"
 ```
 
@@ -1453,8 +1453,8 @@ git commit -m "feat(roaring): implement BitmapContainer with add/contains/cardin
 ## Task 15: TDD -- `RunContainer`
 
 **Files:**
-- Modify: `post/2025-08-roaring-bitmap-wire-formats/roaring_bitmap.hpp`
-- Modify: `post/2025-08-roaring-bitmap-wire-formats/test_roaring.cpp`
+- Modify: `post/2025-12-roaring-bitmap-wire-formats/roaring_bitmap.hpp`
+- Modify: `post/2025-12-roaring-bitmap-wire-formats/test_roaring.cpp`
 
 `RunContainer` stores runs of consecutive integers as `std::vector<std::pair<uint16_t, uint16_t>>` where each pair is `(start, length - 1)`. The run `(s, l)` represents the integers `s, s+1, ..., s+l`. Runs are kept sorted and non-overlapping. `add` extends adjacent runs or merges them.
 
@@ -1627,8 +1627,8 @@ Expected: all RunContainerTest cases pass alongside Array and Bitmap tests.
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2025-08-roaring-bitmap-wire-formats/roaring_bitmap.hpp \
-        post/2025-08-roaring-bitmap-wire-formats/test_roaring.cpp
+git add post/2025-12-roaring-bitmap-wire-formats/roaring_bitmap.hpp \
+        post/2025-12-roaring-bitmap-wire-formats/test_roaring.cpp
 git commit -m "feat(roaring): implement RunContainer with run-merging add (TDD)"
 ```
 
@@ -1637,8 +1637,8 @@ git commit -m "feat(roaring): implement RunContainer with run-merging add (TDD)"
 ## Task 16: TDD -- conversion functions (array/bitmap threshold)
 
 **Files:**
-- Modify: `post/2025-08-roaring-bitmap-wire-formats/roaring_bitmap.hpp`
-- Modify: `post/2025-08-roaring-bitmap-wire-formats/test_roaring.cpp`
+- Modify: `post/2025-12-roaring-bitmap-wire-formats/roaring_bitmap.hpp`
+- Modify: `post/2025-12-roaring-bitmap-wire-formats/test_roaring.cpp`
 
 The container variant used inside `RoaringBitmap` converts automatically:
 - Array grows past ARRAY_MAX (4096) -> convert to bitmap on next `add`.
@@ -1765,8 +1765,8 @@ Expected: all ConversionTest cases pass alongside prior test groups.
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2025-08-roaring-bitmap-wire-formats/roaring_bitmap.hpp \
-        post/2025-08-roaring-bitmap-wire-formats/test_roaring.cpp
+git add post/2025-12-roaring-bitmap-wire-formats/roaring_bitmap.hpp \
+        post/2025-12-roaring-bitmap-wire-formats/test_roaring.cpp
 git commit -m "feat(roaring): implement container conversion helpers (TDD)"
 ```
 
@@ -1775,8 +1775,8 @@ git commit -m "feat(roaring): implement container conversion helpers (TDD)"
 ## Task 17: TDD -- `RoaringBitmap` outer class
 
 **Files:**
-- Modify: `post/2025-08-roaring-bitmap-wire-formats/roaring_bitmap.hpp`
-- Modify: `post/2025-08-roaring-bitmap-wire-formats/test_roaring.cpp`
+- Modify: `post/2025-12-roaring-bitmap-wire-formats/roaring_bitmap.hpp`
+- Modify: `post/2025-12-roaring-bitmap-wire-formats/test_roaring.cpp`
 
 `RoaringBitmap` owns a `std::map<uint16_t, ContainerVariant>` from chunk-id (high 16 bits of each 32-bit integer) to a `std::variant<ArrayContainer, BitmapContainer, RunContainer>`. `add` dispatches to the right container via `std::visit`, auto-converting from array to bitmap when the chunk exceeds ARRAY_MAX.
 
@@ -1959,8 +1959,8 @@ Expected: all RoaringBitmapTest cases pass alongside prior test groups.
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2025-08-roaring-bitmap-wire-formats/roaring_bitmap.hpp \
-        post/2025-08-roaring-bitmap-wire-formats/test_roaring.cpp
+git add post/2025-12-roaring-bitmap-wire-formats/roaring_bitmap.hpp \
+        post/2025-12-roaring-bitmap-wire-formats/test_roaring.cpp
 git commit -m "feat(roaring): implement RoaringBitmap outer class with std::variant dispatch (TDD)"
 ```
 
@@ -1969,8 +1969,8 @@ git commit -m "feat(roaring): implement RoaringBitmap outer class with std::vari
 ## Task 18: TDD -- set operations (union, intersection, difference)
 
 **Files:**
-- Modify: `post/2025-08-roaring-bitmap-wire-formats/roaring_bitmap.hpp`
-- Modify: `post/2025-08-roaring-bitmap-wire-formats/test_roaring.cpp`
+- Modify: `post/2025-12-roaring-bitmap-wire-formats/roaring_bitmap.hpp`
+- Modify: `post/2025-12-roaring-bitmap-wire-formats/test_roaring.cpp`
 
 Set operations work chunk-by-chunk. Each chunk dispatches on container-pair types via `std::visit` on two variants simultaneously.
 
@@ -2186,8 +2186,8 @@ Expected: all RoaringSetOpsTest cases pass alongside all prior test groups.
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2025-08-roaring-bitmap-wire-formats/roaring_bitmap.hpp \
-        post/2025-08-roaring-bitmap-wire-formats/test_roaring.cpp
+git add post/2025-12-roaring-bitmap-wire-formats/roaring_bitmap.hpp \
+        post/2025-12-roaring-bitmap-wire-formats/test_roaring.cpp
 git commit -m "feat(roaring): implement union, intersection, difference operations (TDD)"
 ```
 
@@ -2196,7 +2196,7 @@ git commit -m "feat(roaring): implement union, intersection, difference operatio
 ## Task 19: Round-trip and space-efficiency tests
 
 **Files:**
-- Modify: `post/2025-08-roaring-bitmap-wire-formats/test_roaring.cpp`
+- Modify: `post/2025-12-roaring-bitmap-wire-formats/test_roaring.cpp`
 
 Verify correctness under various density distributions (very sparse, moderate, dense, clustered runs) and confirm that RoaringBitmap uses less space than a naive dense bit array for the sparse/clustered cases.
 
@@ -2276,7 +2276,7 @@ Expected: all RoaringSpaceTest cases pass alongside all prior groups.
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2025-08-roaring-bitmap-wire-formats/test_roaring.cpp
+git add post/2025-12-roaring-bitmap-wire-formats/test_roaring.cpp
 git commit -m "test(roaring): round-trip and space-efficiency tests across density distributions"
 ```
 
@@ -2309,13 +2309,13 @@ No commit for this task.
 ## Task 21: Draft post 12 prose
 
 **Files:**
-- Modify: `post/2025-08-roaring-bitmap-wire-formats/index.md`
+- Modify: `post/2025-12-roaring-bitmap-wire-formats/index.md`
 
 Draft from the spec's sections A through G. Target: approximately 2000 words. No em-dashes.
 
 - [ ] **Step 1: Replace the `index.md` placeholder with the full prose draft**
 
-Write `post/2025-08-roaring-bitmap-wire-formats/index.md` matching spec sections:
+Write `post/2025-12-roaring-bitmap-wire-formats/index.md` matching spec sections:
 
 - **Opening H2:** "Hybrid Representation as Polyalgorithm"
 - **A (The Density Question, ~200 words):** Frame the problem: optimal representation depends on density. Four density regimes: very sparse (index list), moderate (bit vector), very dense (negation list), clustered (run-length). No single representation wins across all regimes. RoaringBitmap (Lemire et al., 2014) is the hybrid.
@@ -2332,7 +2332,7 @@ Key constraint: no em-dashes. Use commas, colons, or parentheses instead.
 
 ```bash
 grep -c $'\xE2\x80\x94' \
-    /home/spinoza/github/metafunctor-series/wire-formats/post/2025-08-roaring-bitmap-wire-formats/index.md
+    /home/spinoza/github/metafunctor-series/wire-formats/post/2025-12-roaring-bitmap-wire-formats/index.md
 ```
 
 Expected: 0. If non-zero, edit to remove em-dashes before proceeding.
@@ -2341,7 +2341,7 @@ Expected: 0. If non-zero, edit to remove em-dashes before proceeding.
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2025-08-roaring-bitmap-wire-formats/index.md
+git add post/2025-12-roaring-bitmap-wire-formats/index.md
 git commit -m "content(post-12): draft prose for RoaringBitmap"
 ```
 
@@ -2358,8 +2358,8 @@ git commit -m "content(post-12): draft prose for RoaringBitmap"
 In `docs/about.md`, find the existing entries for posts 11 and 12 (or add them if the section does not exist). Change their status from "Planned" (or equivalent) to "Published". The entry format should match the existing table style:
 
 ```markdown
-| 11 | 2025-03-09 | Succinct Bit Vectors and Rank/Select | Published |
-| 12 | 2025-08-10 | RoaringBitmap                        | Published |
+| 11 | 2025-06-22 | Succinct Bit Vectors and Rank/Select | Published |
+| 12 | 2025-12-07 | RoaringBitmap                        | Published |
 ```
 
 - [ ] **Step 2: Add a "Succinct Data Structures" section to `mkdocs.yml`**
@@ -2368,8 +2368,8 @@ After the last existing nav section (which may be "Entropy-Optimal" or "Universa
 
 ```yaml
   - "Succinct Data Structures":
-      - "Succinct Bit Vectors and Rank/Select": "post/2025-03-succinct-wire-formats/index.md"
-      - "RoaringBitmap": "post/2025-08-roaring-bitmap-wire-formats/index.md"
+      - "Succinct Bit Vectors and Rank/Select": "post/2025-06-succinct-wire-formats/index.md"
+      - "RoaringBitmap": "post/2025-12-roaring-bitmap-wire-formats/index.md"
 ```
 
 - [ ] **Step 3: Commit**
@@ -2398,8 +2398,8 @@ Expected: all test suites pass (test_kraft, test_mcmillan, and all prior suites 
 
 ```bash
 grep -c $'\xE2\x80\x94' \
-    /home/spinoza/github/metafunctor-series/wire-formats/post/2025-03-succinct-wire-formats/index.md \
-    /home/spinoza/github/metafunctor-series/wire-formats/post/2025-08-roaring-bitmap-wire-formats/index.md
+    /home/spinoza/github/metafunctor-series/wire-formats/post/2025-06-succinct-wire-formats/index.md \
+    /home/spinoza/github/metafunctor-series/wire-formats/post/2025-12-roaring-bitmap-wire-formats/index.md
 ```
 
 Expected: two lines, each showing `0`. If either shows non-zero, edit and re-check before continuing.
@@ -2420,13 +2420,13 @@ BLOG_POST_DIR=/home/spinoza/github/repos/metafunctor/content/post \
 ```
 
 Expected: rsync output showing two directories synced:
-- `-> 2025-03-succinct-wire-formats`
-- `-> 2025-08-roaring-bitmap-wire-formats`
+- `-> 2025-06-succinct-wire-formats`
+- `-> 2025-12-roaring-bitmap-wire-formats`
 
 - [ ] **Step 5: Verify metafunctor received both post directories**
 
 ```bash
-ls /home/spinoza/github/repos/metafunctor/content/post/ | grep -E "2025-03-succinct|2025-08-roaring"
+ls /home/spinoza/github/repos/metafunctor/content/post/ | grep -E "2025-06-succinct|2025-08-roaring"
 ```
 
 Expected: both directories present.
@@ -2434,7 +2434,7 @@ Expected: both directories present.
 - [ ] **Step 6: Check git status in metafunctor**
 
 ```bash
-cd /home/spinoza/github/repos/metafunctor && git status --short | grep -E "2025-03-succinct|2025-08-roaring"
+cd /home/spinoza/github/repos/metafunctor && git status --short | grep -E "2025-06-succinct|2025-08-roaring"
 ```
 
 Expected: two new untracked directories (or staged adds if already added).
@@ -2491,8 +2491,8 @@ git -C /home/spinoza/github/metafunctor-series/wire-formats push origin main
 
 ```bash
 cd /home/spinoza/github/repos/metafunctor
-git add content/post/2025-03-succinct-wire-formats \
-        content/post/2025-08-roaring-bitmap-wire-formats
+git add content/post/2025-06-succinct-wire-formats \
+        content/post/2025-12-roaring-bitmap-wire-formats
 git commit -m "content(wire-formats): sync posts 11 and 12 (succinct-bv, roaring-bitmap)"
 git push origin main
 ```

@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Ship posts 7 ("Rice / Golomb", 2023-02-19) and 8 ("VByte / Varint", 2023-08-14) of the Algebra over Wire Formats series, including TDD implementations of `rice_golomb.hpp` and `vbyte.hpp`, full GoogleTest suites, prose drafts, and sync to metafunctor.com.
+**Goal:** Ship posts 7 ("Rice / Golomb", 2023-09-17) and 8 ("VByte / Varint", 2024-02-25) of the Algebra over Wire Formats series, including TDD implementations of `rice_golomb.hpp` and `vbyte.hpp`, full GoogleTest suites, prose drafts, and sync to metafunctor.com.
 
-**Architecture:** Two new post directories under `post/` (`2023-02-rice-golomb-wire-formats/` and `2023-08-vbyte-wire-formats/`), each with a header, a test file, and `index.md`. Post 7's `rice_golomb.hpp` defines `Rice<K>` and `Golomb<M>` templates plus the parameter-selection helpers `optimal_rice_k` and `optimal_golomb_m` in `namespace rice_golomb`; the implementations match the spec verbatim and are consistent with the PFC production versions in `include/pfc/codecs.hpp`. Post 8's `vbyte.hpp` defines `VByte` in `namespace vbyte`; its bit-level implementation is pedagogically consistent with the rest of the series, with a prose note explaining real implementations operate byte-directly. Both posts wire into the existing `post/CMakeLists.txt`, update `docs/about.md` and `mkdocs.yml`, and sync to metafunctor via the Makefile `sync` target.
+**Architecture:** Two new post directories under `post/` (`2023-09-rice-golomb-wire-formats/` and `2024-02-vbyte-wire-formats/`), each with a header, a test file, and `index.md`. Post 7's `rice_golomb.hpp` defines `Rice<K>` and `Golomb<M>` templates plus the parameter-selection helpers `optimal_rice_k` and `optimal_golomb_m` in `namespace rice_golomb`; the implementations match the spec verbatim and are consistent with the PFC production versions in `include/pfc/codecs.hpp`. Post 8's `vbyte.hpp` defines `VByte` in `namespace vbyte`; its bit-level implementation is pedagogically consistent with the rest of the series, with a prose note explaining real implementations operate byte-directly. Both posts wire into the existing `post/CMakeLists.txt`, update `docs/about.md` and `mkdocs.yml`, and sync to metafunctor via the Makefile `sync` target.
 
 **Tech Stack:** C++23, GoogleTest v1.14.0 (already wired in `post/CMakeLists.txt`), mkdocs, the soul plugin's banned-phrase hook.
 
@@ -18,12 +18,12 @@ See `docs/superpowers/specs/2026-04-24-arc-posts-3-through-13.md`, sections "Pos
 
 Posts 3 through 6 are implemented in sub-sub-projects 3a and 3b. By the time this plan runs, the following live links exist:
 
-- Post 3: `/post/2021-03-priors-wire-formats/`
-- Post 4: `/post/2021-08-elias-gamma-wire-formats/`
-- Post 5: `/post/2022-02-elias-delta-omega-wire-formats/`
-- Post 6: `/post/2022-07-fibonacci-wire-formats/`
+- Post 3: `/post/2022-01-priors-wire-formats/`
+- Post 4: `/post/2022-06-elias-gamma-wire-formats/`
+- Post 5: `/post/2022-11-elias-delta-omega-wire-formats/`
+- Post 6: `/post/2023-04-fibonacci-wire-formats/`
 
-Post 7's forward link to post 8 is a live link (both ship together in this plan). Post 8's forward link to post 9 (Huffman) is plain text ("forthcoming"). Both posts back-link to posts 3 through 6 using the live paths above. The priors library at `post/2021-03-priors-wire-formats/priors.hpp` is used by the integration tests in both post 7 and post 8.
+Post 7's forward link to post 8 is a live link (both ship together in this plan). Post 8's forward link to post 9 (Huffman) is plain text ("forthcoming"). Both posts back-link to posts 3 through 6 using the live paths above. The priors library at `post/2022-01-priors-wire-formats/priors.hpp` is used by the integration tests in both post 7 and post 8.
 
 The Stepanov bridge posts (`/post/2026-05-codecs-functors-stepanov/` and `/post/2026-05-prefix-free-stepanov/`) were updated in sub-project 2. Post 7's cross-series link points to both bridges; post 8 has no cross-series link (byte-alignment is orthogonal to the type-algebra story).
 
@@ -33,11 +33,11 @@ The Stepanov bridge posts (`/post/2026-05-codecs-functors-stepanov/` and `/post/
 
 **Files:** read-only.
 
-- [ ] **Step 1: Verify dates 2023-02-19 and 2023-08-14 do not collide with existing metafunctor posts**
+- [ ] **Step 1: Verify dates 2023-09-17 and 2024-02-25 do not collide with existing metafunctor posts**
 
 ```bash
 grep -h "^date:" /home/spinoza/github/repos/metafunctor/content/post/*/index.md 2>/dev/null \
-  | grep -E "^date: 2023-02-19|^date: 2023-08-14" | sort -u
+  | grep -E "^date: 2023-09-17|^date: 2024-02-25" | sort -u
 ```
 
 Expected: empty output. If any dates collide, pick adjacent unused days and note them before proceeding.
@@ -63,23 +63,23 @@ Expected: the last `add_test` line belongs to the most recently added post (Fibo
 ## Task 2: Scaffold post 7 directory and wire CMakeLists
 
 **Files:**
-- Create: `post/2023-02-rice-golomb-wire-formats/index.md`
-- Create: `post/2023-02-rice-golomb-wire-formats/rice_golomb.hpp`
-- Create: `post/2023-02-rice-golomb-wire-formats/test_rice_golomb.cpp`
+- Create: `post/2023-09-rice-golomb-wire-formats/index.md`
+- Create: `post/2023-09-rice-golomb-wire-formats/rice_golomb.hpp`
+- Create: `post/2023-09-rice-golomb-wire-formats/test_rice_golomb.cpp`
 - Modify: `post/CMakeLists.txt`
 
 - [ ] **Step 1: Create the post 7 directory and skeleton files**
 
 ```bash
-mkdir -p /home/spinoza/github/metafunctor-series/wire-formats/post/2023-02-rice-golomb-wire-formats
+mkdir -p /home/spinoza/github/metafunctor-series/wire-formats/post/2023-09-rice-golomb-wire-formats
 ```
 
-Create `post/2023-02-rice-golomb-wire-formats/index.md` with placeholder frontmatter:
+Create `post/2023-09-rice-golomb-wire-formats/index.md` with placeholder frontmatter:
 
 ```markdown
 ---
 title: "Rice / Golomb"
-date: 2023-02-19
+date: 2023-09-17
 draft: true
 tags:
 - C++
@@ -106,7 +106,7 @@ linked_project:
 (Draft in progress. See plan Task 8 for full prose.)
 ```
 
-Create `post/2023-02-rice-golomb-wire-formats/rice_golomb.hpp` with header guards only:
+Create `post/2023-09-rice-golomb-wire-formats/rice_golomb.hpp` with header guards only:
 
 ```cpp
 // rice_golomb.hpp
@@ -143,7 +143,7 @@ concept BitSource = requires(S& s) {
 }  // namespace rice_golomb
 ```
 
-Create `post/2023-02-rice-golomb-wire-formats/test_rice_golomb.cpp` with a placeholder test:
+Create `post/2023-09-rice-golomb-wire-formats/test_rice_golomb.cpp` with a placeholder test:
 
 ```cpp
 #include <gtest/gtest.h>
@@ -161,11 +161,11 @@ Append to `/home/spinoza/github/metafunctor-series/wire-formats/post/CMakeLists.
 ```cmake
 
 # =============================================================================
-# Rice / Golomb (post 7, 2023-02-19)
+# Rice / Golomb (post 7, 2023-09-17)
 # =============================================================================
-add_executable(test_rice_golomb 2023-02-rice-golomb-wire-formats/test_rice_golomb.cpp)
+add_executable(test_rice_golomb 2023-09-rice-golomb-wire-formats/test_rice_golomb.cpp)
 target_link_libraries(test_rice_golomb GTest::gtest_main)
-target_include_directories(test_rice_golomb PRIVATE 2023-02-rice-golomb-wire-formats)
+target_include_directories(test_rice_golomb PRIVATE 2023-09-rice-golomb-wire-formats)
 add_test(NAME test_rice_golomb COMMAND test_rice_golomb)
 ```
 
@@ -181,7 +181,7 @@ Expected: all existing tests pass plus the new `test_rice_golomb.Placeholder` te
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2023-02-rice-golomb-wire-formats post/CMakeLists.txt
+git add post/2023-09-rice-golomb-wire-formats post/CMakeLists.txt
 git commit -m "scaffold(rice-golomb): add post 7 directory and CMake wiring"
 ```
 
@@ -190,8 +190,8 @@ git commit -m "scaffold(rice-golomb): add post 7 directory and CMake wiring"
 ## Task 3: TDD -- implement `Rice<K>` codec
 
 **Files:**
-- Modify: `post/2023-02-rice-golomb-wire-formats/rice_golomb.hpp`
-- Modify: `post/2023-02-rice-golomb-wire-formats/test_rice_golomb.cpp`
+- Modify: `post/2023-09-rice-golomb-wire-formats/rice_golomb.hpp`
+- Modify: `post/2023-09-rice-golomb-wire-formats/test_rice_golomb.cpp`
 
 - [ ] **Step 1: Write failing tests for `Rice<K>`**
 
@@ -388,8 +388,8 @@ Expected: all RiceGolombTest cases (Rice round-trips, bit counts, spot-checks) p
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2023-02-rice-golomb-wire-formats/rice_golomb.hpp \
-        post/2023-02-rice-golomb-wire-formats/test_rice_golomb.cpp
+git add post/2023-09-rice-golomb-wire-formats/rice_golomb.hpp \
+        post/2023-09-rice-golomb-wire-formats/test_rice_golomb.cpp
 git commit -m "feat(rice-golomb): implement Rice<K> codec (TDD)"
 ```
 
@@ -398,8 +398,8 @@ git commit -m "feat(rice-golomb): implement Rice<K> codec (TDD)"
 ## Task 4: TDD -- implement `Golomb<M>` codec
 
 **Files:**
-- Modify: `post/2023-02-rice-golomb-wire-formats/rice_golomb.hpp`
-- Modify: `post/2023-02-rice-golomb-wire-formats/test_rice_golomb.cpp`
+- Modify: `post/2023-09-rice-golomb-wire-formats/rice_golomb.hpp`
+- Modify: `post/2023-09-rice-golomb-wire-formats/test_rice_golomb.cpp`
 
 - [ ] **Step 1: Append failing tests for `Golomb<M>`**
 
@@ -621,8 +621,8 @@ Expected: all RiceGolombTest cases pass (all Rice tests from Task 3 plus all Gol
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2023-02-rice-golomb-wire-formats/rice_golomb.hpp \
-        post/2023-02-rice-golomb-wire-formats/test_rice_golomb.cpp
+git add post/2023-09-rice-golomb-wire-formats/rice_golomb.hpp \
+        post/2023-09-rice-golomb-wire-formats/test_rice_golomb.cpp
 git commit -m "feat(rice-golomb): implement Golomb<M> with truncated-binary remainder (TDD)"
 ```
 
@@ -631,8 +631,8 @@ git commit -m "feat(rice-golomb): implement Golomb<M> with truncated-binary rema
 ## Task 5: TDD -- implement `optimal_rice_k` and `optimal_golomb_m`
 
 **Files:**
-- Modify: `post/2023-02-rice-golomb-wire-formats/rice_golomb.hpp`
-- Modify: `post/2023-02-rice-golomb-wire-formats/test_rice_golomb.cpp`
+- Modify: `post/2023-09-rice-golomb-wire-formats/rice_golomb.hpp`
+- Modify: `post/2023-09-rice-golomb-wire-formats/test_rice_golomb.cpp`
 
 - [ ] **Step 1: Append failing tests for the parameter-selection functions**
 
@@ -751,8 +751,8 @@ Expected: all RiceGolombTest cases pass including the new optimal_* tests.
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2023-02-rice-golomb-wire-formats/rice_golomb.hpp \
-        post/2023-02-rice-golomb-wire-formats/test_rice_golomb.cpp
+git add post/2023-09-rice-golomb-wire-formats/rice_golomb.hpp \
+        post/2023-09-rice-golomb-wire-formats/test_rice_golomb.cpp
 git commit -m "feat(rice-golomb): add optimal_rice_k and optimal_golomb_m (TDD)"
 ```
 
@@ -761,7 +761,7 @@ git commit -m "feat(rice-golomb): add optimal_rice_k and optimal_golomb_m (TDD)"
 ## Task 6: Optimality verification tests using the priors library
 
 **Files:**
-- Modify: `post/2023-02-rice-golomb-wire-formats/test_rice_golomb.cpp`
+- Modify: `post/2023-09-rice-golomb-wire-formats/test_rice_golomb.cpp`
 - Modify: `post/CMakeLists.txt` (add priors include path)
 
 These tests verify the spec's section D claim: for a geometric source with mean mu, Rice with the optimal K has small redundancy compared to the entropy.
@@ -772,8 +772,8 @@ In `post/CMakeLists.txt`, change the `target_include_directories` line for `test
 
 ```cmake
 target_include_directories(test_rice_golomb PRIVATE
-    2023-02-rice-golomb-wire-formats
-    2021-03-priors-wire-formats)
+    2023-09-rice-golomb-wire-formats
+    2022-01-priors-wire-formats)
 ```
 
 - [ ] **Step 2: Append optimality integration tests to test_rice_golomb.cpp**
@@ -781,7 +781,7 @@ target_include_directories(test_rice_golomb PRIVATE
 Append to `test_rice_golomb.cpp`:
 
 ```cpp
-#include "../2021-03-priors-wire-formats/priors.hpp"
+#include "../2022-01-priors-wire-formats/priors.hpp"
 #include <cmath>
 
 // Build a geometric distribution truncated to N terms with mean mu.
@@ -862,7 +862,7 @@ Expected: all RiceGolombTest cases pass including the optimality tests.
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2023-02-rice-golomb-wire-formats/test_rice_golomb.cpp \
+git add post/2023-09-rice-golomb-wire-formats/test_rice_golomb.cpp \
         post/CMakeLists.txt
 git commit -m "test(rice-golomb): add optimality integration tests against priors library"
 ```
@@ -908,13 +908,13 @@ No commit for this task.
 ## Task 8: Draft post 7 prose
 
 **Files:**
-- Modify: `post/2023-02-rice-golomb-wire-formats/index.md`
+- Modify: `post/2023-09-rice-golomb-wire-formats/index.md`
 
 Draft from the spec's sections A through G for Post 7. The target is approximately 2000 words. No em-dashes anywhere in the file.
 
 - [ ] **Step 1: Draft the prose**
 
-Replace the placeholder `(Draft in progress...)` line in `post/2023-02-rice-golomb-wire-formats/index.md` with the full article body. Use the spec's section-by-section outline:
+Replace the placeholder `(Draft in progress...)` line in `post/2023-09-rice-golomb-wire-formats/index.md` with the full article body. Use the spec's section-by-section outline:
 
 Section A ("The First Parametric Code", ~200 words, no code): all codes seen so far have been monolithic (unary is unary, gamma is gamma). Rice and Golomb introduce a parameter that lets you tune the code to a specific source's expected value. This is the first time we get to choose. Frame it: Rice(k) is a family of codes, one per value of k. Each member is optimal for a specific geometric distribution. Choosing k is choosing your prior precisely.
 
@@ -928,14 +928,14 @@ Section E ("Use Cases", ~250 words, no code): Rice coding is the standard for ru
 
 Section F ("The Connection to Huffman", ~250 words, no code): Rice/Golomb is parametric; Huffman is constructed. Rice with optimal k is asymptotically as good as Huffman on a geometric source, but Rice does not require building a tree at run time. Forward to post 9 (Huffman, "forthcoming").
 
-Section G ("Cross-references and footnote", ~120 words): forward to post 8 (VByte, live link `/post/2023-08-vbyte-wire-formats/`). Back to post 3 (Universal Codes as Priors, live link), posts 4 through 6 (live links). Cross-series links to both Stepanov bridge posts (Rice's parameter K is conceptually the "tag-bit-width" choice in the Either combinator). PFC footnote pointing to `include/pfc/codecs.hpp` (`Rice<K>` and `Golomb<M>` structs).
+Section G ("Cross-references and footnote", ~120 words): forward to post 8 (VByte, live link `/post/2024-02-vbyte-wire-formats/`). Back to post 3 (Universal Codes as Priors, live link), posts 4 through 6 (live links). Cross-series links to both Stepanov bridge posts (Rice's parameter K is conceptually the "tag-bit-width" choice in the Either combinator). PFC footnote pointing to `include/pfc/codecs.hpp` (`Rice<K>` and `Golomb<M>` structs).
 
 Set `draft: false` in the frontmatter when satisfied with the draft.
 
 - [ ] **Step 2: Soul check (banned-phrase hook)**
 
 ```bash
-grep -n $'\xe2\x80\x94' /home/spinoza/github/metafunctor-series/wire-formats/post/2023-02-rice-golomb-wire-formats/index.md | head -5
+grep -n $'\xe2\x80\x94' /home/spinoza/github/metafunctor-series/wire-formats/post/2023-09-rice-golomb-wire-formats/index.md | head -5
 ```
 
 Expected: no output (no em-dashes in the file).
@@ -944,7 +944,7 @@ Expected: no output (no em-dashes in the file).
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2023-02-rice-golomb-wire-formats/index.md
+git add post/2023-09-rice-golomb-wire-formats/index.md
 git commit -m "docs(rice-golomb): draft post 7 prose (Rice / Golomb)"
 ```
 
@@ -953,23 +953,23 @@ git commit -m "docs(rice-golomb): draft post 7 prose (Rice / Golomb)"
 ## Task 9: Scaffold post 8 directory and wire CMakeLists
 
 **Files:**
-- Create: `post/2023-08-vbyte-wire-formats/index.md`
-- Create: `post/2023-08-vbyte-wire-formats/vbyte.hpp`
-- Create: `post/2023-08-vbyte-wire-formats/test_vbyte.cpp`
+- Create: `post/2024-02-vbyte-wire-formats/index.md`
+- Create: `post/2024-02-vbyte-wire-formats/vbyte.hpp`
+- Create: `post/2024-02-vbyte-wire-formats/test_vbyte.cpp`
 - Modify: `post/CMakeLists.txt`
 
 - [ ] **Step 1: Create the post 8 directory and skeleton files**
 
 ```bash
-mkdir -p /home/spinoza/github/metafunctor-series/wire-formats/post/2023-08-vbyte-wire-formats
+mkdir -p /home/spinoza/github/metafunctor-series/wire-formats/post/2024-02-vbyte-wire-formats
 ```
 
-Create `post/2023-08-vbyte-wire-formats/index.md` with placeholder frontmatter:
+Create `post/2024-02-vbyte-wire-formats/index.md` with placeholder frontmatter:
 
 ```markdown
 ---
 title: "VByte / Varint"
-date: 2023-08-14
+date: 2024-02-25
 draft: true
 tags:
 - C++
@@ -996,7 +996,7 @@ linked_project:
 (Draft in progress. See plan Task 13 for full prose.)
 ```
 
-Create `post/2023-08-vbyte-wire-formats/vbyte.hpp` with header guards only:
+Create `post/2024-02-vbyte-wire-formats/vbyte.hpp` with header guards only:
 
 ```cpp
 // vbyte.hpp
@@ -1035,7 +1035,7 @@ concept BitSource = requires(S& s) {
 }  // namespace vbyte
 ```
 
-Create `post/2023-08-vbyte-wire-formats/test_vbyte.cpp` with a placeholder test:
+Create `post/2024-02-vbyte-wire-formats/test_vbyte.cpp` with a placeholder test:
 
 ```cpp
 #include <gtest/gtest.h>
@@ -1053,11 +1053,11 @@ Append to `/home/spinoza/github/metafunctor-series/wire-formats/post/CMakeLists.
 ```cmake
 
 # =============================================================================
-# VByte / Varint (post 8, 2023-08-14)
+# VByte / Varint (post 8, 2024-02-25)
 # =============================================================================
-add_executable(test_vbyte 2023-08-vbyte-wire-formats/test_vbyte.cpp)
+add_executable(test_vbyte 2024-02-vbyte-wire-formats/test_vbyte.cpp)
 target_link_libraries(test_vbyte GTest::gtest_main)
-target_include_directories(test_vbyte PRIVATE 2023-08-vbyte-wire-formats)
+target_include_directories(test_vbyte PRIVATE 2024-02-vbyte-wire-formats)
 add_test(NAME test_vbyte COMMAND test_vbyte)
 ```
 
@@ -1073,7 +1073,7 @@ Expected: all existing tests pass plus the new `test_vbyte.Placeholder` test.
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2023-08-vbyte-wire-formats post/CMakeLists.txt
+git add post/2024-02-vbyte-wire-formats post/CMakeLists.txt
 git commit -m "scaffold(vbyte): add post 8 directory and CMake wiring"
 ```
 
@@ -1082,8 +1082,8 @@ git commit -m "scaffold(vbyte): add post 8 directory and CMake wiring"
 ## Task 10: TDD -- implement `VByte` codec
 
 **Files:**
-- Modify: `post/2023-08-vbyte-wire-formats/vbyte.hpp`
-- Modify: `post/2023-08-vbyte-wire-formats/test_vbyte.cpp`
+- Modify: `post/2024-02-vbyte-wire-formats/vbyte.hpp`
+- Modify: `post/2024-02-vbyte-wire-formats/test_vbyte.cpp`
 
 - [ ] **Step 1: Write failing tests for `VByte`**
 
@@ -1302,8 +1302,8 @@ Expected: all VByteTest cases pass (round-trips, length checks, spot-checks).
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2023-08-vbyte-wire-formats/vbyte.hpp \
-        post/2023-08-vbyte-wire-formats/test_vbyte.cpp
+git add post/2024-02-vbyte-wire-formats/vbyte.hpp \
+        post/2024-02-vbyte-wire-formats/test_vbyte.cpp
 git commit -m "feat(vbyte): implement VByte codec (TDD)"
 ```
 
@@ -1312,7 +1312,7 @@ git commit -m "feat(vbyte): implement VByte codec (TDD)"
 ## Task 11: Length-comparison tests (VByte vs Gamma vs Delta table)
 
 **Files:**
-- Modify: `post/2023-08-vbyte-wire-formats/test_vbyte.cpp`
+- Modify: `post/2024-02-vbyte-wire-formats/test_vbyte.cpp`
 - Modify: `post/CMakeLists.txt` (add include paths for delta and gamma)
 
 These tests verify the spec's section D comparison table and embed it as a machine-checked artifact.
@@ -1323,10 +1323,10 @@ In `post/CMakeLists.txt`, update `target_include_directories` for `test_vbyte`:
 
 ```cmake
 target_include_directories(test_vbyte PRIVATE
-    2023-08-vbyte-wire-formats
-    2021-03-priors-wire-formats
-    2021-08-elias-gamma-wire-formats
-    2022-02-elias-delta-omega-wire-formats)
+    2024-02-vbyte-wire-formats
+    2022-01-priors-wire-formats
+    2022-06-elias-gamma-wire-formats
+    2022-11-elias-delta-omega-wire-formats)
 ```
 
 - [ ] **Step 2: Append the length-comparison tests to test_vbyte.cpp**
@@ -1334,9 +1334,9 @@ target_include_directories(test_vbyte PRIVATE
 Append to `test_vbyte.cpp`:
 
 ```cpp
-#include "../2021-03-priors-wire-formats/priors.hpp"
-#include "../2021-08-elias-gamma-wire-formats/unary_gamma.hpp"
-#include "../2022-02-elias-delta-omega-wire-formats/elias_delta_omega.hpp"
+#include "../2022-01-priors-wire-formats/priors.hpp"
+#include "../2022-06-elias-gamma-wire-formats/unary_gamma.hpp"
+#include "../2022-11-elias-delta-omega-wire-formats/elias_delta_omega.hpp"
 
 // Helper: compute VByte length in bits for n.
 // Formula: 8 * ceil(log2(n+1) / 7), minimum 8.
@@ -1436,7 +1436,7 @@ Expected: all VByteTest cases pass including the length comparison table tests.
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2023-08-vbyte-wire-formats/test_vbyte.cpp \
+git add post/2024-02-vbyte-wire-formats/test_vbyte.cpp \
         post/CMakeLists.txt
 git commit -m "test(vbyte): add length-comparison tests verifying VByte vs Gamma vs Delta table"
 ```
@@ -1482,13 +1482,13 @@ No commit for this task.
 ## Task 13: Draft post 8 prose
 
 **Files:**
-- Modify: `post/2023-08-vbyte-wire-formats/index.md`
+- Modify: `post/2024-02-vbyte-wire-formats/index.md`
 
 Draft from the spec's sections A through G for Post 8. The target is approximately 2000 words. No em-dashes anywhere in the file.
 
 - [ ] **Step 1: Draft the prose**
 
-Replace the placeholder in `post/2023-08-vbyte-wire-formats/index.md` with the full article body:
+Replace the placeholder in `post/2024-02-vbyte-wire-formats/index.md` with the full article body:
 
 Section A ("The Practical Question", ~200 words, no code): all universal codes seen so far operate at bit granularity. Bit packing is theoretically optimal but computationally expensive. For high-throughput encoding (databases, network protocols, log compression), the overhead of bit packing can exceed the savings from compression. VByte (also called Varint) trades a small amount of length efficiency for byte-alignment. It is the encoding used by Protocol Buffers, Google's columnar databases, and most production columnar file formats.
 
@@ -1509,7 +1509,7 @@ Set `draft: false` when satisfied.
 - [ ] **Step 2: Soul check**
 
 ```bash
-grep -n $'\xe2\x80\x94' /home/spinoza/github/metafunctor-series/wire-formats/post/2023-08-vbyte-wire-formats/index.md | head -5
+grep -n $'\xe2\x80\x94' /home/spinoza/github/metafunctor-series/wire-formats/post/2024-02-vbyte-wire-formats/index.md | head -5
 ```
 
 Expected: no output (no em-dashes).
@@ -1518,7 +1518,7 @@ Expected: no output (no em-dashes).
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2023-08-vbyte-wire-formats/index.md
+git add post/2024-02-vbyte-wire-formats/index.md
 git commit -m "docs(vbyte): draft post 8 prose (VByte / Varint)"
 ```
 
@@ -1535,14 +1535,14 @@ In `docs/about.md`, change the rows for posts 7 and 8 from `Forthcoming` to `Pub
 
 Old lines:
 ```
-| 7 | Rice / Golomb | 2023-02-19 | Forthcoming |
-| 8 | VByte / Varint | 2023-08-14 | Forthcoming |
+| 7 | Rice / Golomb | 2023-09-17 | Forthcoming |
+| 8 | VByte / Varint | 2024-02-25 | Forthcoming |
 ```
 
 New lines:
 ```
-| 7 | Rice / Golomb | 2023-02-19 | Published |
-| 8 | VByte / Varint | 2023-08-14 | Published |
+| 7 | Rice / Golomb | 2023-09-17 | Published |
+| 8 | VByte / Varint | 2024-02-25 | Published |
 ```
 
 - [ ] **Step 2: Commit**
@@ -1568,12 +1568,12 @@ In `mkdocs.yml`, the "Universal Codes" section (created by sub-sub-projects 3a a
 
 ```yaml
   - "Universal Codes":
-      - "Universal Codes as Priors": "post/2021-03-priors-wire-formats/index.md"
-      - "Unary and Elias Gamma": "post/2021-08-elias-gamma-wire-formats/index.md"
-      - "Elias Delta and Omega": "post/2022-02-elias-delta-omega-wire-formats/index.md"
-      - "Fibonacci Coding": "post/2022-07-fibonacci-wire-formats/index.md"
-      - "Rice / Golomb": "post/2023-02-rice-golomb-wire-formats/index.md"
-      - "VByte / Varint": "post/2023-08-vbyte-wire-formats/index.md"
+      - "Universal Codes as Priors": "post/2022-01-priors-wire-formats/index.md"
+      - "Unary and Elias Gamma": "post/2022-06-elias-gamma-wire-formats/index.md"
+      - "Elias Delta and Omega": "post/2022-11-elias-delta-omega-wire-formats/index.md"
+      - "Fibonacci Coding": "post/2023-04-fibonacci-wire-formats/index.md"
+      - "Rice / Golomb": "post/2023-09-rice-golomb-wire-formats/index.md"
+      - "VByte / Varint": "post/2024-02-vbyte-wire-formats/index.md"
 ```
 
 - [ ] **Step 2: Commit**
@@ -1602,8 +1602,8 @@ Expected: all eight test suites pass (test_kraft, test_mcmillan, test_priors, te
 
 ```bash
 grep -n $'\xe2\x80\x94' \
-    /home/spinoza/github/metafunctor-series/wire-formats/post/2023-02-rice-golomb-wire-formats/index.md \
-    /home/spinoza/github/metafunctor-series/wire-formats/post/2023-08-vbyte-wire-formats/index.md \
+    /home/spinoza/github/metafunctor-series/wire-formats/post/2023-09-rice-golomb-wire-formats/index.md \
+    /home/spinoza/github/metafunctor-series/wire-formats/post/2024-02-vbyte-wire-formats/index.md \
     | head -10
 ```
 
@@ -1633,13 +1633,13 @@ BLOG_POST_DIR=/home/spinoza/github/repos/metafunctor/content/post \
 ```
 
 Expected: rsync output showing two new directories synced:
-- `-> 2023-02-rice-golomb-wire-formats`
-- `-> 2023-08-vbyte-wire-formats`
+- `-> 2023-09-rice-golomb-wire-formats`
+- `-> 2024-02-vbyte-wire-formats`
 
 - [ ] **Step 2: Verify metafunctor received both post directories**
 
 ```bash
-ls /home/spinoza/github/repos/metafunctor/content/post/ | grep -E "2023-02-rice-golomb|2023-08-vbyte"
+ls /home/spinoza/github/repos/metafunctor/content/post/ | grep -E "2023-09-rice-golomb|2024-02-vbyte"
 ```
 
 Expected: both directories present.
@@ -1655,7 +1655,7 @@ No commit for this task (sync only; metafunctor commit is a separate step).
 - [ ] **Step 1: Check git status in metafunctor**
 
 ```bash
-cd /home/spinoza/github/repos/metafunctor && git status --short | grep -E "2023-02-rice-golomb|2023-08-vbyte"
+cd /home/spinoza/github/repos/metafunctor && git status --short | grep -E "2023-09-rice-golomb|2024-02-vbyte"
 ```
 
 Expected: two new untracked directories (or staged adds if already added).
@@ -1728,8 +1728,8 @@ git -C /home/spinoza/github/metafunctor-series/wire-formats push origin main
 
 ```bash
 cd /home/spinoza/github/repos/metafunctor
-git add content/post/2023-02-rice-golomb-wire-formats \
-        content/post/2023-08-vbyte-wire-formats
+git add content/post/2023-09-rice-golomb-wire-formats \
+        content/post/2024-02-vbyte-wire-formats
 git commit -m "content(wire-formats): sync posts 7 and 8 (rice-golomb, vbyte)"
 git push origin main
 ```
@@ -1741,7 +1741,7 @@ git push origin main
 - [ ] **Step 1: Produce a summary for the user**
 
 Report:
-- Posts shipped: post 7 ("Rice / Golomb", 2023-02-19) and post 8 ("VByte / Varint", 2023-08-14).
+- Posts shipped: post 7 ("Rice / Golomb", 2023-09-17) and post 8 ("VByte / Varint", 2024-02-25).
 - Files created: `rice_golomb.hpp` (Rice<K>, Golomb<M>, detail::truncated_binary_encode/decode, optimal_rice_k, optimal_golomb_m), `test_rice_golomb.cpp` (round-trips, bit-count checks, spot-checks, optimality tests against priors library), `vbyte.hpp` (VByte), `test_vbyte.cpp` (round-trips, length checks, spot-checks, length-comparison table vs Gamma and Delta), `index.md` for each post.
 - Test counts: all suites pass (test_kraft, test_mcmillan, test_priors, test_unary_gamma, test_elias_delta_omega, test_fibonacci, test_rice_golomb, test_vbyte).
 - Navigation: `mkdocs.yml` updated with posts 7 and 8 under "Universal Codes"; `docs/about.md` updated with Published status for both posts.

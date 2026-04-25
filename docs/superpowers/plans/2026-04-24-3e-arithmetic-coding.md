@@ -16,9 +16,9 @@ See `docs/superpowers/specs/2026-04-24-arc-posts-3-through-13.md`, section "Post
 
 ## Cross-references note
 
-Post 9 (Huffman, planned date 2024-03-25) is the immediate back-reference. Post 3 (priors, 2021-03-29) supplies `entropy()` and `redundancy()` via cross-include. Post 11 (Succinct Bit Vectors, 2025-03-09) is the forward-reference. All forward/back links use the stable `/post/YYYY-MM-slug/` URL pattern; links to posts not yet published remain as plain text in the prose (no href).
+Post 9 (Huffman, planned date 2024-08-04) is the immediate back-reference. Post 3 (priors, 2022-01-15) supplies `entropy()` and `redundancy()` via cross-include. Post 11 (Succinct Bit Vectors, 2025-06-22) is the forward-reference. All forward/back links use the stable `/post/YYYY-MM-slug/` URL pattern; links to posts not yet published remain as plain text in the prose (no href).
 
-The priors.hpp file lives at `post/2021-03-priors-wire-formats/priors.hpp`. The test target for post 10 gets `target_include_directories` pointing at both its own directory and `2021-03-priors-wire-formats/` so `#include "priors.hpp"` resolves without path duplication.
+The priors.hpp file lives at `post/2022-01-priors-wire-formats/priors.hpp`. The test target for post 10 gets `target_include_directories` pointing at both its own directory and `2022-01-priors-wire-formats/` so `#include "priors.hpp"` resolves without path duplication.
 
 ---
 
@@ -26,11 +26,11 @@ The priors.hpp file lives at `post/2021-03-priors-wire-formats/priors.hpp`. The 
 
 **Files:** read-only.
 
-- [ ] **Step 1: Verify date 2024-09-04 does not collide with existing metafunctor posts**
+- [ ] **Step 1: Verify date 2025-01-12 does not collide with existing metafunctor posts**
 
 ```bash
 grep -h "^date:" /home/spinoza/github/repos/metafunctor/content/post/*/index.md 2>/dev/null \
-  | grep "^date: 2024-09-04" | sort -u
+  | grep "^date: 2025-01-12" | sort -u
 ```
 
 Expected: empty output. If a date collides, pick an adjacent unused date (2024-09-03 or 2024-09-05) and note it before proceeding. Use the chosen date throughout this plan.
@@ -56,23 +56,23 @@ Expected: the last `add_test` line belongs to whatever the highest-numbered exis
 ## Task 2: Scaffold post 10 directory and wire CMakeLists
 
 **Files:**
-- Create: `post/2024-09-arithmetic-coding-wire-formats/index.md`
-- Create: `post/2024-09-arithmetic-coding-wire-formats/arithmetic_coding.hpp`
-- Create: `post/2024-09-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp`
+- Create: `post/2025-01-arithmetic-coding-wire-formats/index.md`
+- Create: `post/2025-01-arithmetic-coding-wire-formats/arithmetic_coding.hpp`
+- Create: `post/2025-01-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp`
 - Modify: `post/CMakeLists.txt`
 
 - [ ] **Step 1: Create the post 10 directory and skeleton files**
 
 ```bash
-mkdir -p /home/spinoza/github/metafunctor-series/wire-formats/post/2024-09-arithmetic-coding-wire-formats
+mkdir -p /home/spinoza/github/metafunctor-series/wire-formats/post/2025-01-arithmetic-coding-wire-formats
 ```
 
-Create `post/2024-09-arithmetic-coding-wire-formats/index.md` with placeholder frontmatter:
+Create `post/2025-01-arithmetic-coding-wire-formats/index.md` with placeholder frontmatter:
 
 ```markdown
 ---
 title: "Arithmetic Coding"
-date: 2024-09-04
+date: 2025-01-12
 draft: true
 tags:
 - C++
@@ -98,7 +98,7 @@ linked_project:
 (Draft in progress. See plan Task 14 for full prose.)
 ```
 
-Create `post/2024-09-arithmetic-coding-wire-formats/arithmetic_coding.hpp` with header guards and namespace skeleton only:
+Create `post/2025-01-arithmetic-coding-wire-formats/arithmetic_coding.hpp` with header guards and namespace skeleton only:
 
 ```cpp
 // arithmetic_coding.hpp
@@ -134,7 +134,7 @@ class ArithmeticDecoder;
 }  // namespace arithmetic_coding
 ```
 
-Create `post/2024-09-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp` with a placeholder test:
+Create `post/2025-01-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp` with a placeholder test:
 
 ```cpp
 #include <gtest/gtest.h>
@@ -152,18 +152,18 @@ Append to `/home/spinoza/github/metafunctor-series/wire-formats/post/CMakeLists.
 ```cmake
 
 # =============================================================================
-# Arithmetic Coding (post 10, 2024-09-04)
+# Arithmetic Coding (post 10, 2025-01-12)
 # =============================================================================
 add_executable(test_arithmetic_coding
-    2024-09-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp)
+    2025-01-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp)
 target_link_libraries(test_arithmetic_coding GTest::gtest_main)
 target_include_directories(test_arithmetic_coding PRIVATE
-    2024-09-arithmetic-coding-wire-formats
-    2021-03-priors-wire-formats)
+    2025-01-arithmetic-coding-wire-formats
+    2022-01-priors-wire-formats)
 add_test(NAME test_arithmetic_coding COMMAND test_arithmetic_coding)
 ```
 
-Note: the `2021-03-priors-wire-formats` entry in `target_include_directories` allows the test to `#include "priors.hpp"` for entropy and redundancy measurements.
+Note: the `2022-01-priors-wire-formats` entry in `target_include_directories` allows the test to `#include "priors.hpp"` for entropy and redundancy measurements.
 
 - [ ] **Step 3: Build and verify placeholder test passes**
 
@@ -177,7 +177,7 @@ Expected: all previous tests pass plus the new `ArithmeticCodingTest.Placeholder
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2024-09-arithmetic-coding-wire-formats post/CMakeLists.txt
+git add post/2025-01-arithmetic-coding-wire-formats post/CMakeLists.txt
 git commit -m "scaffold(arithmetic-coding): add post 10 directory and CMake wiring"
 ```
 
@@ -186,8 +186,8 @@ git commit -m "scaffold(arithmetic-coding): add post 10 directory and CMake wiri
 ## Task 3: TDD -- implement `BitWriter` and `BitReader` (local I/O helpers)
 
 **Files:**
-- Modify: `post/2024-09-arithmetic-coding-wire-formats/arithmetic_coding.hpp`
-- Modify: `post/2024-09-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp`
+- Modify: `post/2025-01-arithmetic-coding-wire-formats/arithmetic_coding.hpp`
+- Modify: `post/2025-01-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp`
 
 The integer range coder emits and reads individual bits. Rather than pulling in the full PFC `core.hpp`, define minimal self-contained `BitWriter` and `BitReader` classes that back their bit streams with `std::vector<std::uint8_t>`.
 
@@ -323,8 +323,8 @@ Expected: BitIOTest.RoundTripSingleBit, BitIOTest.RoundTripMultipleBits, BitIOTe
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2024-09-arithmetic-coding-wire-formats/arithmetic_coding.hpp \
-        post/2024-09-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp
+git add post/2025-01-arithmetic-coding-wire-formats/arithmetic_coding.hpp \
+        post/2025-01-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp
 git commit -m "feat(arithmetic-coding): implement BitWriter and BitReader (TDD)"
 ```
 
@@ -333,8 +333,8 @@ git commit -m "feat(arithmetic-coding): implement BitWriter and BitReader (TDD)"
 ## Task 4: TDD -- implement `ArithmeticEncoder` constructor and state
 
 **Files:**
-- Modify: `post/2024-09-arithmetic-coding-wire-formats/arithmetic_coding.hpp`
-- Modify: `post/2024-09-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp`
+- Modify: `post/2025-01-arithmetic-coding-wire-formats/arithmetic_coding.hpp`
+- Modify: `post/2025-01-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp`
 
 - [ ] **Step 1: Append failing tests for encoder construction**
 
@@ -402,8 +402,8 @@ Expected: ArithmeticEncoderTest.ConstructorInitializesState passes.
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2024-09-arithmetic-coding-wire-formats/arithmetic_coding.hpp \
-        post/2024-09-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp
+git add post/2025-01-arithmetic-coding-wire-formats/arithmetic_coding.hpp \
+        post/2025-01-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp
 git commit -m "feat(arithmetic-coding): implement ArithmeticEncoder skeleton with state (TDD)"
 ```
 
@@ -412,8 +412,8 @@ git commit -m "feat(arithmetic-coding): implement ArithmeticEncoder skeleton wit
 ## Task 5: TDD -- implement `encode_symbol` and `renormalize`
 
 **Files:**
-- Modify: `post/2024-09-arithmetic-coding-wire-formats/arithmetic_coding.hpp`
-- Modify: `post/2024-09-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp`
+- Modify: `post/2025-01-arithmetic-coding-wire-formats/arithmetic_coding.hpp`
+- Modify: `post/2025-01-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp`
 
 This is the numerical heart of the coder. `encode_symbol` shrinks the interval; `renormalize` extracts agreed-upon bits and handles underflow. Both must be correct for any round-trip test to pass.
 
@@ -534,8 +534,8 @@ Expected: EncodeSymbolShrinksIntervalCorrectly, EncodeSymbolUpperHalf, Underflow
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2024-09-arithmetic-coding-wire-formats/arithmetic_coding.hpp \
-        post/2024-09-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp
+git add post/2025-01-arithmetic-coding-wire-formats/arithmetic_coding.hpp \
+        post/2025-01-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp
 git commit -m "feat(arithmetic-coding): implement encode_symbol and renormalize (TDD)"
 ```
 
@@ -544,8 +544,8 @@ git commit -m "feat(arithmetic-coding): implement encode_symbol and renormalize 
 ## Task 6: TDD -- implement `ArithmeticEncoder::finish`
 
 **Files:**
-- Modify: `post/2024-09-arithmetic-coding-wire-formats/arithmetic_coding.hpp`
-- Modify: `post/2024-09-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp`
+- Modify: `post/2025-01-arithmetic-coding-wire-formats/arithmetic_coding.hpp`
+- Modify: `post/2025-01-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp`
 
 `finish()` emits the final bits needed to disambiguate the encoded interval. After `finish()`, the bit stream is complete and the decoder can reconstruct the sequence.
 
@@ -621,8 +621,8 @@ Expected: all ArithmeticEncoderTest cases pass (ConstructorInitializesState, Enc
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2024-09-arithmetic-coding-wire-formats/arithmetic_coding.hpp \
-        post/2024-09-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp
+git add post/2025-01-arithmetic-coding-wire-formats/arithmetic_coding.hpp \
+        post/2025-01-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp
 git commit -m "feat(arithmetic-coding): implement ArithmeticEncoder::finish (TDD)"
 ```
 
@@ -631,8 +631,8 @@ git commit -m "feat(arithmetic-coding): implement ArithmeticEncoder::finish (TDD
 ## Task 7: TDD -- implement `ArithmeticDecoder` constructor and state
 
 **Files:**
-- Modify: `post/2024-09-arithmetic-coding-wire-formats/arithmetic_coding.hpp`
-- Modify: `post/2024-09-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp`
+- Modify: `post/2025-01-arithmetic-coding-wire-formats/arithmetic_coding.hpp`
+- Modify: `post/2025-01-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp`
 
 The decoder mirrors the encoder. Its state is `low_`, `high_`, and `code_` (the 32-bit window of bits read from the input). The constructor primes `code_` by reading the first 32 bits.
 
@@ -716,8 +716,8 @@ Expected: ArithmeticDecoderTest.ConstructorPrimesCode passes.
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2024-09-arithmetic-coding-wire-formats/arithmetic_coding.hpp \
-        post/2024-09-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp
+git add post/2025-01-arithmetic-coding-wire-formats/arithmetic_coding.hpp \
+        post/2025-01-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp
 git commit -m "feat(arithmetic-coding): implement ArithmeticDecoder skeleton (TDD)"
 ```
 
@@ -726,8 +726,8 @@ git commit -m "feat(arithmetic-coding): implement ArithmeticDecoder skeleton (TD
 ## Task 8: TDD -- implement `ArithmeticDecoder::decode_symbol`
 
 **Files:**
-- Modify: `post/2024-09-arithmetic-coding-wire-formats/arithmetic_coding.hpp`
-- Modify: `post/2024-09-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp`
+- Modify: `post/2025-01-arithmetic-coding-wire-formats/arithmetic_coding.hpp`
+- Modify: `post/2025-01-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp`
 
 `decode_symbol` is the inverse of `encode_symbol`. It computes a scaled value from `code_`, calls a callback to find the symbol whose cumulative-frequency interval contains that value, updates the interval exactly as the encoder would, then renormalizes by reading new bits.
 
@@ -843,8 +843,8 @@ Expected: ArithmeticDecoderTest.ConstructorPrimesCode and DecodeSymbolAfterEncod
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2024-09-arithmetic-coding-wire-formats/arithmetic_coding.hpp \
-        post/2024-09-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp
+git add post/2025-01-arithmetic-coding-wire-formats/arithmetic_coding.hpp \
+        post/2025-01-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp
 git commit -m "feat(arithmetic-coding): implement ArithmeticDecoder::decode_symbol (TDD)"
 ```
 
@@ -853,7 +853,7 @@ git commit -m "feat(arithmetic-coding): implement ArithmeticDecoder::decode_symb
 ## Task 9: TDD -- single-symbol round-trip across various probabilities
 
 **Files:**
-- Modify: `post/2024-09-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp`
+- Modify: `post/2025-01-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp`
 
 Parameterized tests that encode a single symbol under several different two-symbol distributions and verify the decoder recovers it exactly.
 
@@ -920,7 +920,7 @@ Expected: RoundTripTest.SingleSymbolEquiprobable, .SingleSymbolSkewed90, .Single
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2024-09-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp
+git add post/2025-01-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp
 git commit -m "test(arithmetic-coding): single-symbol round-trip across distributions (TDD)"
 ```
 
@@ -929,7 +929,7 @@ git commit -m "test(arithmetic-coding): single-symbol round-trip across distribu
 ## Task 10: TDD -- multi-symbol sequence round-trip
 
 **Files:**
-- Modify: `post/2024-09-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp`
+- Modify: `post/2025-01-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp`
 
 Round-trip tests for sequences of 10, 50, and 100 symbols using a helper that encodes a full sequence then decodes it symbol-by-symbol.
 
@@ -1006,7 +1006,7 @@ Expected: all RoundTripTest cases pass (single-symbol and sequence tests).
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2024-09-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp
+git add post/2025-01-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp
 git commit -m "test(arithmetic-coding): multi-symbol sequence round-trip (TDD)"
 ```
 
@@ -1015,7 +1015,7 @@ git commit -m "test(arithmetic-coding): multi-symbol sequence round-trip (TDD)"
 ## Task 11: TDD -- convergence-to-entropy test
 
 **Files:**
-- Modify: `post/2024-09-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp`
+- Modify: `post/2025-01-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp`
 
 Verify that as the sequence length grows, the encoder's output approaches H(p) bits per symbol. Uses `priors::entropy` via the cross-include established in Task 2.
 
@@ -1085,7 +1085,7 @@ Expected: ConvergenceTest.ApproachesEntropyBernoulli99 and ConvergenceTest.NearE
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2024-09-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp
+git add post/2025-01-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp
 git commit -m "test(arithmetic-coding): convergence-to-entropy test for Bernoulli(0.99) (TDD)"
 ```
 
@@ -1094,7 +1094,7 @@ git commit -m "test(arithmetic-coding): convergence-to-entropy test for Bernoull
 ## Task 12: TDD -- binary-source compression demo (the spec's compelling test)
 
 **Files:**
-- Modify: `post/2024-09-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp`
+- Modify: `post/2025-01-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp`
 
 The spec highlights a specific demo: a Bernoulli(0.99) source of 1000 symbols. Huffman cannot compress below 1 bit/symbol on a binary source. Arithmetic coding achieves approximately 0.082 bits/symbol, a factor-of-12 improvement.
 
@@ -1165,7 +1165,7 @@ Expected: BinarySourceDemoTest.Bernoulli99OneThousandSymbols passes.
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2024-09-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp
+git add post/2025-01-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp
 git commit -m "test(arithmetic-coding): binary-source compression demo, Bernoulli(0.99)"
 ```
 
@@ -1211,7 +1211,7 @@ No commit for this task (verification only).
 ## Task 14: Draft post 10 prose
 
 **Files:**
-- Modify: `post/2024-09-arithmetic-coding-wire-formats/index.md`
+- Modify: `post/2025-01-arithmetic-coding-wire-formats/index.md`
 
 Draft from the spec's sections A through G. Target: approximately 2200 words. Section C (the integer implementation) is the densest section; budget extra time. No em-dashes anywhere in the file.
 
@@ -1235,7 +1235,7 @@ Include the renormalize loop verbatim from the implementation as the code block.
 
 **Section G ("Cross-references and footnote", ~120 words):** Include the exact cross-reference set from the spec:
 - Forward: Succinct Bit Vectors and Rank/Select (post 11) shifts from entropy coding to space-efficient data structures (plain text, no href yet).
-- Back: [Huffman](/post/2024-03-huffman-wire-formats/) (post 9), [Universal Codes as Priors](/post/2021-03-priors-wire-formats/) (post 3).
+- Back: [Huffman](/post/2024-08-huffman-wire-formats/) (post 9), [Universal Codes as Priors](/post/2022-01-priors-wire-formats/) (post 3).
 - Cross-series: Bits Follow Types -- arithmetic is the entropy-optimal version of the Either combinator's tag bit (plain text reference).
 - Footnote: PFC's `include/pfc/arithmetic_coding.hpp` has both the integer range coder and a higher-level adaptive variant.
 
@@ -1245,7 +1245,7 @@ Set `draft: false` in the frontmatter when satisfied with the draft.
 
 ```bash
 grep -c $'\xe2\x80\x94' \
-    /home/spinoza/github/metafunctor-series/wire-formats/post/2024-09-arithmetic-coding-wire-formats/index.md
+    /home/spinoza/github/metafunctor-series/wire-formats/post/2025-01-arithmetic-coding-wire-formats/index.md
 ```
 
 Expected: 0. If non-zero, locate and replace each em-dash with a comma, colon, or period before proceeding.
@@ -1254,7 +1254,7 @@ Expected: 0. If non-zero, locate and replace each em-dash with a comma, colon, o
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2024-09-arithmetic-coding-wire-formats/index.md
+git add post/2025-01-arithmetic-coding-wire-formats/index.md
 git commit -m "docs(arithmetic-coding): draft post 10 prose (Arithmetic Coding)"
 ```
 
@@ -1270,13 +1270,13 @@ git commit -m "docs(arithmetic-coding): draft post 10 prose (Arithmetic Coding)"
 In `docs/about.md`, locate the row:
 
 ```
-| 10 | Arithmetic Coding | 2024-09-04 | Forthcoming |
+| 10 | Arithmetic Coding | 2025-01-12 | Forthcoming |
 ```
 
 Change it to:
 
 ```
-| 10 | Arithmetic Coding | 2024-09-04 | Published |
+| 10 | Arithmetic Coding | 2025-01-12 | Published |
 ```
 
 - [ ] **Step 2: Commit**
@@ -1300,14 +1300,14 @@ In `mkdocs.yml`, after whatever nav section contains post 9 (Huffman), add post 
 
 ```yaml
   - "Entropy-Optimal":
-      - "Huffman": "post/2024-03-huffman-wire-formats/index.md"
-      - "Arithmetic Coding": "post/2024-09-arithmetic-coding-wire-formats/index.md"
+      - "Huffman": "post/2024-08-huffman-wire-formats/index.md"
+      - "Arithmetic Coding": "post/2025-01-arithmetic-coding-wire-formats/index.md"
 ```
 
 If the Huffman entry is already there under "Entropy-Optimal", only the arithmetic-coding line is new:
 
 ```yaml
-      - "Arithmetic Coding": "post/2024-09-arithmetic-coding-wire-formats/index.md"
+      - "Arithmetic Coding": "post/2025-01-arithmetic-coding-wire-formats/index.md"
 ```
 
 - [ ] **Step 2: Commit**
@@ -1336,7 +1336,7 @@ Expected: all test suites pass (test_kraft, test_mcmillan, plus any from posts 3
 
 ```bash
 grep -c $'\xe2\x80\x94' \
-    /home/spinoza/github/metafunctor-series/wire-formats/post/2024-09-arithmetic-coding-wire-formats/index.md
+    /home/spinoza/github/metafunctor-series/wire-formats/post/2025-01-arithmetic-coding-wire-formats/index.md
 ```
 
 Expected: 0.
@@ -1356,7 +1356,7 @@ BLOG_POST_DIR=/home/spinoza/github/repos/metafunctor/content/post \
     make -C /home/spinoza/github/metafunctor-series/wire-formats sync 2>&1
 ```
 
-Expected: rsync output showing `-> 2024-09-arithmetic-coding-wire-formats` synced.
+Expected: rsync output showing `-> 2025-01-arithmetic-coding-wire-formats` synced.
 
 - [ ] **Step 5: Verify metafunctor received the post directory**
 
@@ -1364,7 +1364,7 @@ Expected: rsync output showing `-> 2024-09-arithmetic-coding-wire-formats` synce
 ls /home/spinoza/github/repos/metafunctor/content/post/ | grep "2024-09-arithmetic"
 ```
 
-Expected: `2024-09-arithmetic-coding-wire-formats` present.
+Expected: `2025-01-arithmetic-coding-wire-formats` present.
 
 No commit for this task.
 
@@ -1416,7 +1416,7 @@ Expected: the directory shown as untracked or staged.
 
 Report to the user:
 - Wire-formats repo: ~14 new commits to push to origin/main.
-- Metafunctor repo: 1 new post directory (`2024-09-arithmetic-coding-wire-formats`) to commit and push.
+- Metafunctor repo: 1 new post directory (`2025-01-arithmetic-coding-wire-formats`) to commit and push.
 
 Wait for explicit user approval before proceeding.
 
@@ -1430,7 +1430,7 @@ git -C /home/spinoza/github/metafunctor-series/wire-formats push origin main
 
 ```bash
 cd /home/spinoza/github/repos/metafunctor
-git add content/post/2024-09-arithmetic-coding-wire-formats
+git add content/post/2025-01-arithmetic-coding-wire-formats
 git commit -m "content(wire-formats): sync post 10 (Arithmetic Coding)"
 git push origin main
 ```
@@ -1514,8 +1514,8 @@ std::size_t decode_symbol(FreqCb&& get_freq_cb, RangeCb&& cum_range_cb,
 
 ## Cross-references (summary for prose and nav)
 
-- Forward: post 11, Succinct Bit Vectors and Rank/Select (`/post/2025-03-succinct-wire-formats/`) -- plain text in prose until post 11 is published.
-- Back: post 9, Huffman (`/post/2024-03-huffman-wire-formats/`); post 3, Universal Codes as Priors (`/post/2021-03-priors-wire-formats/`).
+- Forward: post 11, Succinct Bit Vectors and Rank/Select (`/post/2025-06-succinct-wire-formats/`) -- plain text in prose until post 11 is published.
+- Back: post 9, Huffman (`/post/2024-08-huffman-wire-formats/`); post 3, Universal Codes as Priors (`/post/2022-01-priors-wire-formats/`).
 - Cross-series: Bits Follow Types (Stepanov bridge) -- arithmetic is the entropy-optimal version of the Either combinator's tag bit.
 - PFC footnote: `include/pfc/arithmetic_coding.hpp` contains both the integer range coder and a higher-level adaptive variant.
 

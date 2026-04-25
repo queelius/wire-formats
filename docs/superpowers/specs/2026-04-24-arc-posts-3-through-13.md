@@ -105,7 +105,7 @@ Each outline below specifies: title, date, code budget, prose budget, opening H2
 ## Post 3: "Universal Codes as Priors"
 
 **Slot weight:** 3
-**Date:** 2021-03-29
+**Date:** 2022-01-15
 **Code budget:** ~150 lines (`priors.hpp` containing `implied_prior`, `entropy`, `expected_length`, `redundancy`, plus a few helpers)
 **Prose budget:** ~2000 words
 **Opening H2:** "Universal Codes as Priors"
@@ -214,7 +214,7 @@ Forward-pointer: posts 4 through 8 develop the universal codes; posts 9 and 10 d
 
 #### G. Cross-references and footnote (~120 words)
 
-- Forward: [Unary and Elias Gamma](/post/2021-08-elias-gamma-wire-formats/) (post 4) develops the first concrete instances.
+- Forward: [Unary and Elias Gamma](/post/2022-06-elias-gamma-wire-formats/) (post 4) develops the first concrete instances.
 - Back: [Kraft's Inequality](/post/2020-03-kraft-wire-formats/) characterizes which length vectors (and therefore which implicit priors) are achievable. [McMillan's Converse](/post/2020-09-mcmillan-wire-formats/) gives the construction.
 - Cross-series: [Bits Follow Types](/post/2026-05-codecs-functors-stepanov/) and [When Lists Become Bits](/post/2026-05-prefix-free-stepanov/) develop the type-algebra side; this post and the rest of the wire-formats series develop the bit-level information-theory side.
 - Footnote: PFC's `include/pfc/codecs.hpp` is the production catalogue of universal codes; this series develops them one at a time.
@@ -224,7 +224,7 @@ Forward-pointer: posts 4 through 8 develop the universal codes; posts 9 and 10 d
 ## Post 4: "Unary and Elias Gamma"
 
 **Slot weight:** 4
-**Date:** 2021-08-08
+**Date:** 2022-06-19
 **Code budget:** ~180 lines (`unary_gamma.hpp` containing `Unary` and `Gamma` codecs plus their length-vector generators)
 **Prose budget:** ~2000 words
 **Opening H2:** "Unary and Elias Gamma"
@@ -315,8 +315,8 @@ Forward to post 5: this recursive idea is the key to delta and omega.
 
 #### G. Cross-references and footnote (~120 words)
 
-- Forward: [Elias Delta and Omega](/post/2022-02-elias-delta-omega-wire-formats/) (post 5) develops the recursive elaborations.
-- Back: [Universal Codes as Priors](/post/2021-03-priors-wire-formats/) (post 3) is the framing this post instantiates twice.
+- Forward: [Elias Delta and Omega](/post/2022-11-elias-delta-omega-wire-formats/) (post 5) develops the recursive elaborations.
+- Back: [Universal Codes as Priors](/post/2022-01-priors-wire-formats/) (post 3) is the framing this post instantiates twice.
 - Cross-series: [When Lists Become Bits](/post/2026-05-prefix-free-stepanov/) uses Gamma as its running example for prefix-free length encoding.
 - Footnote: PFC's `include/pfc/codecs.hpp` has both `Unary` and `Gamma` along with the rest of the universal-codes catalogue.
 
@@ -325,7 +325,7 @@ Forward to post 5: this recursive idea is the key to delta and omega.
 ## Post 5: "Elias Delta and Omega"
 
 **Slot weight:** 5
-**Date:** 2022-02-13
+**Date:** 2022-11-13
 **Code budget:** ~200 lines (`elias_delta_omega.hpp` containing `Delta` and `Omega` codecs)
 **Prose budget:** ~2000 words
 **Opening H2:** "Recursive Elaborations of Gamma"
@@ -415,8 +415,8 @@ Note: omega is rarely used in practice (the constant overhead dominates), but it
 
 #### G. Cross-references and footnote (~120 words)
 
-- Forward: [Fibonacci Coding](/post/2022-07-fibonacci-wire-formats/) (post 6) takes a different design philosophy.
-- Back: [Unary and Elias Gamma](/post/2021-08-elias-gamma-wire-formats/) (post 4); [Universal Codes as Priors](/post/2021-03-priors-wire-formats/) (post 3).
+- Forward: [Fibonacci Coding](/post/2023-04-fibonacci-wire-formats/) (post 6) takes a different design philosophy.
+- Back: [Unary and Elias Gamma](/post/2022-06-elias-gamma-wire-formats/) (post 4); [Universal Codes as Priors](/post/2022-01-priors-wire-formats/) (post 3).
 - Cross-series: both Stepanov bridge posts.
 - Footnote: PFC's `include/pfc/codecs.hpp` has `EliasDelta` and `EliasOmega`.
 
@@ -425,7 +425,7 @@ Note: omega is rarely used in practice (the constant overhead dominates), but it
 ## Post 6: "Fibonacci Coding"
 
 **Slot weight:** 6
-**Date:** 2022-07-17
+**Date:** 2023-04-23
 **Code budget:** ~180 lines (`fibonacci.hpp` containing `Fibonacci` codec plus the Zeckendorf representation helpers)
 **Prose budget:** ~2000 words
 **Opening H2:** "Fibonacci Coding"
@@ -510,8 +510,8 @@ Note that Fibonacci is rarely the right choice when the channel is reliable; the
 
 #### G. Cross-references and footnote (~120 words)
 
-- Forward: [Rice / Golomb](/post/2023-02-rice-golomb-wire-formats/) (post 7) takes yet another design angle: parametric optimization for geometric sources.
-- Back: [Universal Codes as Priors](/post/2021-03-priors-wire-formats/) (post 3); [Unary and Elias Gamma](/post/2021-08-elias-gamma-wire-formats/) (post 4) for comparison.
+- Forward: [Rice / Golomb](/post/2023-09-rice-golomb-wire-formats/) (post 7) takes yet another design angle: parametric optimization for geometric sources.
+- Back: [Universal Codes as Priors](/post/2022-01-priors-wire-formats/) (post 3); [Unary and Elias Gamma](/post/2022-06-elias-gamma-wire-formats/) (post 4) for comparison.
 - Cross-series: not directly relevant (Fibonacci is its own animal; the type-algebra side does not particularly need self-synchronization).
 - Footnote: PFC's `include/pfc/codecs.hpp` has `Fibonacci`.
 
@@ -520,7 +520,7 @@ Note that Fibonacci is rarely the right choice when the channel is reliable; the
 ## Post 7: "Rice / Golomb"
 
 **Slot weight:** 7
-**Date:** 2023-02-19
+**Date:** 2023-09-17
 **Code budget:** ~200 lines (`rice_golomb.hpp` containing `RiceCodec<k>` and `GolombCodec<m>` plus parameter-selection helpers)
 **Prose budget:** ~2000 words
 **Opening H2:** "Parametric Codes for Geometric Sources"
@@ -615,8 +615,8 @@ Forward to post 9: Huffman as the construction that achieves optimality for any 
 
 #### G. Cross-references and footnote (~120 words)
 
-- Forward: [VByte / Varint](/post/2023-08-vbyte-wire-formats/) (post 8) takes a different practical angle: byte-alignment.
-- Back: [Universal Codes as Priors](/post/2021-03-priors-wire-formats/) (post 3); previous code posts 4, 5, 6.
+- Forward: [VByte / Varint](/post/2024-02-vbyte-wire-formats/) (post 8) takes a different practical angle: byte-alignment.
+- Back: [Universal Codes as Priors](/post/2022-01-priors-wire-formats/) (post 3); previous code posts 4, 5, 6.
 - Cross-series: both Stepanov bridge posts (Rice's parameter is conceptually the "tag bit width" choice from the Either combinator).
 - Footnote: PFC's `include/pfc/codecs.hpp` has `Rice<K>` and `Golomb<M>`.
 
@@ -625,7 +625,7 @@ Forward to post 9: Huffman as the construction that achieves optimality for any 
 ## Post 8: "VByte / Varint"
 
 **Slot weight:** 8
-**Date:** 2023-08-14
+**Date:** 2024-02-25
 **Code budget:** ~150 lines (`vbyte.hpp` containing `VByte` codec)
 **Prose budget:** ~2000 words
 **Opening H2:** "Byte-Aligned Variable-Length Encoding"
@@ -726,7 +726,7 @@ Note that this pattern recurs throughout systems work: theoretically optimal sol
 
 #### G. Cross-references and footnote (~120 words)
 
-- Forward: [Huffman](/post/2024-03-huffman-wire-formats/) (post 9) returns to the entropy-optimal regime.
+- Forward: [Huffman](/post/2024-08-huffman-wire-formats/) (post 9) returns to the entropy-optimal regime.
 - Back: previous code posts (4, 5, 6, 7).
 - Cross-series: not directly relevant; byte-alignment is orthogonal to the type-algebra story.
 - Footnote: PFC's `include/pfc/codecs.hpp` has `VByte`. Production Protocol Buffers source (e.g., Google's protobuf-cpp) has the SIMD-optimized version this post does not implement.
@@ -736,7 +736,7 @@ Note that this pattern recurs throughout systems work: theoretically optimal sol
 ## Post 9: "Huffman"
 
 **Slot weight:** 9
-**Date:** 2024-03-25
+**Date:** 2024-08-04
 **Code budget:** ~280 lines (`huffman.hpp` containing tree building, encoding, decoding, and the optimality proof helpers)
 **Prose budget:** ~2200 words
 **Opening H2:** "Optimality from Frequency"
@@ -830,8 +830,8 @@ Forward to post 10: arithmetic coding solves both problems (no integer-length co
 
 #### G. Cross-references and footnote (~120 words)
 
-- Forward: [Arithmetic Coding](/post/2024-09-arithmetic-coding-wire-formats/) (post 10) achieves entropy in the limit.
-- Back: [McMillan's Converse](/post/2020-09-mcmillan-wire-formats/) (post 2) is the construction Huffman specializes; [Universal Codes as Priors](/post/2021-03-priors-wire-formats/) (post 3) is the framing.
+- Forward: [Arithmetic Coding](/post/2025-01-arithmetic-coding-wire-formats/) (post 10) achieves entropy in the limit.
+- Back: [McMillan's Converse](/post/2020-09-mcmillan-wire-formats/) (post 2) is the construction Huffman specializes; [Universal Codes as Priors](/post/2022-01-priors-wire-formats/) (post 3) is the framing.
 - Cross-series: [Bits Follow Types](/post/2026-05-codecs-functors-stepanov/) -- Huffman is the entropy-optimal alternative to the fixed `log2(N)` tag-bit cost the Either combinator pays.
 - Footnote: PFC's `include/pfc/huffman.hpp` is the production version with iterative tree construction and the optimal Tunstall-coding-friendly variant.
 
@@ -840,7 +840,7 @@ Forward to post 10: arithmetic coding solves both problems (no integer-length co
 ## Post 10: "Arithmetic Coding"
 
 **Slot weight:** 10
-**Date:** 2024-09-04
+**Date:** 2025-01-12
 **Code budget:** ~320 lines (`arithmetic_coding.hpp` containing the integer range coder, encoder, decoder, and continuous-length analysis helpers)
 **Prose budget:** ~2200 words
 **Opening H2:** "From Integer to Continuous Lengths"
@@ -911,8 +911,8 @@ Frame: arithmetic coding is the end of the road for entropy coding. Beyond it, t
 
 #### G. Cross-references and footnote (~120 words)
 
-- Forward: [Succinct Bit Vectors and Rank/Select](/post/2025-03-succinct-wire-formats/) (post 11) shifts from entropy coding to space-efficient data structures.
-- Back: [Huffman](/post/2024-03-huffman-wire-formats/) (post 9), [Universal Codes as Priors](/post/2021-03-priors-wire-formats/) (post 3).
+- Forward: [Succinct Bit Vectors and Rank/Select](/post/2025-06-succinct-wire-formats/) (post 11) shifts from entropy coding to space-efficient data structures.
+- Back: [Huffman](/post/2024-08-huffman-wire-formats/) (post 9), [Universal Codes as Priors](/post/2022-01-priors-wire-formats/) (post 3).
 - Cross-series: [Bits Follow Types](/post/2026-05-codecs-functors-stepanov/) -- arithmetic is the entropy-optimal version of the Either combinator's tag bit.
 - Footnote: PFC's `include/pfc/arithmetic_coding.hpp` has both the integer range coder and a higher-level adaptive variant.
 
@@ -921,7 +921,7 @@ Frame: arithmetic coding is the end of the road for entropy coding. Beyond it, t
 ## Post 11: "Succinct Bit Vectors and Rank/Select"
 
 **Slot weight:** 11
-**Date:** 2025-03-09
+**Date:** 2025-06-22
 **Code budget:** ~250 lines (`succinct_bitvector.hpp` containing `SuccinctBitVector` with rank, select, and the supporting block/superblock structure)
 **Prose budget:** ~2000 words
 **Opening H2:** "Constant-Time Queries on Bit Vectors"
@@ -1022,8 +1022,8 @@ The choice depends on density. Succinct is best when the bit vector is dense (cl
 
 #### G. Cross-references and footnote (~120 words)
 
-- Forward: [RoaringBitmap](/post/2025-08-roaring-bitmap-wire-formats/) (post 12) is the hybrid that combines succinct bit vectors with sparse representations.
-- Back: [Kraft's Inequality](/post/2020-03-kraft-wire-formats/) (post 1) is the relevant lower bound (succinct bit vectors achieve the information-theoretic minimum space); [Universal Codes as Priors](/post/2021-03-priors-wire-formats/) (post 3) frames sparse-representation choice as a prior over densities.
+- Forward: [RoaringBitmap](/post/2025-12-roaring-bitmap-wire-formats/) (post 12) is the hybrid that combines succinct bit vectors with sparse representations.
+- Back: [Kraft's Inequality](/post/2020-03-kraft-wire-formats/) (post 1) is the relevant lower bound (succinct bit vectors achieve the information-theoretic minimum space); [Universal Codes as Priors](/post/2022-01-priors-wire-formats/) (post 3) frames sparse-representation choice as a prior over densities.
 - Cross-series: not directly relevant.
 - Footnote: PFC's `include/pfc/succinct.hpp` is the production version with $O(1)$ select via the additional index.
 
@@ -1032,7 +1032,7 @@ The choice depends on density. Succinct is best when the bit vector is dense (cl
 ## Post 12: "RoaringBitmap"
 
 **Slot weight:** 12
-**Date:** 2025-08-10
+**Date:** 2025-12-07
 **Code budget:** ~280 lines (`roaring_bitmap.hpp` containing the three container types and the dispatching layer)
 **Prose budget:** ~2000 words
 **Opening H2:** "Hybrid Representation as Polyalgorithm"
@@ -1103,7 +1103,7 @@ Connect back to the series's framing: each container type in RoaringBitmap is op
 #### G. Cross-references and footnote (~120 words)
 
 - Forward: [Synthesis: Codecs as Structure](/post/2026-05-synthesis-wire-formats/) (post 13) closes the arc.
-- Back: [Succinct Bit Vectors](/post/2025-03-succinct-wire-formats/) (post 11) is one of the container types Roaring uses; [Universal Codes as Priors](/post/2021-03-priors-wire-formats/) (post 3) frames Roaring as a polyalgorithm over density priors.
+- Back: [Succinct Bit Vectors](/post/2025-06-succinct-wire-formats/) (post 11) is one of the container types Roaring uses; [Universal Codes as Priors](/post/2022-01-priors-wire-formats/) (post 3) frames Roaring as a polyalgorithm over density priors.
 - Cross-series: not directly relevant.
 - Footnote: PFC's `include/pfc/succinct.hpp` includes a `RoaringBitmap` implementation with the three container types.
 

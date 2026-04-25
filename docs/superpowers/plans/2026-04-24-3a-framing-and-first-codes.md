@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Ship posts 3 ("Universal Codes as Priors", 2021-03-29) and 4 ("Unary and Elias Gamma", 2021-08-08) of the Algebra over Wire Formats series, including TDD implementations of `priors.hpp` and `unary_gamma.hpp`, full GoogleTest suites, prose drafts, and sync to metafunctor.com.
+**Goal:** Ship posts 3 ("Universal Codes as Priors", 2022-01-15) and 4 ("Unary and Elias Gamma", 2022-06-19) of the Algebra over Wire Formats series, including TDD implementations of `priors.hpp` and `unary_gamma.hpp`, full GoogleTest suites, prose drafts, and sync to metafunctor.com.
 
-**Architecture:** Two new post directories under `post/` (`2021-03-priors-wire-formats/` and `2021-08-elias-gamma-wire-formats/`), each with a header, a test file, and `index.md`. Post 3's `priors.hpp` defines the `implied_prior`, `entropy`, `expected_length`, and `redundancy` functions that all subsequent posts (4 through 13) can include as a shared library. Post 4's `unary_gamma.hpp` defines `Unary` and `Gamma` codecs in `namespace unary_gamma`; the implementations match the spec verbatim and are consistent with the PFC production versions in `include/pfc/codecs.hpp`. Both posts wire into the existing `post/CMakeLists.txt`, update `docs/about.md` and `mkdocs.yml`, and sync to metafunctor via the Makefile `sync` target.
+**Architecture:** Two new post directories under `post/` (`2022-01-priors-wire-formats/` and `2022-06-elias-gamma-wire-formats/`), each with a header, a test file, and `index.md`. Post 3's `priors.hpp` defines the `implied_prior`, `entropy`, `expected_length`, and `redundancy` functions that all subsequent posts (4 through 13) can include as a shared library. Post 4's `unary_gamma.hpp` defines `Unary` and `Gamma` codecs in `namespace unary_gamma`; the implementations match the spec verbatim and are consistent with the PFC production versions in `include/pfc/codecs.hpp`. Both posts wire into the existing `post/CMakeLists.txt`, update `docs/about.md` and `mkdocs.yml`, and sync to metafunctor via the Makefile `sync` target.
 
 **Tech Stack:** C++23, GoogleTest v1.14.0 (already wired in `post/CMakeLists.txt`), mkdocs, the soul plugin's banned-phrase hook.
 
@@ -28,11 +28,11 @@ Post 4's `unary_gamma.hpp` can draw its `Unary` and `Gamma` implementations dire
 
 **Files:** read-only.
 
-- [ ] **Step 1: Verify dates 2021-03-29 and 2021-08-08 do not collide with existing metafunctor posts**
+- [ ] **Step 1: Verify dates 2022-01-15 and 2022-06-19 do not collide with existing metafunctor posts**
 
 ```bash
 grep -h "^date:" /home/spinoza/github/repos/metafunctor/content/post/*/index.md 2>/dev/null \
-  | grep -E "^date: 2021-03-29|^date: 2021-08-08" | sort -u
+  | grep -E "^date: 2022-01-15|^date: 2022-06-19" | sort -u
 ```
 
 Expected: empty output. If any dates collide, pick adjacent unused days and note them before proceeding.
@@ -58,23 +58,23 @@ Expected: the last `add_test` line belongs to McMillan. No commit for this task.
 ## Task 2: Scaffold post 3 directory and wire CMakeLists
 
 **Files:**
-- Create: `post/2021-03-priors-wire-formats/index.md`
-- Create: `post/2021-03-priors-wire-formats/priors.hpp`
-- Create: `post/2021-03-priors-wire-formats/test_priors.cpp`
+- Create: `post/2022-01-priors-wire-formats/index.md`
+- Create: `post/2022-01-priors-wire-formats/priors.hpp`
+- Create: `post/2022-01-priors-wire-formats/test_priors.cpp`
 - Modify: `post/CMakeLists.txt`
 
 - [ ] **Step 1: Create the post 3 directory and skeleton files**
 
 ```bash
-mkdir -p /home/spinoza/github/metafunctor-series/wire-formats/post/2021-03-priors-wire-formats
+mkdir -p /home/spinoza/github/metafunctor-series/wire-formats/post/2022-01-priors-wire-formats
 ```
 
-Create `post/2021-03-priors-wire-formats/index.md` with placeholder frontmatter:
+Create `post/2022-01-priors-wire-formats/index.md` with placeholder frontmatter:
 
 ```markdown
 ---
 title: "Universal Codes as Priors"
-date: 2021-03-29
+date: 2022-01-15
 draft: true
 tags:
 - C++
@@ -99,7 +99,7 @@ linked_project:
 (Draft in progress. See plan Task 7 for full prose.)
 ```
 
-Create `post/2021-03-priors-wire-formats/priors.hpp` with header guards only:
+Create `post/2022-01-priors-wire-formats/priors.hpp` with header guards only:
 
 ```cpp
 // priors.hpp
@@ -121,7 +121,7 @@ namespace priors {
 }  // namespace priors
 ```
 
-Create `post/2021-03-priors-wire-formats/test_priors.cpp` with a placeholder test:
+Create `post/2022-01-priors-wire-formats/test_priors.cpp` with a placeholder test:
 
 ```cpp
 #include <gtest/gtest.h>
@@ -139,11 +139,11 @@ Append to `/home/spinoza/github/metafunctor-series/wire-formats/post/CMakeLists.
 ```cmake
 
 # =============================================================================
-# Universal Codes as Priors (post 3, 2021-03-29)
+# Universal Codes as Priors (post 3, 2022-01-15)
 # =============================================================================
-add_executable(test_priors 2021-03-priors-wire-formats/test_priors.cpp)
+add_executable(test_priors 2022-01-priors-wire-formats/test_priors.cpp)
 target_link_libraries(test_priors GTest::gtest_main)
-target_include_directories(test_priors PRIVATE 2021-03-priors-wire-formats)
+target_include_directories(test_priors PRIVATE 2022-01-priors-wire-formats)
 add_test(NAME test_priors COMMAND test_priors)
 ```
 
@@ -159,7 +159,7 @@ Expected: all previous tests pass plus the new `test_priors.Placeholder` test. O
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2021-03-priors-wire-formats post/CMakeLists.txt
+git add post/2022-01-priors-wire-formats post/CMakeLists.txt
 git commit -m "scaffold(priors): add post 3 directory and CMake wiring"
 ```
 
@@ -168,8 +168,8 @@ git commit -m "scaffold(priors): add post 3 directory and CMake wiring"
 ## Task 3: TDD -- implement `implied_prior`
 
 **Files:**
-- Modify: `post/2021-03-priors-wire-formats/priors.hpp`
-- Modify: `post/2021-03-priors-wire-formats/test_priors.cpp`
+- Modify: `post/2022-01-priors-wire-formats/priors.hpp`
+- Modify: `post/2022-01-priors-wire-formats/test_priors.cpp`
 
 - [ ] **Step 1: Write failing tests for `implied_prior`**
 
@@ -322,8 +322,8 @@ Expected: all `PriorsTest` cases pass (ImpliedPriorUnaryIsGeometricHalf, Implied
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2021-03-priors-wire-formats/priors.hpp \
-        post/2021-03-priors-wire-formats/test_priors.cpp
+git add post/2022-01-priors-wire-formats/priors.hpp \
+        post/2022-01-priors-wire-formats/test_priors.cpp
 git commit -m "feat(priors): implement implied_prior with Kraft normalization (TDD)"
 ```
 
@@ -332,8 +332,8 @@ git commit -m "feat(priors): implement implied_prior with Kraft normalization (T
 ## Task 4: TDD -- implement `entropy`, `expected_length`, `redundancy`
 
 **Files:**
-- Modify: `post/2021-03-priors-wire-formats/priors.hpp`
-- Modify: `post/2021-03-priors-wire-formats/test_priors.cpp`
+- Modify: `post/2022-01-priors-wire-formats/priors.hpp`
+- Modify: `post/2022-01-priors-wire-formats/test_priors.cpp`
 
 - [ ] **Step 1: Append failing tests for Shannon functions**
 
@@ -468,8 +468,8 @@ Expected: all PriorsTest cases pass (11 tests total after this task).
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2021-03-priors-wire-formats/priors.hpp \
-        post/2021-03-priors-wire-formats/test_priors.cpp
+git add post/2022-01-priors-wire-formats/priors.hpp \
+        post/2022-01-priors-wire-formats/test_priors.cpp
 git commit -m "feat(priors): implement entropy, expected_length, redundancy (TDD)"
 ```
 
@@ -478,7 +478,7 @@ git commit -m "feat(priors): implement entropy, expected_length, redundancy (TDD
 ## Task 5: Composed integration tests for post 3's library
 
 **Files:**
-- Modify: `post/2021-03-priors-wire-formats/test_priors.cpp`
+- Modify: `post/2022-01-priors-wire-formats/test_priors.cpp`
 
 These tests exercise the full library (implied_prior, entropy, expected_length, redundancy) together on specific named distributions to verify the spec's "two concrete examples" (section D) and "table of priors" (section E) claims hold numerically.
 
@@ -562,7 +562,7 @@ Expected: all PriorsTest cases pass (14 tests after this task).
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2021-03-priors-wire-formats/test_priors.cpp
+git add post/2022-01-priors-wire-formats/test_priors.cpp
 git commit -m "test(priors): add composed integration tests (geometric/gamma/power-law)"
 ```
 
@@ -605,13 +605,13 @@ No commit for this task (verification only).
 ## Task 7: Draft post 3 prose
 
 **Files:**
-- Modify: `post/2021-03-priors-wire-formats/index.md`
+- Modify: `post/2022-01-priors-wire-formats/index.md`
 
 Draft from the spec's sections A through G for Post 3. The target is approximately 2000 words. Key requirement: no em-dashes anywhere in the file (the soul hook will block writes that contain them).
 
 - [ ] **Step 1: Draft the prose**
 
-Replace the placeholder `(Draft in progress...)` line in `post/2021-03-priors-wire-formats/index.md` with the full article body. Use the spec's section-by-section outline:
+Replace the placeholder `(Draft in progress...)` line in `post/2022-01-priors-wire-formats/index.md` with the full article body. Use the spec's section-by-section outline:
 
 Section A ("The Question", ~200 words): introduce the source-model selection framing. Any integer-compressing code is a bet about which integers show up most. Foreshadow the thesis.
 
@@ -632,13 +632,13 @@ Set `draft: false` in the frontmatter when satisfied with the draft.
 - [ ] **Step 2: Soul check (banned-phrase hook)**
 
 ```bash
-check-banned-phrases.sh /home/spinoza/github/metafunctor-series/wire-formats/post/2021-03-priors-wire-formats/index.md 2>&1
+check-banned-phrases.sh /home/spinoza/github/metafunctor-series/wire-formats/post/2022-01-priors-wire-formats/index.md 2>&1
 ```
 
 Expected: no banned phrases found. If the soul hook is not available as a standalone command, run:
 
 ```bash
-grep -n $'\xe2\x80\x94' /home/spinoza/github/metafunctor-series/wire-formats/post/2021-03-priors-wire-formats/index.md | head -5
+grep -n $'\xe2\x80\x94' /home/spinoza/github/metafunctor-series/wire-formats/post/2022-01-priors-wire-formats/index.md | head -5
 ```
 
 Expected: no output (no em-dashes in the file).
@@ -647,7 +647,7 @@ Expected: no output (no em-dashes in the file).
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2021-03-priors-wire-formats/index.md
+git add post/2022-01-priors-wire-formats/index.md
 git commit -m "docs(priors): draft post 3 prose (Universal Codes as Priors)"
 ```
 
@@ -656,23 +656,23 @@ git commit -m "docs(priors): draft post 3 prose (Universal Codes as Priors)"
 ## Task 8: Scaffold post 4 directory and wire CMakeLists
 
 **Files:**
-- Create: `post/2021-08-elias-gamma-wire-formats/index.md`
-- Create: `post/2021-08-elias-gamma-wire-formats/unary_gamma.hpp`
-- Create: `post/2021-08-elias-gamma-wire-formats/test_unary_gamma.cpp`
+- Create: `post/2022-06-elias-gamma-wire-formats/index.md`
+- Create: `post/2022-06-elias-gamma-wire-formats/unary_gamma.hpp`
+- Create: `post/2022-06-elias-gamma-wire-formats/test_unary_gamma.cpp`
 - Modify: `post/CMakeLists.txt`
 
 - [ ] **Step 1: Create the post 4 directory and skeleton files**
 
 ```bash
-mkdir -p /home/spinoza/github/metafunctor-series/wire-formats/post/2021-08-elias-gamma-wire-formats
+mkdir -p /home/spinoza/github/metafunctor-series/wire-formats/post/2022-06-elias-gamma-wire-formats
 ```
 
-Create `post/2021-08-elias-gamma-wire-formats/index.md` with placeholder frontmatter:
+Create `post/2022-06-elias-gamma-wire-formats/index.md` with placeholder frontmatter:
 
 ```markdown
 ---
 title: "Unary and Elias Gamma"
-date: 2021-08-08
+date: 2022-06-19
 draft: true
 tags:
 - C++
@@ -698,7 +698,7 @@ linked_project:
 (Draft in progress. See plan Task 14 for full prose.)
 ```
 
-Create `post/2021-08-elias-gamma-wire-formats/unary_gamma.hpp` with header guards only:
+Create `post/2022-06-elias-gamma-wire-formats/unary_gamma.hpp` with header guards only:
 
 ```cpp
 // unary_gamma.hpp
@@ -734,7 +734,7 @@ concept BitSource = requires(S& s) {
 }  // namespace unary_gamma
 ```
 
-Create `post/2021-08-elias-gamma-wire-formats/test_unary_gamma.cpp` with a placeholder:
+Create `post/2022-06-elias-gamma-wire-formats/test_unary_gamma.cpp` with a placeholder:
 
 ```cpp
 #include <gtest/gtest.h>
@@ -752,11 +752,11 @@ Append to `/home/spinoza/github/metafunctor-series/wire-formats/post/CMakeLists.
 ```cmake
 
 # =============================================================================
-# Unary and Elias Gamma (post 4, 2021-08-08)
+# Unary and Elias Gamma (post 4, 2022-06-19)
 # =============================================================================
-add_executable(test_unary_gamma 2021-08-elias-gamma-wire-formats/test_unary_gamma.cpp)
+add_executable(test_unary_gamma 2022-06-elias-gamma-wire-formats/test_unary_gamma.cpp)
 target_link_libraries(test_unary_gamma GTest::gtest_main)
-target_include_directories(test_unary_gamma PRIVATE 2021-08-elias-gamma-wire-formats)
+target_include_directories(test_unary_gamma PRIVATE 2022-06-elias-gamma-wire-formats)
 add_test(NAME test_unary_gamma COMMAND test_unary_gamma)
 ```
 
@@ -772,7 +772,7 @@ Expected: all existing tests pass plus the new `test_unary_gamma.Placeholder` te
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2021-08-elias-gamma-wire-formats post/CMakeLists.txt
+git add post/2022-06-elias-gamma-wire-formats post/CMakeLists.txt
 git commit -m "scaffold(unary-gamma): add post 4 directory and CMake wiring"
 ```
 
@@ -781,8 +781,8 @@ git commit -m "scaffold(unary-gamma): add post 4 directory and CMake wiring"
 ## Task 9: TDD -- implement `Unary` codec
 
 **Files:**
-- Modify: `post/2021-08-elias-gamma-wire-formats/unary_gamma.hpp`
-- Modify: `post/2021-08-elias-gamma-wire-formats/test_unary_gamma.cpp`
+- Modify: `post/2022-06-elias-gamma-wire-formats/unary_gamma.hpp`
+- Modify: `post/2022-06-elias-gamma-wire-formats/test_unary_gamma.cpp`
 
 - [ ] **Step 1: Write failing tests for `Unary`**
 
@@ -917,8 +917,8 @@ Expected: all UnaryGammaTest cases up to this point pass.
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2021-08-elias-gamma-wire-formats/unary_gamma.hpp \
-        post/2021-08-elias-gamma-wire-formats/test_unary_gamma.cpp
+git add post/2022-06-elias-gamma-wire-formats/unary_gamma.hpp \
+        post/2022-06-elias-gamma-wire-formats/test_unary_gamma.cpp
 git commit -m "feat(unary-gamma): implement Unary codec (TDD)"
 ```
 
@@ -927,8 +927,8 @@ git commit -m "feat(unary-gamma): implement Unary codec (TDD)"
 ## Task 10: TDD -- implement `Gamma` codec
 
 **Files:**
-- Modify: `post/2021-08-elias-gamma-wire-formats/unary_gamma.hpp`
-- Modify: `post/2021-08-elias-gamma-wire-formats/test_unary_gamma.cpp`
+- Modify: `post/2022-06-elias-gamma-wire-formats/unary_gamma.hpp`
+- Modify: `post/2022-06-elias-gamma-wire-formats/test_unary_gamma.cpp`
 
 - [ ] **Step 1: Append failing tests for `Gamma`**
 
@@ -1081,8 +1081,8 @@ Expected: all UnaryGammaTest cases pass.
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2021-08-elias-gamma-wire-formats/unary_gamma.hpp \
-        post/2021-08-elias-gamma-wire-formats/test_unary_gamma.cpp
+git add post/2022-06-elias-gamma-wire-formats/unary_gamma.hpp \
+        post/2022-06-elias-gamma-wire-formats/test_unary_gamma.cpp
 git commit -m "feat(unary-gamma): implement Gamma (Elias gamma) codec (TDD)"
 ```
 
@@ -1091,8 +1091,8 @@ git commit -m "feat(unary-gamma): implement Gamma (Elias gamma) codec (TDD)"
 ## Task 11: TDD -- length-vector helpers `unary_lengths` and `gamma_lengths`
 
 **Files:**
-- Modify: `post/2021-08-elias-gamma-wire-formats/unary_gamma.hpp`
-- Modify: `post/2021-08-elias-gamma-wire-formats/test_unary_gamma.cpp`
+- Modify: `post/2022-06-elias-gamma-wire-formats/unary_gamma.hpp`
+- Modify: `post/2022-06-elias-gamma-wire-formats/test_unary_gamma.cpp`
 
 These helpers are used by the integration tests (Task 12) and also serve as explicit documentation of the length functions embedded in the post prose.
 
@@ -1185,8 +1185,8 @@ Expected: all UnaryGammaTest cases pass including the three new helper tests.
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2021-08-elias-gamma-wire-formats/unary_gamma.hpp \
-        post/2021-08-elias-gamma-wire-formats/test_unary_gamma.cpp
+git add post/2022-06-elias-gamma-wire-formats/unary_gamma.hpp \
+        post/2022-06-elias-gamma-wire-formats/test_unary_gamma.cpp
 git commit -m "feat(unary-gamma): add unary_lengths and gamma_lengths helpers (TDD)"
 ```
 
@@ -1195,8 +1195,8 @@ git commit -m "feat(unary-gamma): add unary_lengths and gamma_lengths helpers (T
 ## Task 12: Integration tests using post 3's priors library
 
 **Files:**
-- Modify: `post/2021-08-elias-gamma-wire-formats/unary_gamma.hpp` (add include path note)
-- Modify: `post/2021-08-elias-gamma-wire-formats/test_unary_gamma.cpp`
+- Modify: `post/2022-06-elias-gamma-wire-formats/unary_gamma.hpp` (add include path note)
+- Modify: `post/2022-06-elias-gamma-wire-formats/test_unary_gamma.cpp`
 - Modify: `post/CMakeLists.txt` (add include path for priors)
 
 These tests verify the spec's claims about optimality: unary achieves entropy on a geometric source; gamma has bounded redundancy on a power-law source.
@@ -1207,8 +1207,8 @@ In `post/CMakeLists.txt`, change the `target_include_directories` line for `test
 
 ```cmake
 target_include_directories(test_unary_gamma PRIVATE
-    2021-08-elias-gamma-wire-formats
-    2021-03-priors-wire-formats)
+    2022-06-elias-gamma-wire-formats
+    2022-01-priors-wire-formats)
 ```
 
 - [ ] **Step 2: Append integration tests to test_unary_gamma.cpp**
@@ -1217,7 +1217,7 @@ Append to `test_unary_gamma.cpp`:
 
 ```cpp
 // Integration tests using the priors library from post 3.
-#include "../2021-03-priors-wire-formats/priors.hpp"
+#include "../2022-01-priors-wire-formats/priors.hpp"
 
 // Unary is exactly optimal for geometric(1/2): redundancy ~ 0.
 // (The code achieves entropy exactly because the prior is dyadic and saturates Kraft.)
@@ -1292,7 +1292,7 @@ Expected: all UnaryGammaTest cases pass including the four integration tests.
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2021-08-elias-gamma-wire-formats/test_unary_gamma.cpp \
+git add post/2022-06-elias-gamma-wire-formats/test_unary_gamma.cpp \
         post/CMakeLists.txt
 git commit -m "test(unary-gamma): integration tests verifying optimality against priors library"
 ```
@@ -1336,13 +1336,13 @@ No commit for this task.
 ## Task 14: Draft post 4 prose
 
 **Files:**
-- Modify: `post/2021-08-elias-gamma-wire-formats/index.md`
+- Modify: `post/2022-06-elias-gamma-wire-formats/index.md`
 
 Draft from the spec's sections A through G for Post 4. Target approximately 2000 words. No em-dashes.
 
 - [ ] **Step 1: Draft the prose**
 
-Replace the placeholder in `post/2021-08-elias-gamma-wire-formats/index.md` with the full article body:
+Replace the placeholder in `post/2022-06-elias-gamma-wire-formats/index.md` with the full article body:
 
 Section A ("The Two Simplest Universal Codes", ~200 words): unary predates information theory (tally marks); gamma is Elias 1975. Both are instances of post 3's "code as prior" claim.
 
@@ -1363,7 +1363,7 @@ Set `draft: false` when satisfied.
 - [ ] **Step 2: Soul check**
 
 ```bash
-grep -n $'\xe2\x80\x94' /home/spinoza/github/metafunctor-series/wire-formats/post/2021-08-elias-gamma-wire-formats/index.md | head -5
+grep -n $'\xe2\x80\x94' /home/spinoza/github/metafunctor-series/wire-formats/post/2022-06-elias-gamma-wire-formats/index.md | head -5
 ```
 
 Expected: no output (no em-dashes).
@@ -1372,7 +1372,7 @@ Expected: no output (no em-dashes).
 
 ```bash
 cd /home/spinoza/github/metafunctor-series/wire-formats
-git add post/2021-08-elias-gamma-wire-formats/index.md
+git add post/2022-06-elias-gamma-wire-formats/index.md
 git commit -m "docs(unary-gamma): draft post 4 prose (Unary and Elias Gamma)"
 ```
 
@@ -1389,14 +1389,14 @@ In `docs/about.md`, change the rows for posts 3 and 4 from `Forthcoming` to `Pub
 
 Old lines:
 ```
-| 3 | Universal Codes as Priors | 2021-03-29 | Forthcoming |
-| 4 | Unary and Elias Gamma | 2021-08-08 | Forthcoming |
+| 3 | Universal Codes as Priors | 2022-01-15 | Forthcoming |
+| 4 | Unary and Elias Gamma | 2022-06-19 | Forthcoming |
 ```
 
 New lines:
 ```
-| 3 | Universal Codes as Priors | 2021-03-29 | Published |
-| 4 | Unary and Elias Gamma | 2021-08-08 | Published |
+| 3 | Universal Codes as Priors | 2022-01-15 | Published |
+| 4 | Unary and Elias Gamma | 2022-06-19 | Published |
 ```
 
 - [ ] **Step 2: Commit**
@@ -1420,8 +1420,8 @@ In `mkdocs.yml`, after the `"Foundations"` nav section, add:
 
 ```yaml
   - "Universal Codes":
-      - "Universal Codes as Priors": "post/2021-03-priors-wire-formats/index.md"
-      - "Unary and Elias Gamma": "post/2021-08-elias-gamma-wire-formats/index.md"
+      - "Universal Codes as Priors": "post/2022-01-priors-wire-formats/index.md"
+      - "Unary and Elias Gamma": "post/2022-06-elias-gamma-wire-formats/index.md"
 ```
 
 The full nav section should look like:
@@ -1434,8 +1434,8 @@ nav:
       - "Kraft's Inequality": "post/2020-03-kraft-wire-formats/index.md"
       - "McMillan's Converse": "post/2020-09-mcmillan-wire-formats/index.md"
   - "Universal Codes":
-      - "Universal Codes as Priors": "post/2021-03-priors-wire-formats/index.md"
-      - "Unary and Elias Gamma": "post/2021-08-elias-gamma-wire-formats/index.md"
+      - "Universal Codes as Priors": "post/2022-01-priors-wire-formats/index.md"
+      - "Unary and Elias Gamma": "post/2022-06-elias-gamma-wire-formats/index.md"
 ```
 
 - [ ] **Step 2: Commit**
@@ -1464,8 +1464,8 @@ Expected: all four test suites pass (test_kraft, test_mcmillan, test_priors, tes
 
 ```bash
 grep -n $'\xe2\x80\x94' \
-    /home/spinoza/github/metafunctor-series/wire-formats/post/2021-03-priors-wire-formats/index.md \
-    /home/spinoza/github/metafunctor-series/wire-formats/post/2021-08-elias-gamma-wire-formats/index.md \
+    /home/spinoza/github/metafunctor-series/wire-formats/post/2022-01-priors-wire-formats/index.md \
+    /home/spinoza/github/metafunctor-series/wire-formats/post/2022-06-elias-gamma-wire-formats/index.md \
     | head -10
 ```
 
@@ -1495,13 +1495,13 @@ BLOG_POST_DIR=/home/spinoza/github/repos/metafunctor/content/post \
 ```
 
 Expected: rsync output showing two directories synced:
-- `-> 2021-03-priors-wire-formats`
-- `-> 2021-08-elias-gamma-wire-formats`
+- `-> 2022-01-priors-wire-formats`
+- `-> 2022-06-elias-gamma-wire-formats`
 
 - [ ] **Step 2: Verify metafunctor received both post directories**
 
 ```bash
-ls /home/spinoza/github/repos/metafunctor/content/post/ | grep -E "2021-03-priors|2021-08-elias-gamma"
+ls /home/spinoza/github/repos/metafunctor/content/post/ | grep -E "2022-01-priors|2022-06-elias-gamma"
 ```
 
 Expected: both directories present.
@@ -1517,7 +1517,7 @@ No commit for this task (sync only; metafunctor commit is a separate step).
 - [ ] **Step 1: Check git status in metafunctor**
 
 ```bash
-cd /home/spinoza/github/repos/metafunctor && git status --short | grep -E "2021-03-priors|2021-08-elias"
+cd /home/spinoza/github/repos/metafunctor && git status --short | grep -E "2022-01-priors|2021-08-elias"
 ```
 
 Expected: two new untracked directories (or staged adds if already added).
@@ -1590,8 +1590,8 @@ git -C /home/spinoza/github/metafunctor-series/wire-formats push origin main
 
 ```bash
 cd /home/spinoza/github/repos/metafunctor
-git add content/post/2021-03-priors-wire-formats \
-        content/post/2021-08-elias-gamma-wire-formats
+git add content/post/2022-01-priors-wire-formats \
+        content/post/2022-06-elias-gamma-wire-formats
 git commit -m "content(wire-formats): sync posts 3 and 4 (priors, unary-gamma)"
 git push origin main
 ```
@@ -1603,7 +1603,7 @@ git push origin main
 - [ ] **Step 1: Produce a summary for the user**
 
 Report:
-- Posts shipped: post 3 ("Universal Codes as Priors", 2021-03-29) and post 4 ("Unary and Elias Gamma", 2021-08-08).
+- Posts shipped: post 3 ("Universal Codes as Priors", 2022-01-15) and post 4 ("Unary and Elias Gamma", 2022-06-19).
 - Files created: `priors.hpp` (4 functions: implied_prior, entropy, expected_length, redundancy), `test_priors.cpp` (14 tests), `unary_gamma.hpp` (2 codecs + 2 helpers: Unary, Gamma, unary_lengths, gamma_lengths), `test_unary_gamma.cpp` (integration tests against priors library), `index.md` for each post.
 - Test counts: all suites pass (test_kraft, test_mcmillan, test_priors, test_unary_gamma).
 - Navigation: `mkdocs.yml` updated with "Universal Codes" section; `docs/about.md` updated with Published status for both posts.
