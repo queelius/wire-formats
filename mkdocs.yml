@@ -46,3 +46,6 @@ nav:
   - "Entropy-Optimal":
       - "Huffman Coding": "post/2024-08-huffman-wire-formats/index.md"
       - "Arithmetic Coding": "post/2025-01-arithmetic-coding-wire-formats/index.md"
+  - "Succinct Data Structures":
+      - "Succinct Bit Vectors and Rank/Select": "post/2025-06-succinct-wire-formats/index.md"
+      - "RoaringBitmap": "post/2025-12-roaring-bitmap-wire-formats/index.md"

@@ -21,8 +21,8 @@ The series is planned for 13 posts spanning 2020 through 2026, roughly 2 posts p
 | 8 | VByte / Varint | 2024-02-25 | Published |
 | 9 | Huffman Coding | 2024-08-04 | Published |
 | 10 | Arithmetic Coding | 2025-01-12 | Published |
-| 11 | Succinct Bit Vectors and Rank/Select | 2025-03-09 | Forthcoming |
-| 12 | RoaringBitmap | 2025-08-10 | Forthcoming |
+| 11 | Succinct Bit Vectors and Rank/Select | 2025-06-22 | Published |
+| 12 | RoaringBitmap                        | 2025-12-07 | Published |
 | 13 | Synthesis: Codecs as Structure | 2026-05-15 | Forthcoming |
 
 ## Voice and Style
