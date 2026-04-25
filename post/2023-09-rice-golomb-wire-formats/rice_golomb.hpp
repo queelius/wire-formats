@@ -83,4 +83,110 @@ struct Rice {
     }
 };
 
+// ---- truncated_binary -- helper for Golomb's remainder encoding --------------
+//
+// Encodes r in the range [0, m) using the minimal-length prefix-free code:
+//   bits = ceil(log2(m)) = bit_width(m - 1)
+//   cutoff = 2^bits - m       (number of values that use bits-1 bits)
+//
+// If r < cutoff: encode r in (bits - 1) bits.
+// If r >= cutoff: encode (r + cutoff) in bits bits.
+//
+// This packs the m values into a prefix-free binary code of length
+// floor(log2(m)) or ceil(log2(m)), splitting the two groups so no codeword
+// is a prefix of another.
+
+namespace detail {
+
+// Number of bits needed to represent values in [0, m): ceil(log2(m)).
+// For m=1 we need 0 bits (only one value). For m=2 we need 1 bit, etc.
+inline std::size_t min_bits(std::size_t m) {
+    if (m <= 1) return 0;
+    return static_cast<std::size_t>(std::bit_width(m - 1));
+}
+
+template<BitSink S>
+inline void truncated_binary_encode(std::uint64_t r, std::size_t m, S& sink) {
+    assert(r < m);
+    if (m == 1) return;  // Zero bits needed for a single value.
+    std::size_t bits = min_bits(m);
+    std::uint64_t cutoff = (std::uint64_t{1} << bits) - static_cast<std::uint64_t>(m);
+    if (r < cutoff) {
+        // Encode r in (bits - 1) bits, MSB first.
+        for (std::size_t i = bits - 1; i > 0; --i) {
+            sink.write(((r >> (i - 1)) & 1) != 0);
+        }
+    } else {
+        // Encode (r + cutoff) in bits bits, MSB first.
+        std::uint64_t val = r + cutoff;
+        for (std::size_t i = bits; i > 0; --i) {
+            sink.write(((val >> (i - 1)) & 1) != 0);
+        }
+    }
+}
+
+template<BitSource S>
+inline std::uint64_t truncated_binary_decode(std::size_t m, S& source) {
+    if (m == 1) return 0;
+    std::size_t bits = min_bits(m);
+    std::uint64_t cutoff = (std::uint64_t{1} << bits) - static_cast<std::uint64_t>(m);
+    // Read (bits - 1) bits first.
+    std::uint64_t val = 0;
+    for (std::size_t i = 0; i < bits - 1; ++i) {
+        val = (val << 1) | (source.read() ? std::uint64_t{1} : std::uint64_t{0});
+    }
+    if (val < cutoff) {
+        // The short codeword: r = val, consumed (bits - 1) bits.
+        return val;
+    } else {
+        // Need one more bit to distinguish.
+        val = (val << 1) | (source.read() ? std::uint64_t{1} : std::uint64_t{0});
+        return val - cutoff;
+    }
+}
+
+}  // namespace detail
+
+// ---- Golomb<M> -- generalized Rice for non-power-of-2 divisors --------------
+//
+// Encodes non-negative integer n >= 0 by splitting into quotient q = n / m
+// and remainder r = n % m:
+//   1. Write q in unary (q zeros then a '1' bit).
+//   2. Write r in truncated binary (prefix-free code over [0, m)).
+//
+// When M is a power of 2 (M = 2^K), Golomb<M> produces identical codewords
+// to Rice<K>. For non-power-of-2 M, the truncated-binary remainder is
+// slightly more efficient than a fixed K-bit field.
+//
+// Codeword length: floor(n/M) + 1 + (floor(log2(M)) or ceil(log2(M))) bits.
+// Implied prior: geometric with rate parameter p tuned to mean ~ M / (1 - p).
+// Optimal source: geometric distribution with mean close to M.
+
+template<std::size_t M>
+struct Golomb {
+    using value_type = std::uint64_t;
+    static_assert(M >= 1, "M must be at least 1");
+
+    template<BitSink S>
+    static void encode(value_type n, S& sink) {
+        std::uint64_t q = n / static_cast<std::uint64_t>(M);
+        std::uint64_t r = n % static_cast<std::uint64_t>(M);
+        // Write q in unary: q zeros then a '1'.
+        for (std::uint64_t i = 0; i < q; ++i) sink.write(false);
+        sink.write(true);
+        // Write r in truncated binary.
+        detail::truncated_binary_encode(r, M, sink);
+    }
+
+    template<BitSource S>
+    static value_type decode(S& source) {
+        // Count zero bits to get q.
+        std::uint64_t q = 0;
+        while (!source.read()) ++q;
+        // Decode r from truncated binary.
+        std::uint64_t r = detail::truncated_binary_decode(M, source);
+        return q * static_cast<std::uint64_t>(M) + r;
+    }
+};
+
 }  // namespace rice_golomb
