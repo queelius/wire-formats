@@ -188,3 +188,48 @@ TEST(RiceGolombTest, Golomb5LargeRoundTrip) {
         EXPECT_EQ(golomb_round_trip<5>(n), n) << "n=" << n;
     }
 }
+
+// Tests for optimal_rice_k(mean) and optimal_golomb_m(mean).
+
+// For mean = 1 (almost all values are 0), K=0 would be ideal but K must be >=1;
+// optimal_rice_k should return 1.
+TEST(RiceGolombTest, OptimalRiceKMeanOne) {
+    EXPECT_EQ(optimal_rice_k(1.0), std::size_t{1});
+}
+
+// For mean = 2 (geometric with p~0.5), K=1 is optimal.
+TEST(RiceGolombTest, OptimalRiceKMeanTwo) {
+    EXPECT_EQ(optimal_rice_k(2.0), std::size_t{1});
+}
+
+// For mean = 4, K=2 is optimal.
+TEST(RiceGolombTest, OptimalRiceKMeanFour) {
+    EXPECT_EQ(optimal_rice_k(4.0), std::size_t{2});
+}
+
+// For mean = 16, K=4 is optimal.
+TEST(RiceGolombTest, OptimalRiceKMeanSixteen) {
+    EXPECT_EQ(optimal_rice_k(16.0), std::size_t{4});
+}
+
+// optimal_golomb_m returns a positive integer.
+TEST(RiceGolombTest, OptimalGolombMPositive) {
+    for (double mu : {1.5, 2.0, 5.0, 10.0, 100.0}) {
+        EXPECT_GE(optimal_golomb_m(mu), std::size_t{1}) << "mu=" << mu;
+    }
+}
+
+// For a power-of-2 mean, optimal_golomb_m is close to optimal_rice_k's 2^K.
+TEST(RiceGolombTest, OptimalGolombMNearPowerOf2ForPowerMean) {
+    // mean=4: optimal Rice K=2, so 2^K=4. Golomb m should be near 4.
+    std::size_t m = optimal_golomb_m(4.0);
+    EXPECT_GE(m, std::size_t{2});
+    EXPECT_LE(m, std::size_t{8});
+}
+
+// For non-power-of-2 mean, optimal_golomb_m can differ from any power of 2.
+TEST(RiceGolombTest, OptimalGolombMForMeanFive) {
+    std::size_t m = optimal_golomb_m(5.0);
+    EXPECT_GE(m, std::size_t{1});
+    EXPECT_LE(m, std::size_t{20});
+}

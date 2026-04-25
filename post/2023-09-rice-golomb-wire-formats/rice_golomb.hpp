@@ -189,4 +189,43 @@ struct Golomb {
     }
 };
 
+// ---- Parameter selection (Gallager and van Voorhis 1975) --------------------
+//
+// For a geometric distribution with mean mu (i.e., p = 1/mu if the distribution
+// is over non-negative integers), the optimal Golomb parameter is approximately:
+//
+//   m* = -1 / log2((mu - 1) / mu)  =  -1 / log2(1 - 1/mu)
+//
+// For Rice (which requires m = 2^K), round m* to the nearest power of 2 and
+// return K = round(log2(m*)).
+//
+// Both functions clamp their results to sensible ranges to avoid degenerate
+// outputs from extreme or near-zero mean values.
+
+// optimal_golomb_m: returns the approximately optimal Golomb parameter m
+// for a geometric source with the given mean (mean > 1).
+inline std::size_t optimal_golomb_m(double mean) {
+    assert(mean > 1.0 && "Golomb parameter undefined for mean <= 1");
+    // Gallager-van Voorhis formula.
+    double p = (mean - 1.0) / mean;  // geometric success probability
+    // m* = -1 / log2(p)
+    double m_star = -1.0 / std::log2(p);
+    std::size_t m = static_cast<std::size_t>(std::round(m_star));
+    if (m < 1) m = 1;
+    return m;
+}
+
+// optimal_rice_k: returns the approximately optimal Rice parameter K
+// for a geometric source with the given mean (mean >= 1).
+// Rice<K> is optimal for a geometric source with mean close to 2^K.
+// K = round(log2(mean)), clamped to [1, 62].
+inline std::size_t optimal_rice_k(double mean) {
+    if (mean <= 2.0) return 1;  // Clamp: K must be >= 1.
+    // K ~ log2(mean): 2^K is the nearest power of 2 to the mean.
+    double k_real = std::log2(mean);
+    std::size_t k = static_cast<std::size_t>(std::max(1.0, std::round(k_real)));
+    if (k >= 63) k = 62;  // Clamp to valid Rice template range.
+    return k;
+}
+
 }  // namespace rice_golomb
