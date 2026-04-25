@@ -185,3 +185,117 @@ TEST(FibonacciTest, NoInternalConsecutiveOnes) {
         }
     }
 }
+
+// ---- Self-synchronization test (spec section E) ----------------------------
+
+// Helper: encode a sequence of integers into one flat bit stream.
+static std::vector<bool> encode_sequence(const std::vector<uint64_t>& seq) {
+    struct VecSink {
+        std::vector<bool>& bits;
+        void write(bool b) { bits.push_back(b); }
+    };
+    std::vector<bool> result;
+    VecSink sink{result};
+    for (uint64_t n : seq) Fibonacci::encode(n, sink);
+    return result;
+}
+
+// Helper: flip bit at index idx in a copy of the bit stream.
+static std::vector<bool> flip_bit(std::vector<bool> bits, std::size_t idx) {
+    bits[idx] = !bits[idx];
+    return bits;
+}
+
+// Helper: try to decode at most one integer from a bit stream with an EOF guard.
+// Returns false if we run out of bits before finding the "11" terminator.
+static bool try_decode_one(const std::vector<bool>& bits, std::size_t& pos,
+                            uint64_t& out) {
+    std::vector<bool> zeck;
+    bool prev = false;
+    while (pos < bits.size()) {
+        bool cur = bits[pos++];
+        if (cur && prev) { out = 0; /* compute below */ goto reconstruct; }
+        zeck.push_back(cur);
+        prev = cur;
+    }
+    return false;  // ran out of bits
+reconstruct:
+    std::vector<uint64_t> fibs{1, 2};
+    while (fibs.size() < zeck.size())
+        fibs.push_back(fibs[fibs.size()-1] + fibs[fibs.size()-2]);
+    out = 0;
+    for (std::size_t i = 0; i < zeck.size(); ++i)
+        if (zeck[i]) out += fibs[i];
+    return true;
+}
+
+// Spec section E: a single bit flip corrupts at most two codewords.
+// We encode {3, 5, 7, 9, 11, 13}, flip the first bit in the stream
+// (within the codeword for 3), and verify that the first codeword may be
+// wrong but subsequent ones are recovered.
+// The key property: after a corrupted codeword, the next "11" resynchronizes.
+TEST(FibonacciTest, BitFlipStaysLocal) {
+    const std::vector<uint64_t> original = {3, 5, 7, 9, 11, 13};
+    auto encoded = encode_sequence(original);
+    // Flip the very first bit (within the codeword for 3 = "0011 1").
+    // This corrupts at most the first codeword; from the first "11" we find
+    // afterwards, the rest of the stream is recovered.
+    auto corrupted = flip_bit(encoded, 0);
+    std::size_t pos = 0;
+    std::vector<uint64_t> decoded;
+    uint64_t v;
+    while (decoded.size() < original.size() && try_decode_one(corrupted, pos, v)) {
+        decoded.push_back(v);
+    }
+    int matches = 0;
+    for (std::size_t i = 0; i < std::min(decoded.size(), original.size()); ++i) {
+        if (decoded[i] == original[i]) ++matches;
+    }
+    // The first codeword may be corrupted; the remaining 5 should be intact.
+    EXPECT_GE(matches, 4)
+        << "Expected at least 4/6 values intact after flipping bit 0";
+}
+
+// ---- Integration tests using the priors library ----------------------------
+
+#include "../2022-01-priors-wire-formats/priors.hpp"
+
+// Helper: build fibonacci length vector for symbols 1..N.
+static std::vector<std::size_t> fib_lengths(std::size_t N) {
+    std::vector<std::size_t> v(N);
+    for (std::size_t i = 0; i < N; ++i) {
+        v[i] = fib_bit_count(static_cast<uint64_t>(i + 1));
+    }
+    return v;
+}
+
+// Fibonacci has bounded redundancy on its own implied prior (by definition).
+TEST(FibonacciTest, FibonacciSmallRedundancyOnImpliedPrior) {
+    const std::size_t N = 50;
+    auto lens = fib_lengths(N);
+    auto probs = priors::implied_prior(lens);
+    double r = priors::redundancy(probs, lens);
+    // The code is approximately optimal for its own prior.
+    EXPECT_GE(r, 0.0);
+    EXPECT_LT(r, 2.0);
+}
+
+// Fibonacci length grows as roughly log_phi(n) + 1 ~ 1.44 * log2(n) + 1.
+// This is always at least ceil(log2(n)) + 1 bits (can't do better without
+// the Zeckendorf representation). Verify Fibonacci length is bounded above
+// by approximately 1.5 * gamma_length for n in [4..100].
+TEST(FibonacciTest, FibonacciLengthWithinBounds) {
+    for (uint64_t n = 4; n <= 100; ++n) {
+        // gamma length = 2*floor(log2(n)) + 1.
+        std::size_t k = 0;
+        uint64_t tmp = n;
+        while (tmp > 1) { tmp >>= 1; ++k; }
+        std::size_t gl = 2 * k + 1;
+        std::size_t fl = fib_bit_count(n);
+        // Fibonacci length is at most 1.5 * gamma length for n in this range.
+        // (Both grow as O(log n) with Fibonacci at ~1.44*log2(n) and gamma at ~2*log2(n).)
+        EXPECT_LE(fl, gl + gl / 2 + 2) << "n=" << n;
+        // Fibonacci length is at least floor(log2(n)) + 1 (minimum for n bits of info).
+        EXPECT_GE(fl, k + 1) << "n=" << n;
+    }
+}
