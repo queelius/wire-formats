@@ -23,11 +23,15 @@ linked_project:
 - wire-formats
 ---
 
+*Elias gamma spends too many bits saying how many bits it will use. Delta fixes that. Omega takes the fix one step further. This post is about what happens when you apply recursion to the length prefix.*
+
 ## Where Gamma Stops Being Good
 
 Elias gamma, from [the previous post](/post/2022-06-elias-gamma-wire-formats/), encodes a positive integer $n$ in $2\lfloor \log_2 n \rfloor + 1$ bits: a unary count of $\lfloor \log_2 n \rfloor$ zeros, then a stop bit, then the $\lfloor \log_2 n \rfloor$ trailing binary bits of $n$. For small $n$ this is fine. For large $n$, nearly half the bits are spent on the unary prefix alone.
 
-The unary prefix is the bottleneck. It encodes the length $L = \lfloor \log_2 n \rfloor + 1$ in the least efficient possible way: one bit per unit. For $n = 256$, that is 8 zero bits just to say "the payload is 8 bits long." A better idea: encode $L$ itself in some shorter code. Elias delta does exactly this, replacing the unary length prefix with a gamma-coded length. Elias omega takes the idea one step further and applies the recursion to itself.
+The unary prefix is the bottleneck. It encodes the length $L = \lfloor \log_2 n \rfloor + 1$ in the most wasteful possible way: one bit per unit. For $n = 256$, that is 8 zero bits just to say "the payload is 8 bits long." The payload itself is also 8 bits, so you are paying a 100% overhead on the length announcement. That is bad, and it gets worse as $n$ grows.
+
+The fix is obvious once you see it: encode $L$ itself in some shorter code instead of unary. Elias delta does exactly this, replacing the unary length prefix with a gamma-coded length. Elias omega takes the idea one step further and applies the recursion to itself, all the way down.
 
 Both codes are universal: they assign finite codewords to every positive integer, and the expected codeword length is within a constant factor of optimal for any source whose probabilities decrease with $n$. The improvement over gamma is real and measurable once $n$ grows past a few dozen.
 
@@ -52,6 +56,8 @@ Gamma encodes $L$ (a small integer) in $O(\log \log n)$ bits instead of $O(\log 
 | 2   | 2                           | `010`       | `0`           | `0100`         |
 | 3   | 2                           | `010`       | `1`           | `0101`         |
 | 4   | 3                           | `011`       | `00`          | `01100`        |
+
+For $n = 1$, the two codes agree: both emit a single `1` bit. For $n = 4$, gamma would emit `00100` (5 bits); delta emits `01100` (5 bits as well, but it will pull ahead soon). The crossover is not immediate, but it is real.
 
 **Implementation.**
 
@@ -83,7 +89,7 @@ struct Delta {
 };
 ```
 
-Decoding inverts exactly: read $L$ from a gamma-coded prefix, then read $L - 1$ payload bits, prepending the implicit leading 1.
+Decoding inverts exactly: read $L$ from a gamma-coded prefix, then read $L - 1$ payload bits, prepending the implicit leading 1. The structure mirrors the encoder step for step. There is nothing subtle here; the recursion is one level deep and terminates immediately.
 
 **Implied prior.** The delta length for $n$ is approximately $\log_2 n + 2 \log_2 \log_2 n + C$ bits. The implied probability is roughly $1 / (n \log^2 n)$, a heavier tail than gamma's $\sim 1/n^2$. Delta is better matched to sources where large values are somewhat more likely than a squared power law would predict.
 
@@ -142,7 +148,7 @@ struct Omega {
 };
 ```
 
-The stack-based encoding and forward-reading decode are mirror images of each other. The terminating 0 bit is the base case of the recursion.
+The stack-based encoding and forward-reading decode are mirror images of each other. The terminating 0 bit is the base case of the recursion: it tells the decoder there is nothing more to unfold.
 
 **Implied prior.** Omega's length grows as $O(\log^* n)$, the iterated logarithm. This is the theoretical limit for self-delimiting integer codes. The implied probability is slightly heavier-tailed than delta's $1/(n \log^2 n)$.
 
@@ -171,16 +177,18 @@ The takeaway: delta is the default choice for most practical work. Omega is inte
 
 ## The Implied Prior Ladder
 
-Each encoding step shifts the implied prior toward a heavier tail:
+Each step in the encoding hierarchy shifts the implied prior toward a heavier tail:
 
 - **Unary**: implied prior $\sim 1/2^n$ (geometric, extremely light tail).
 - **Gamma**: implied prior $\sim 1/n^2$ (power law with exponent 2).
 - **Delta**: implied prior $\sim 1/(n \log^2 n)$ (power law with a logarithmic correction).
 - **Omega**: implied prior slightly heavier than delta's.
 
-A heavier tail means the code assigns shorter codewords to large $n$ relative to what a pure power law would give. This reduces average code length when the source occasionally produces large outliers. The cost: a small constant overhead for the small values that make up the bulk of typical data.
+A heavier tail means the code assigns shorter codewords to large $n$ relative to what a pure power law would give. This reduces average code length when the source occasionally produces large outliers. The cost is a small constant overhead for the small values that make up the bulk of typical data.
 
 If your source is well-modeled by $1/n^2$, gamma is the best match. If large values appear more often than $1/n^2$ predicts (heavier tail), delta is better. Omega is useful primarily as a theoretical reference: the code that matches the heaviest practically encodable tail.
+
+Choosing a code is choosing a prior. You should at least know what prior you are choosing.
 
 The [Universal Codes as Priors](/post/2022-01-priors-wire-formats/) post gives the machinery for computing redundancy given a source distribution and a code length sequence. The integration tests in `test_elias_delta_omega.cpp` use that library to verify that delta's redundancy on a $1/n^2$ source stays bounded, and that gamma beats delta on exactly that source.
 
@@ -190,11 +198,11 @@ The [Universal Codes as Priors](/post/2022-01-priors-wire-formats/) post gives t
 
 Omega achieves $O(\log^* n)$ codeword length, where $\log^*$ is the iterated logarithm: the number of times you must apply $\log_2$ before the result drops to 1 or below. For all 64-bit integers, $\log^* n \leq 5$.
 
-This is not just a curiosity. It is the theoretical lower bound for self-delimiting codes on positive integers with no distributional assumptions. No prefix-free code can do asymptotically better than $O(\log^* n)$.
+This is the theoretical lower bound for self-delimiting codes on positive integers with no distributional assumptions. No prefix-free code can do asymptotically better than $O(\log^* n)$.
 
-In practice, however, the constant in that $O$ matters. Omega's codewords for $n \leq 1000$ are frequently longer than delta's. The overhead of adding one more recursion level costs bits even when the recursion only saves bits asymptotically. For any practical $n$ in the range a 64-bit system can produce, delta already achieves most of omega's compression advantage at lower constant overhead.
+In practice, the constant in that $O$ matters. Omega's codewords for $n \leq 1000$ are frequently longer than delta's. The overhead of adding one more recursion level costs bits even when the recursion only saves bits asymptotically. For any practical $n$ in the range a 64-bit system can produce, delta already achieves most of omega's compression advantage at lower constant overhead.
 
-So omega is the theoretical ceiling, delta is the practical ceiling, and gamma is the workhorse for distributions where large values are rare. Each code in the ladder is the right choice for a different source model.
+So omega is the theoretical ceiling, delta is the practical ceiling, and gamma is the workhorse for distributions where large values are rare. Each code is the right choice for a different source model. That is not a deficiency of any of them; it is the point.
 
 ---
 
