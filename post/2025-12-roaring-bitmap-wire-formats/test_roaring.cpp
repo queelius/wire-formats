@@ -156,3 +156,47 @@ TEST(RunContainerTest, DuplicateAddNoChange) {
     EXPECT_EQ(c.cardinality(), 2u);
     EXPECT_EQ(c.num_runs(), 1u);
 }
+
+// ---- Container conversion tests ---------------------------------------------
+
+// array_to_bitmap: converts ArrayContainer contents into a BitmapContainer.
+TEST(ConversionTest, ArrayToBitmap) {
+    ArrayContainer a;
+    for (uint16_t v = 0; v < 100; ++v) a.add(v);
+    BitmapContainer b = array_to_bitmap(a);
+    EXPECT_EQ(b.cardinality(), 100u);
+    for (uint16_t v = 0; v < 100; ++v) EXPECT_TRUE(b.contains(v));
+    EXPECT_FALSE(b.contains(100));
+}
+
+// bitmap_to_array: converts BitmapContainer contents into an ArrayContainer.
+TEST(ConversionTest, BitmapToArray) {
+    BitmapContainer b;
+    for (uint16_t v = 0; v < 50; ++v) b.add(v);
+    ArrayContainer a = bitmap_to_array(b);
+    EXPECT_EQ(a.cardinality(), 50u);
+    for (uint16_t v = 0; v < 50; ++v) EXPECT_TRUE(a.contains(v));
+    EXPECT_FALSE(a.contains(50));
+}
+
+// array_to_run: converts ArrayContainer into a RunContainer.
+TEST(ConversionTest, ArrayToRun) {
+    ArrayContainer a;
+    for (uint16_t v = 10; v < 20; ++v) a.add(v);  // One run: [10, 19].
+    RunContainer r = array_to_run(a);
+    EXPECT_EQ(r.cardinality(), 10u);
+    EXPECT_EQ(r.num_runs(), 1u);
+    for (uint16_t v = 10; v < 20; ++v) EXPECT_TRUE(r.contains(v));
+}
+
+// Round-trip: array -> bitmap -> array preserves cardinality.
+TEST(ConversionTest, ArrayBitmapArrayRoundTrip) {
+    ArrayContainer a_orig;
+    for (uint16_t v = 0; v < 200; v += 3) a_orig.add(v);
+    BitmapContainer b = array_to_bitmap(a_orig);
+    ArrayContainer a_back = bitmap_to_array(b);
+    EXPECT_EQ(a_back.cardinality(), a_orig.cardinality());
+    for (const auto& val : a_orig.elements()) {
+        EXPECT_TRUE(a_back.contains(val));
+    }
+}

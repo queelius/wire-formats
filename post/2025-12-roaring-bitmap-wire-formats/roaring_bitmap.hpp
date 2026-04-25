@@ -179,4 +179,46 @@ public:
     }
 };
 
+// ---- Container conversion helpers -------------------------------------------
+//
+// These are called by the RoaringBitmap dispatcher when a chunk crosses a
+// density threshold. The conversion cost is O(n) in the chunk size and is
+// amortized over many subsequent O(1) operations.
+
+// array_to_bitmap: O(cardinality) -- set each array element as a bitmap bit.
+[[nodiscard]] inline BitmapContainer array_to_bitmap(const ArrayContainer& a) {
+    BitmapContainer b;
+    for (uint16_t v : a.elements()) b.add(v);
+    return b;
+}
+
+// bitmap_to_array: O(65536/64) -- scan bitmap words, collect set bits.
+[[nodiscard]] inline ArrayContainer bitmap_to_array(const BitmapContainer& b) {
+    ArrayContainer a;
+    const auto& words = b.raw_words();
+    for (std::size_t w = 0; w < words.size(); ++w) {
+        uint64_t word = words[w];
+        while (word) {
+            // Find lowest set bit.
+            std::size_t bit = static_cast<std::size_t>(__builtin_ctzll(word));
+            a.add(static_cast<uint16_t>(w * 64 + bit));
+            word &= word - 1;  // Clear lowest set bit.
+        }
+    }
+    return a;
+}
+
+// array_to_run: O(cardinality) -- scan sorted array, group consecutive values.
+// The array must be sorted (invariant of ArrayContainer).
+[[nodiscard]] inline RunContainer array_to_run(const ArrayContainer& a) {
+    RunContainer r;
+    for (uint16_t v : a.elements()) r.add(v);
+    return r;
+}
+
+// bitmap_to_run: convert a BitmapContainer into a RunContainer via array.
+[[nodiscard]] inline RunContainer bitmap_to_run(const BitmapContainer& b) {
+    return array_to_run(bitmap_to_array(b));
+}
+
 }  // namespace roaring
