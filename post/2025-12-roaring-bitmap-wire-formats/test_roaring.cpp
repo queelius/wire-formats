@@ -247,3 +247,69 @@ TEST(RoaringBitmapTest, AutoConvertArrayToBitmap) {
     for (uint32_t i = 0; i <= 4096; ++i) EXPECT_TRUE(rb.contains(i));
     EXPECT_FALSE(rb.contains(4097));
 }
+
+// ---- Set operation tests ----------------------------------------------------
+
+TEST(RoaringSetOpsTest, UnionDisjoint) {
+    RoaringBitmap a, b;
+    a.add(1); a.add(2);
+    b.add(3); b.add(4);
+    RoaringBitmap u = a.union_with(b);
+    EXPECT_EQ(u.cardinality(), 4u);
+    for (uint32_t v : {1u, 2u, 3u, 4u}) EXPECT_TRUE(u.contains(v));
+}
+
+TEST(RoaringSetOpsTest, UnionOverlapping) {
+    RoaringBitmap a, b;
+    a.add(10); a.add(20);
+    b.add(20); b.add(30);
+    RoaringBitmap u = a.union_with(b);
+    EXPECT_EQ(u.cardinality(), 3u);
+    EXPECT_TRUE(u.contains(10));
+    EXPECT_TRUE(u.contains(20));
+    EXPECT_TRUE(u.contains(30));
+}
+
+TEST(RoaringSetOpsTest, IntersectionOverlapping) {
+    RoaringBitmap a, b;
+    a.add(5); a.add(10); a.add(15);
+    b.add(10); b.add(15); b.add(20);
+    RoaringBitmap inter = a.intersection_with(b);
+    EXPECT_EQ(inter.cardinality(), 2u);
+    EXPECT_TRUE(inter.contains(10));
+    EXPECT_TRUE(inter.contains(15));
+    EXPECT_FALSE(inter.contains(5));
+    EXPECT_FALSE(inter.contains(20));
+}
+
+TEST(RoaringSetOpsTest, IntersectionDisjoint) {
+    RoaringBitmap a, b;
+    a.add(1); a.add(2);
+    b.add(3); b.add(4);
+    RoaringBitmap inter = a.intersection_with(b);
+    EXPECT_EQ(inter.cardinality(), 0u);
+}
+
+TEST(RoaringSetOpsTest, DifferenceAMinusB) {
+    RoaringBitmap a, b;
+    a.add(1); a.add(2); a.add(3);
+    b.add(2); b.add(4);
+    RoaringBitmap diff = a.difference(b);
+    EXPECT_EQ(diff.cardinality(), 2u);
+    EXPECT_TRUE(diff.contains(1));
+    EXPECT_TRUE(diff.contains(3));
+    EXPECT_FALSE(diff.contains(2));
+}
+
+TEST(RoaringSetOpsTest, SetOpsAcrossChunks) {
+    RoaringBitmap a, b;
+    a.add(10);               // Chunk 0.
+    a.add(65536 + 5);        // Chunk 1.
+    b.add(10);               // Chunk 0.
+    b.add(65536 + 10);       // Chunk 1, different value.
+    RoaringBitmap u = a.union_with(b);
+    EXPECT_EQ(u.cardinality(), 3u);
+    RoaringBitmap inter = a.intersection_with(b);
+    EXPECT_EQ(inter.cardinality(), 1u);
+    EXPECT_TRUE(inter.contains(10));
+}
