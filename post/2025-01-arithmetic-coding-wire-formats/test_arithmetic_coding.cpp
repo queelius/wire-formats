@@ -263,3 +263,54 @@ TEST(RoundTripTest, Sequence100SymbolsSkewed99) {
     for (std::size_t i = 0; i < 100; ++i) syms[i] = (i % 100 == 0) ? 1u : 0u;
     EXPECT_TRUE(sequence_round_trip(syms, 99, 100));
 }
+
+// Measure bits per symbol for a Bernoulli(p) source encoded with arithmetic
+// coding. Returns bits_per_symbol = (bits_written / n_symbols).
+static double measure_bits_per_symbol(std::size_t n_symbols,
+                                      std::uint32_t prob_high,
+                                      std::uint32_t total) {
+    // Generate a periodic sequence approximating Bernoulli(prob_high/total).
+    // sym 0 has probability prob_high/total (the frequent symbol).
+    // sym 1 has probability (total-prob_high)/total (the rare symbol).
+    // Place one sym-1 every 'ratio' positions to approximate P(sym1).
+    std::vector<std::size_t> syms(n_symbols);
+    std::uint32_t rare = total - prob_high;  // frequency count of rare symbol
+    // Use rare!=0 guard; if rare==0 all symbols are 0.
+    std::uint32_t ratio = (rare > 0) ? (total / rare) : n_symbols + 1;
+    for (std::size_t i = 0; i < n_symbols; ++i) {
+        syms[i] = (ratio > 0 && i % ratio == ratio - 1) ? 1u : 0u;
+    }
+    BitWriter bw;
+    {
+        ArithmeticEncoder enc(bw);
+        for (std::size_t sym : syms) {
+            if (sym == 0) enc.encode_symbol(0, prob_high, total);
+            else          enc.encode_symbol(prob_high, total, total);
+        }
+        enc.finish();
+    }
+    bw.flush();
+    return static_cast<double>(bw.bytes().size() * 8) /
+           static_cast<double>(n_symbols);
+}
+
+// For a Bernoulli(99/100) source, entropy H ~ 0.081 bits/symbol.
+// With 10000 symbols, the arithmetic coder should achieve <= 0.2 bits/symbol.
+TEST(ConvergenceTest, ApproachesEntropyBernoulli99) {
+    // H(p) for p0=0.99, p1=0.01.
+    std::vector<double> dist = {0.99, 0.01};
+    double h = priors::entropy(dist);  // ~0.0808 bits
+    double bps = measure_bits_per_symbol(10000, 99, 100);
+    // Generous tolerance: within 0.5 bits/symbol of entropy.
+    EXPECT_LT(bps, h + 0.5) << "bps=" << bps << " H=" << h;
+    // Must be better than 1 bit/symbol (Huffman on binary source).
+    EXPECT_LT(bps, 1.0);
+}
+
+// For a uniform binary source (entropy = 1 bit/symbol), should be ~1.
+TEST(ConvergenceTest, NearEntropyForUniform) {
+    std::vector<double> dist = {0.5, 0.5};
+    double h = priors::entropy(dist);  // exactly 1.0 bit
+    double bps = measure_bits_per_symbol(10000, 1, 2);
+    EXPECT_NEAR(bps, h, 0.1) << "bps=" << bps << " H=" << h;
+}
