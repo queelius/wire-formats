@@ -22,10 +22,11 @@ linked_project:
 - pfc
 - wire-formats
 ---
+*Twelve posts, twelve codes, one thesis that refused to change. This is the closing summary.*
 
 ## A. The Twelve Codes Together
 
-Twelve posts and twelve codes. Each one answered a version of the same question: given a source of positive integers, how do you represent its values compactly as a sequence of bits? The answers differ in shape, in assumptions, and in which distribution of values each code implicitly expects.
+Every post in this series answered a version of the same question: given a source of positive integers, how do you represent its values compactly as a sequence of bits? The answers differ in shape, in assumptions, and in which distribution each code implicitly expects.
 
 | Post | Code | Implied prior (one phrase) |
 |------|------|---------------------------|
@@ -43,9 +44,9 @@ Twelve posts and twelve codes. Each one answered a version of the same question:
 | 11 | Succinct bit vectors | Not a code for integers: a representation that answers rank/select queries |
 | 12 | RoaringBitmap | Polyalgorithm: picks array, bitset, or run-length per container chunk |
 
-The table is the catalogue. Posts 1 and 2 ([Kraft's Inequality](/post/2020-03-kraft-wire-formats/) and [McMillan's Converse](/post/2020-09-mcmillan-wire-formats/)) established why prefix-free codes are the right unit of analysis. Post 3 ([Universal Codes as Priors](/post/2022-01-priors-wire-formats/)) named the frame: a code is a hypothesis about the source. Posts 4 through 10 filled in the catalogue. Posts 11 and 12 extended the ideas from integer coding to set representation, where the questions become "how do you store membership?" and "how do you answer rank/select?" rather than "how long is this codeword?"
+Posts 1 and 2 ([Kraft's Inequality](/post/2020-03-kraft-wire-formats/) and [McMillan's Converse](/post/2020-09-mcmillan-wire-formats/)) established why prefix-free codes are the right unit of analysis. Post 3 ([Universal Codes as Priors](/post/2022-01-priors-wire-formats/)) named the frame: a code is a hypothesis about the source. Posts 4 through 10 filled in the catalogue. Posts 11 and 12 extended from integer coding to set representation, where the questions shift from "how long is this codeword?" to "how do you store membership?" and "how do you answer rank/select?"
 
-Looking across all twelve entries, the main lesson is not that one code dominates. It is that the question "which code?" is always empirically answerable given a sample.
+Looking across all twelve, the main lesson is not that one code dominates. It is that the question "which code?" is always empirically answerable given a sample.
 
 ## B. The Unifying Frame Restated
 
@@ -67,19 +68,19 @@ Here is the six-clause version.
 
 ## C. Composition with Type Algebra
 
-Two posts in the companion series on Stepanov-style generic programming made claims that interlock with everything above.
+Two posts in the companion Stepanov series made claims that interlock with everything above. Working through them changed how I think about codec design.
 
-The post [Bits Follow Types](/post/2026-05-codecs-functors-stepanov/) argued that codecs compose along the algebraic structure of types: a codec for `Either<A, B>` is built from codecs for `A` and `B` by prepending a tag bit and dispatching; a codec for `Vec<A>` is built from a codec for `A` by iterating. The composition law is structural: it follows the constructors of the algebraic data type.
+The post [Bits Follow Types](/post/2026-05-codecs-functors-stepanov/) argued that codecs compose along the algebraic structure of types: a codec for `Either<A, B>` is built from codecs for `A` and `B` by prepending a tag bit and dispatching; a codec for `Vec<A>` is built from a codec for `A` by iterating. The composition law is structural. It follows the constructors of the algebraic data type, not the distribution of the data.
 
-The post [When Lists Become Bits](/post/2026-05-prefix-free-stepanov/) argued that prefix-freeness lifts the free-monoid construction into bit space. Concatenating prefix-free codewords is unambiguous because each codeword is self-delimiting. The monoid of strings of bits decomposes along codec boundaries exactly as the monoid of abstract tokens decomposes along type boundaries.
+The post [When Lists Become Bits](/post/2026-05-prefix-free-stepanov/) argued that prefix-freeness lifts the free-monoid construction into bit space. Concatenating prefix-free codewords is unambiguous because each codeword is self-delimiting. The monoid of bit strings decomposes along codec boundaries exactly as the monoid of abstract tokens decomposes along type boundaries.
 
 This series adds a third claim: the choice of leaf codec in any composite type is determined by the prior over that leaf's data, while the composition structure is determined by the type. These are two orthogonal axes of design freedom.
 
-Consider `Either<uint32_t, std::string>`. The composition structure says: write one bit for the variant tag, then write the payload for the selected variant. The composition structure is fixed by the type. What is not fixed is which codec you use for the tag bit, and which codec you use for the `uint32_t` payload.
+Consider `Either<uint32_t, std::string>`. The composition structure says: write one bit for the variant tag, then write the payload for the selected variant. That part is fixed by the type. What is not fixed is which codec you use for the tag bit, and which codec you use for the `uint32_t` payload.
 
-If you observe that 90% of values are `uint32_t` and 10% are `std::string`, a Huffman code over the two-symbol alphabet `{left, right}` gives you the tag bit nearly for free (0.47 bits expected vs. 1 bit for the flat tag). And if you observe that the `uint32_t` values are concentrated in `[0, 127]`, a VByte codec costs exactly 8 bits per value. Swap those observations and you swap those choices.
+If 90% of values are `uint32_t` and 10% are `std::string`, a Huffman code over the two-symbol alphabet `{left, right}` gives you the tag bit nearly for free (0.47 bits expected vs. 1 bit for the flat tag). And if the `uint32_t` values cluster in `[0, 127]`, VByte costs exactly 8 bits per value. Swap those observations and you swap those choices.
 
-The type algebra determines the composition; the empirical distribution determines the leaf codecs. Neither axis constrains the other. Good codec design means attending to both.
+The type algebra determines the composition; the empirical distribution determines the leaf codecs. Neither axis constrains the other. Attending to both is what makes codec design non-trivial.
 
 ## D. The Codec-Selection Library
 
@@ -111,29 +112,29 @@ inline std::string recommend_code(const std::vector<std::uint64_t>& sample)
 }
 ```
 
-On a strongly geometric sample (value 1 appears much more often than value 2, which appears more often than value 3, and so on), `recommend_code` returns `"Unary"` or `"Fibonacci"`. Both codes are matched to geometric-like priors; their redundancy on geometric data is low. On a sample of values in `[500, 1000]`, it returns `"VByte"` or `"Delta"`: byte-aligned codes have low overhead for values that cluster in that range, and neither Unary nor Gamma would be tolerable (Unary would require hundreds of bits per value).
+On a strongly geometric sample (value 1 appears much more often than value 2, which appears more often than value 3, and so on), `recommend_code` returns `"Unary"` or `"Fibonacci"`. Both codes are matched to geometric-like priors; their redundancy on geometric data is low. On a sample of values in `[500, 1000]`, it returns `"VByte"` or `"Delta"`: byte-aligned codes have low overhead for values that cluster in that range, and neither Unary nor Gamma would be tolerable there. Unary would require hundreds of bits per value.
 
-The point is not that `recommend_code` gives you a production-quality codec selector. It is that it makes the selection process concrete and mechanical. There is no "best code in general." There is a best code given a sample.
+The point is not that `recommend_code` is a production-quality selector. It is that it makes the selection process concrete and mechanical. There is no best code in general. There is a best code given a sample.
 
 ## E. The Six Principles
 
-The twelve posts reduce to six principles.
+These are the things I now believe about coding, after working through twelve instances.
 
 **1. A code is a prior.** Every codeword length implies a probability. Choosing a code is choosing what you believe about the source. The choice is never neutral, even when it is unconscious. When you reach for the first codec you know, you are betting on a prior you may never have examined.
 
 **2. Universality is robustness.** A universal code performs well across many priors, not just one. Elias gamma is asymptotically optimal for any source from a broad class of power-law distributions; VByte is a pragmatic universal for byte-oriented hardware. Use universal codes when you do not know the prior in advance, when the prior may shift over time, or when the engineering cost of measuring the source outweighs the compression gain. Use Huffman or arithmetic coding when you do know the prior and the gain from exploiting it justifies the overhead.
 
-**3. Optimality is measurable.** Shannon's source-coding theorem gives the lower bound: no uniquely-decodable code can have expected length below the entropy $H(p)$ of the source. Every code's redundancy is then measurable as expected-length minus entropy. This is not a theoretical abstraction; you can compute it from a sample in a few lines of code, as `redundancy_for` demonstrates. Pick codes by minimizing redundancy on the actual source, not by intuition about which code "sounds right" for the problem.
+**3. Optimality is measurable.** Shannon's source-coding theorem gives the lower bound: no uniquely-decodable code can have expected length below the entropy $H(p)$ of the source. Every code's redundancy is then measurable as expected-length minus entropy. This is not a theoretical abstraction; you can compute it from a sample in a few lines of code, as `redundancy_for` demonstrates. Pick codes by minimizing redundancy on the actual source, not by intuition about which code sounds right for the problem.
 
-**4. Engineering trades dominate at scale.** Theoretical optima (Elias gamma, delta, arithmetic coding) are outperformed in throughput benchmarks by byte-aligned approximations (VByte) when decode speed is the binding constraint. The reason is cache line alignment and SIMD: modern CPUs process data in 16-byte to 64-byte chunks, and a code that crosses byte boundaries pays a penalty that no redundancy saving can overcome at typical data volumes. Recognize where the binding constraint lives (compression ratio, decode throughput, encode throughput, memory, latency) before you decide which axis to optimize.
+**4. Engineering trades dominate at scale.** Theoretical optima (Elias gamma, delta, arithmetic coding) are outperformed in throughput benchmarks by byte-aligned approximations (VByte) when decode speed is the binding constraint. The reason is cache line alignment and SIMD: modern CPUs process data in 16-byte to 64-byte chunks, and a code that crosses byte boundaries pays a penalty that no redundancy saving can overcome at typical data volumes. Figure out where the binding constraint lives (compression ratio, decode throughput, encode throughput, memory, latency) before you decide which axis to optimize.
 
-**5. Polyalgorithms beat single algorithms.** When source characteristics vary across the data, adapt per-chunk rather than committing to a single global code. RoaringBitmap does this for integer sets: it observes each 65536-element chunk and picks the container type that minimizes storage for that chunk's observed density. Zstd does this for byte streams: it switches between LZ77, Huffman, and ANS depending on what the local symbol statistics support. The principle is general: non-stationarity is the norm in real data, and a globally optimal code is locally suboptimal everywhere the source deviates from the global average.
+**5. Polyalgorithms beat single algorithms.** When source characteristics vary across the data, adapt per-chunk rather than committing to a single global code. RoaringBitmap does this for integer sets: it observes each 65536-element chunk and picks the container type that minimizes storage for that chunk's density. Zstd does this for byte streams: it switches between LZ77, Huffman, and ANS depending on local symbol statistics. The principle is general. Non-stationarity is the norm in real data, and a globally optimal code is locally suboptimal everywhere the source deviates from the global average.
 
-**6. The algebra of composition is orthogonal to the choice of leaf code.** Type structure dictates how codecs compose: `Either` needs a tag, `Vec` needs a count or terminator, `Product` concatenates. These are structural facts about the algebraic data type and they do not change with the data distribution. What does change with the distribution is which codec you assign to each leaf. These are independent design dimensions: you can swap leaf codecs without changing the composition law, and you can change the composition structure (e.g., change how you represent the list length) without touching the leaf codecs.
+**6. The algebra of composition is orthogonal to the choice of leaf code.** Type structure dictates how codecs compose: `Either` needs a tag, `Vec` needs a count or terminator, `Product` concatenates. These are structural facts about the algebraic data type and they do not change with the data distribution. What does change with the distribution is which codec you assign to each leaf. You can swap leaf codecs without changing the composition law, and you can change the composition structure without touching the leaf codecs. Keeping these two axes separate is what makes a codec library composable rather than a pile of special cases.
 
 ## F. What Comes Next
 
-This series covered prefix-free codes from their theoretical foundations through a dozen instances, ending at polyalgorithms. The frontier extends in three directions.
+This series covered prefix-free codes from their theoretical foundations through twelve instances, ending at polyalgorithms. I stopped here because this is where the foundations end and the engineering starts getting domain-specific. The frontier extends in three directions I have not covered.
 
 **Context mixing.** The PAQ and ZPAQ family of compressors achieve near-arithmetic-limits on general data by running many predictive models in parallel and mixing their probability estimates with weights that are themselves adapted to the data. The key insight is that no single model is best everywhere; a mixture that weights models by their recent prediction accuracy outperforms any single model on non-stationary sources. Context mixing is the logical culmination of the codes-as-priors idea: you do not pick one prior, you maintain a portfolio.
 
