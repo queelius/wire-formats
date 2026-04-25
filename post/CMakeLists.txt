@@ -107,3 +107,14 @@ target_include_directories(test_huffman PRIVATE
     2024-08-huffman-wire-formats
     2022-01-priors-wire-formats)
 add_test(NAME test_huffman COMMAND test_huffman)
+
+# =============================================================================
+# Arithmetic Coding (post 10, 2025-01-12)
+# =============================================================================
+add_executable(test_arithmetic_coding
+    2025-01-arithmetic-coding-wire-formats/test_arithmetic_coding.cpp)
+target_link_libraries(test_arithmetic_coding GTest::gtest_main)
+target_include_directories(test_arithmetic_coding PRIVATE
+    2025-01-arithmetic-coding-wire-formats
+    2022-01-priors-wire-formats)
+add_test(NAME test_arithmetic_coding COMMAND test_arithmetic_coding)
