@@ -43,3 +43,5 @@ nav:
       - "Fibonacci Coding": "post/2023-04-fibonacci-wire-formats/index.md"
       - "Rice / Golomb": "post/2023-09-rice-golomb-wire-formats/index.md"
       - "VByte / Varint": "post/2024-02-vbyte-wire-formats/index.md"
+  - "Entropy-Optimal":
+      - "Huffman Coding": "post/2024-08-huffman-wire-formats/index.md"
